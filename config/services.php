@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'emoji' => [
+        'url' => env('EMOJI_API_URL'),
+        'key' => env('EMOJI_API_KEY'),
+    ],
+
 ];
