@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-import { Pencil, Plus } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Inicio', href: '/' },
@@ -37,10 +37,10 @@ export default function CategoryIndex({ categories }: { categories: Category[] }
                             <TableCaption>Lista de todas las categorías</TableCaption>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Nombre</TableHead>
-                                    <TableHead>Color de fondo</TableHead>
-                                    <TableHead>Color de texto</TableHead>
-                                    <TableHead>Vista previa</TableHead>
+                                    <TableHead className="text-center">Nombre</TableHead>
+                                    <TableHead className="text-center">Color de fondo</TableHead>
+                                    <TableHead className="text-center">Color de texto</TableHead>
+                                    <TableHead className="text-center">Vista previa</TableHead>
                                     <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -50,35 +50,61 @@ export default function CategoryIndex({ categories }: { categories: Category[] }
                                         <TableRow key={category.id}>
                                             <TableCell className="font-medium">{category.name}</TableCell>
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center justify-center gap-2">
                                                     <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: category.bg_color }} />
                                                     {category.bg_color}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center justify-center gap-2">
                                                     <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: category.text_color }} />
                                                     {category.text_color}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="flex min-w-[120px] items-center gap-2 px-4 py-2 text-sm"
-                                                    style={{
-                                                        backgroundColor: category.bg_color,
-                                                        color: category.text_color,
-                                                    }}
-                                                >
-                                                    <span>{category.icon}</span> {category.name}
-                                                </Badge>
+                                                <div className="flex items-center justify-center">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="flex min-w-[120px] items-center gap-2 px-4 py-2"
+                                                        style={{
+                                                            backgroundColor: category.bg_color,
+                                                            color: category.text_color,
+                                                        }}
+                                                    >
+                                                        <span>{category.icon}</span> {category.name}
+                                                    </Badge>
+                                                </div>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={route('categories.edit', category.id)}>
-                                                        <Pencil className="mr-1 h-4 w-4" /> Editar
-                                                    </Link>
-                                                </Button>
+                                            <TableCell>
+                                                <div className="flex justify-end gap-2">
+                                                    {/* Ver */}
+                                                    <Button variant="ghost" size="sm" asChild>
+                                                        <Link href={route('categories.show', category.id)}>
+                                                            <Eye className="mr-1 h-4 w-4" /> Ver
+                                                        </Link>
+                                                    </Button>
+
+                                                    {/* Editar */}
+                                                    <Button variant="ghost" size="sm" asChild>
+                                                        <Link href={route('categories.edit', category.id)}>
+                                                            <Pencil className="mr-1 h-4 w-4" /> Editar
+                                                        </Link>
+                                                    </Button>
+
+                                                    {/* Eliminar */}
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (confirm(`¿Seguro que deseas eliminar la categoría "${category.name}"?`)) {
+                                                                // Aquí va la acción de Inertia delete
+                                                                // ej: router.delete(route('categories.destroy', category.id))
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Trash2 className="mr-1 h-4 w-4" /> Eliminar
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))

@@ -14,6 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('dashboard/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('dashboard/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
     Route::get('dashboard/categories/create', [CategoryController::class, 'create'])->name('categories.create');
     Route::post('dashboard/categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::get('dashboard/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
