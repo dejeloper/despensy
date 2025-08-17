@@ -15,9 +15,10 @@ export interface Emoji {
 
 interface ButtonSearchEmojisProps {
     onSelect: (emoji: string) => void;
+    disabled?: boolean;
 }
 
-export default function ButtonSearchEmojis({ onSelect }: ButtonSearchEmojisProps) {
+export default function ButtonSearchEmojis({ onSelect, disabled = false }: ButtonSearchEmojisProps) {
     const [search, setSearch] = useState('');
     const [emojis, setEmojis] = useState<Emoji[]>([]);
     const [loading, setLoading] = useState(false);
@@ -50,7 +51,10 @@ export default function ButtonSearchEmojis({ onSelect }: ButtonSearchEmojisProps
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant={'outline'}>{loading ? <Loader2 className="h-5 w-5 animate-spin" /> : '😀'}</Button>
+                <Button variant={'outline'} disabled={disabled}>
+                    {' '}
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : '😀'}
+                </Button>
             </PopoverTrigger>
 
             <PopoverContent className="w-96 p-3">
