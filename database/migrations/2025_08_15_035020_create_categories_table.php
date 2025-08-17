@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('icon')->nullable();
-            $table->string('bg_color')->default('#ffffff');
-            $table->string('text_color')->default('#000000');
+            $table->string('name', 50)->unique();
+            $table->string('icon');
+            $table->string('bg_color', 7)->default('#ffffff');
+            $table->string('text_color', 7)->default('#000000');
             $table->boolean('enabled')->default(true);
             $table->timestamps();
         });

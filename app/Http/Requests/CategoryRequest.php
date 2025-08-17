@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {
@@ -20,10 +21,11 @@ class CategoryRequest extends FormRequest
 	public function rules(): array
 	{
 		return [
-			'name' => 'required|string|min:3|max:255|unique:categories,name',
-			'icon' => 'required|string|max:1',
+			'name' => 'required|string|max:50|min:3|unique:categories,name',
+			'icon' => 'required|string',
 			'bg_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
 			'text_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
+			'enabled' => 'required|boolean',
 		];
 	}
 
@@ -40,11 +42,12 @@ class CategoryRequest extends FormRequest
 			'name.unique' => 'El nombre ya existe.',
 			'icon.required' => 'El icono es obligatorio.',
 			'icon.string' => 'El icono debe ser una cadena de texto.',
-			'icon.max' => 'El icono no puede tener más de 1 carácter.',
 			'bg_color.required' => 'El color de fondo es obligatorio.',
 			'bg_color.regex' => 'El color de fondo debe ser un color hexadecimal válido.',
 			'text_color.required' => 'El color del texto es obligatorio.',
 			'text_color.regex' => 'El color del texto debe ser un color hexadecimal válido.',
+			'enabled.required' => 'El estado es obligatorio.',
+			'enabled.boolean' => 'El estado debe ser verdadero o falso.',
 		];
 	}
 }

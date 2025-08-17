@@ -54,7 +54,8 @@ class CategoryController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+        return Inertia::render('categories/show', ['category' => $category]);
     }
 
     /**
@@ -62,15 +63,22 @@ class CategoryController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+        return Inertia::render('categories/edit', ['category' => $category]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CategoryRequest $request, string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+
+        $validated = $request->validated();
+
+        $category->update($validated);
+
+        return redirect()->route('categories.index');
     }
 
     /**
@@ -78,6 +86,9 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+        $category->delete();
+
+        return redirect()->route('categories.index');
     }
 }
