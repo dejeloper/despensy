@@ -8,10 +8,13 @@ export type Column<T> = {
 };
 
 export type Action<T> = {
-	label: string;
+	title: string;
+	label?: string;
 	icon: ReactNode;
 	variant?: 'default' | 'ghost' | 'destructive';
 	onClick: (item: T) => void;
+	className?: string;
+	style?: React.CSSProperties;
 };
 
 export type DataTableProps<T> = {
