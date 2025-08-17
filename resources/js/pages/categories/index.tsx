@@ -7,7 +7,7 @@ import { PaginatedCategories } from '@/types/business/category';
 import { Button } from '@/components/ui/button';
 
 import { DataTable } from '@/components/shared/datatable.component';
-import { Pagination } from '@/components/shared/Pagination';
+import { Pagination } from '@/components/shared/pagination.component';
 import { categoryActions, categoryColumns } from '@/structures/categories.structure';
 import { Plus } from 'lucide-react';
 
