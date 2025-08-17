@@ -26,6 +26,7 @@ class PlaceRequest extends FormRequest
 			'bg_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
 			'text_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
 			'note' => 'nullable|string|max:200',
+			'enabled' => 'boolean',
 		];
 	}
 
@@ -39,6 +40,7 @@ class PlaceRequest extends FormRequest
 			'name.string' => 'El nombre debe ser una cadena de texto.',
 			'name.max' => 'El nombre no puede tener más de 50 caracteres.',
 			'short_name.required' => 'El nombre corto es obligatorio.',
+			'short_name.unique' => 'El nombre corto ya está en uso.',
 			'short_name.string' => 'El nombre corto debe ser una cadena de texto.',
 			'short_name.max' => 'El nombre corto no puede tener más de 30 caracteres.',
 			'address.string' => 'La dirección debe ser una cadena de texto.',
@@ -49,6 +51,7 @@ class PlaceRequest extends FormRequest
 			'text_color.regex' => 'El color del texto debe ser un color hexadecimal válido.',
 			'note.string' => 'La nota debe ser una cadena de texto.',
 			'note.max' => 'La nota no puede tener más de 200 caracteres.',
+			'enabled.boolean' => 'El estado debe ser verdadero o falso.',
 		];
 	}
 }
