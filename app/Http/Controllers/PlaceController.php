@@ -40,7 +40,7 @@ class PlaceController extends Controller
 
 		$place = new Place();
 		$place->name = $validated['name'];
-		$place->slug = $validated['slug'];
+		$place->short_name = $validated['short_name'];
 		$place->address = $validated['address'] ?? null;
 		$place->bg_color = $validated['bg_color'];
 		$place->text_color = $validated['text_color'];

@@ -8,7 +8,7 @@ class Place extends Model
 {
 	protected $fillable = [
 		'name',
-		'slug',
+		'short_name',
 		'address',
 		'bg_color',
 		'text_color',

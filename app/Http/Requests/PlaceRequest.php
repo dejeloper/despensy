@@ -21,7 +21,7 @@ class PlaceRequest extends FormRequest
 	{
 		return [
 			'name' => 'required|string|max:50',
-			'slug' => 'required|string|max:30|unique:places,slug',
+			'short_name' => 'required|string|max:30|unique:places,short_name',
 			'address' => 'nullable|string|max:50',
 			'bg_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
 			'text_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
@@ -38,9 +38,9 @@ class PlaceRequest extends FormRequest
 			'name.required' => 'El nombre es obligatorio.',
 			'name.string' => 'El nombre debe ser una cadena de texto.',
 			'name.max' => 'El nombre no puede tener más de 50 caracteres.',
-			'slug.required' => 'El slug es obligatorio.',
-			'slug.string' => 'El slug debe ser una cadena de texto.',
-			'slug.max' => 'El slug no puede tener más de 30 caracteres.',
+			'short_name.required' => 'El nombre corto es obligatorio.',
+			'short_name.string' => 'El nombre corto debe ser una cadena de texto.',
+			'short_name.max' => 'El nombre corto no puede tener más de 30 caracteres.',
 			'address.string' => 'La dirección debe ser una cadena de texto.',
 			'address.max' => 'La dirección no puede tener más de 50 caracteres.',
 			'bg_color.required' => 'El color de fondo es obligatorio.',

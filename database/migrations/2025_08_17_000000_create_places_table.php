@@ -14,7 +14,7 @@ return new class extends Migration
 		Schema::create('places', function (Blueprint $table) {
 			$table->id();
 			$table->string('name', 50)->unique();
-			$table->string('slug', 30)->unique();
+			$table->string('short_name', 30)->unique();
 			$table->string('address', 50)->nullable();
 			$table->string('bg_color', 7)->default('#ffffff');
 			$table->string('text_color', 7)->default('#000000');
