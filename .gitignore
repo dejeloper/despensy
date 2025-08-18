@@ -2,6 +2,7 @@
 /bootstrap/ssr
 /node_modules
 /producción
+/production
 /public/build
 /public/hot
 /public/storage
