@@ -9,31 +9,68 @@ import config from './deploy.config.json' with { type: 'json' };
 const rootDir = process.cwd();
 const prodDir = path.join(rootDir, 'production');
 
+// Added: steps tracking
+const steps = [];
+
+function markStart(label) {
+    steps.push({
+        label,
+        startIso: new Date().toISOString(),
+        startTs: Date.now(),
+    });
+}
+
+function markEnd(label) {
+    for (let i = steps.length - 1; i >= 0; i--) {
+        if (steps[i].label === label && !steps[i].endIso) {
+            steps[i].endIso = new Date().toISOString();
+            steps[i].durationMs = Date.now() - steps[i].startTs;
+            return;
+        }
+    }
+    // if not found, push a quick step
+    steps.push({
+        label,
+        startIso: new Date().toISOString(),
+        startTs: Date.now(),
+        endIso: new Date().toISOString(),
+        durationMs: 0,
+    });
+}
+
 async function main() {
     console.log('🚀 Iniciando build de producción...');
     console.time('⏱️ Tiempo total');
+    markStart('⏱️ Tiempo total');
 
     // 1. Ejecutar comandos de build
     console.time('⚙️ Build');
+    markStart('⚙️ Build');
     execSync('composer install --optimize-autoloader --no-dev', { stdio: 'inherit' });
     execSync('pnpm install', { stdio: 'inherit' });
     execSync('pnpm run build', { stdio: 'inherit' });
     execSync('php artisan config:cache', { stdio: 'inherit' });
+    execSync('php artisan cache:clear', { stdio: 'inherit' });
     execSync('php artisan route:cache', { stdio: 'inherit' });
     execSync('php artisan view:cache', { stdio: 'inherit' });
+    execSync('php artisan optimize:clear', { stdio: 'inherit' });
     console.timeEnd('⚙️ Build');
+    markEnd('⚙️ Build');
 
     // 2. Borrar carpeta production si existe
     console.time('🧹 Preparando carpeta production');
+    markStart('🧹 Preparando carpeta production');
     if (fs.existsSync(prodDir)) {
         fs.emptyDirSync(prodDir);
     } else {
         fs.mkdirSync(prodDir);
     }
     console.timeEnd('🧹 Preparando carpeta production');
+    markEnd('🧹 Preparando carpeta production');
 
     // 3. Copiar todo excepto lo que no quieres
     console.time('📂 Copiando archivos');
+    markStart('📂 Copiando archivos');
     for (const item of fs.readdirSync(rootDir)) {
         if (item === 'production') continue;
         const srcPath = path.join(rootDir, item);
@@ -66,32 +103,40 @@ async function main() {
         });
     }
     console.timeEnd('📂 Copiando archivos');
+    markEnd('📂 Copiando archivos');
 
     // 4. Mover contenido de public al root de production
     console.time('📦 Ajustando public');
+    markStart('📦 Ajustando public');
     const publicPath = path.join(prodDir, 'public');
     fs.copySync(publicPath, prodDir);
     fs.removeSync(publicPath);
     console.timeEnd('📦 Ajustando public');
+    markEnd('📦 Ajustando public');
 
     // 5. Editar index.php
     console.time('✏️ Editando index.php');
+    markStart('✏️ Editando index.php');
     const indexPath = path.join(prodDir, 'index.php');
     let indexContent = fs.readFileSync(indexPath, 'utf8');
     indexContent = indexContent.replace(`$root = __DIR__ . '/..';`, `$root = __DIR__;`);
     fs.writeFileSync(indexPath, indexContent);
     console.timeEnd('✏️ Editando index.php');
+    markEnd('✏️ Editando index.php');
 
     // 6. Renombrar .env.prod a .env
     console.time('🔑 Configurando .env');
+    markStart('🔑 Configurando .env');
     const envProdPath = path.join(prodDir, '.env.prod');
     if (fs.existsSync(envProdPath)) {
         fs.renameSync(envProdPath, path.join(prodDir, '.env'));
     }
     console.timeEnd('🔑 Configurando .env');
+    markEnd('🔑 Configurando .env');
 
     // 7. Crear ZIP de la carpeta production
     console.time('📦 Creando ZIP');
+    markStart('📦 Creando ZIP');
     const zipPath = path.join(rootDir, 'production.zip');
     const output = fs.createWriteStream(zipPath);
     const archive = archiver('zip', { zlib: { level: 9 } });
@@ -104,12 +149,14 @@ async function main() {
         archive.finalize();
     });
     console.timeEnd('📦 Creando ZIP');
+    markEnd('📦 Creando ZIP');
 
     console.log(`✅ ZIP creado (${(fs.statSync(zipPath).size / 1024 / 1024).toFixed(2)} MB)`);
 
     // 8. Subir ZIP al FTP
     if (config.ftp?.host) {
         console.time('🌐 Subida FTP');
+        markStart('🌐 Subida FTP');
         const files = listDirsRecursive(prodDir);
         console.log('📦 Archivos listos para subir:');
         files.forEach((f) => console.log(' - ' + f));
@@ -138,6 +185,34 @@ async function main() {
             client.close();
         }
         console.timeEnd('🌐 Subida FTP');
+        markEnd('🌐 Subida FTP');
+    }
+
+    markEnd('⏱️ Tiempo total');
+    console.timeEnd('⏱️ Tiempo total');
+
+    // Imprimir y guardar resumen
+    const summary = steps.map((s) => ({
+        label: s.label,
+        start: s.startIso,
+        end: s.endIso || null,
+        durationMs: s.durationMs ?? null,
+        durationSec: s.durationMs != null ? (s.durationMs / 1000).toFixed(2) : null,
+    }));
+
+    console.log('\n📋 Resumen de pasos:');
+    summary.forEach((s) => {
+        console.log(` - ${s.label}: ${s.durationSec ?? '-'} s`);
+    });
+
+    try {
+        fs.writeFileSync(path.join(rootDir, 'deploy-summary.json'), JSON.stringify(summary, null, 2));
+        if (fs.existsSync(prodDir)) {
+            fs.writeFileSync(path.join(prodDir, 'deploy-summary.json'), JSON.stringify(summary, null, 2));
+        }
+        console.log('✅ Resumen guardado en deploy-summary.json');
+    } catch (err) {
+        console.warn('⚠️ No se pudo guardar el resumen:', err.message);
     }
 
     console.timeEnd('⏱️ Tiempo total');
