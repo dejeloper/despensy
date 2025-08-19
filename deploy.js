@@ -9,7 +9,6 @@ import config from './deploy.config.json' with { type: 'json' };
 const rootDir = process.cwd();
 const prodDir = path.join(rootDir, 'production');
 
-// Added: steps tracking
 const steps = [];
 
 function markStart(label) {
@@ -28,7 +27,7 @@ function markEnd(label) {
             return;
         }
     }
-    // if not found, push a quick step
+
     steps.push({
         label,
         startIso: new Date().toISOString(),
@@ -46,14 +45,14 @@ async function main() {
     // 1. Ejecutar comandos de build
     console.time('⚙️ Build');
     markStart('⚙️ Build');
-    execSync('composer install --optimize-autoloader --no-dev', { stdio: 'inherit' });
-    execSync('pnpm install', { stdio: 'inherit' });
-    execSync('pnpm run build', { stdio: 'inherit' });
     execSync('php artisan config:cache', { stdio: 'inherit' });
     execSync('php artisan cache:clear', { stdio: 'inherit' });
     execSync('php artisan route:cache', { stdio: 'inherit' });
     execSync('php artisan view:cache', { stdio: 'inherit' });
     execSync('php artisan optimize:clear', { stdio: 'inherit' });
+    execSync('composer install --optimize-autoloader --no-dev', { stdio: 'inherit' });
+    execSync('pnpm install', { stdio: 'inherit' });
+    execSync('pnpm run build', { stdio: 'inherit' });
     console.timeEnd('⚙️ Build');
     markEnd('⚙️ Build');
 
@@ -105,12 +104,23 @@ async function main() {
     console.timeEnd('📂 Copiando archivos');
     markEnd('📂 Copiando archivos');
 
-    // 4. Mover contenido de public al root de production
+    // 4. Validar y eliminar carpeta HOT
     console.time('📦 Ajustando public');
     markStart('📦 Ajustando public');
     const publicPath = path.join(prodDir, 'public');
-    fs.copySync(publicPath, prodDir);
-    fs.removeSync(publicPath);
+
+    if (fs.existsSync(publicPath)) {
+        ['HOT', 'hot'].forEach((hotName) => {
+            const hotPath = path.join(publicPath, hotName);
+            if (fs.existsSync(hotPath)) {
+                fs.removeSync(hotPath);
+                console.log(`ℹ️ Eliminado ${hotName} en public`);
+            }
+        });
+    } else {
+        console.warn('⚠️ public no existe en production, se omite este paso.');
+    }
+
     console.timeEnd('📦 Ajustando public');
     markEnd('📦 Ajustando public');
 
@@ -191,7 +201,6 @@ async function main() {
     markEnd('⏱️ Tiempo total');
     console.timeEnd('⏱️ Tiempo total');
 
-    // Imprimir y guardar resumen
     const summary = steps.map((s) => ({
         label: s.label,
         start: s.startIso,
@@ -204,18 +213,6 @@ async function main() {
     summary.forEach((s) => {
         console.log(` - ${s.label}: ${s.durationSec ?? '-'} s`);
     });
-
-    try {
-        fs.writeFileSync(path.join(rootDir, 'deploy-summary.json'), JSON.stringify(summary, null, 2));
-        if (fs.existsSync(prodDir)) {
-            fs.writeFileSync(path.join(prodDir, 'deploy-summary.json'), JSON.stringify(summary, null, 2));
-        }
-        console.log('✅ Resumen guardado en deploy-summary.json');
-    } catch (err) {
-        console.warn('⚠️ No se pudo guardar el resumen:', err.message);
-    }
-
-    console.timeEnd('⏱️ Tiempo total');
 }
 
 main();
