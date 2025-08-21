@@ -89,8 +89,10 @@ async function main() {
                     '.gitignore',
                     '.prettierignore',
                     '.prettierrc',
+                    'artisan',
                     'deploy.config.json',
                     'deploy.json',
+                    'deploy.ts',
                     'eslint.config.js',
                     'phpunit.xml',
                     'tsconfig.json',
@@ -124,17 +126,9 @@ async function main() {
     console.timeEnd('📦 Ajustando public');
     markEnd('📦 Ajustando public');
 
-    // 5. Editar index.php
-    console.time('✏️ Editando index.php');
-    markStart('✏️ Editando index.php');
-    const indexPath = path.join(prodDir, 'index.php');
-    let indexContent = fs.readFileSync(indexPath, 'utf8');
-    indexContent = indexContent.replace(`$root = __DIR__ . '/..';`, `$root = __DIR__;`);
-    fs.writeFileSync(indexPath, indexContent);
-    console.timeEnd('✏️ Editando index.php');
-    markEnd('✏️ Editando index.php');
+    // 5.
 
-    // 6. Renombrar .env.prod a .env
+    // 5. Renombrar .env.prod a .env
     console.time('🔑 Configurando .env');
     markStart('🔑 Configurando .env');
     const envProdPath = path.join(prodDir, '.env.prod');
@@ -144,7 +138,7 @@ async function main() {
     console.timeEnd('🔑 Configurando .env');
     markEnd('🔑 Configurando .env');
 
-    // 7. Crear ZIP de la carpeta production
+    // 6. Crear ZIP de la carpeta production
     console.time('📦 Creando ZIP');
     markStart('📦 Creando ZIP');
     const zipPath = path.join(rootDir, 'production.zip');
@@ -163,7 +157,7 @@ async function main() {
 
     console.log(`✅ ZIP creado (${(fs.statSync(zipPath).size / 1024 / 1024).toFixed(2)} MB)`);
 
-    // 8. Subir ZIP al FTP
+    // 7. Subir ZIP al FTP
     if (config.ftp?.host) {
         console.time('🌐 Subida FTP');
         markStart('🌐 Subida FTP');
