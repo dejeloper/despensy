@@ -6,6 +6,7 @@ import { PaginatedCategories } from '@/types/business/category';
 
 import { Button } from '@/components/ui/button';
 
+import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
 import { categoryActions, categoryColumns } from '@/structures/categories.structure';
@@ -30,9 +31,27 @@ export default function CategoryIndex({ categories }: { categories: PaginatedCat
                     </Button>
                 </div>
 
-                <DataTable data={categories.data} columns={categoryColumns} actions={categoryActions} emptyMessage="No hay categorías registradas" />
+                <div className="w-full">
+                    <div className="hidden md:block">
+                        <DataTable
+                            data={categories.data}
+                            columns={categoryColumns}
+                            actions={categoryActions}
+                            emptyMessage="No hay categorías registradas"
+                        />
+                    </div>
 
-                <Pagination links={categories.links} />
+                    <div className="block md:hidden">
+                        <DataCards
+                            data={categories.data}
+                            columns={categoryColumns}
+                            actions={categoryActions}
+                            emptyMessage="No hay categorías registradas"
+                        />
+                    </div>
+
+                    <Pagination links={categories.links} />
+                </div>
             </div>
         </AppLayout>
     );

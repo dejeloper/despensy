@@ -6,6 +6,7 @@ import { PaginatedPlaces } from '@/types/business/place';
 
 import { Button } from '@/components/ui/button';
 
+import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
 import { placeActions, placeColumns } from '@/structures/places.structure';
@@ -30,9 +31,17 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
                     </Button>
                 </div>
 
-                <DataTable data={places.data} columns={placeColumns} actions={placeActions} emptyMessage="No hay lugares registrados" />
+                <div className="w-full">
+                    <div className="hidden md:block">
+                        <DataTable data={places.data} columns={placeColumns} actions={placeActions} emptyMessage="No hay lugares registrados" />
+                    </div>
 
-                <Pagination links={places.links} />
+                    <div className="block md:hidden">
+                        <DataCards data={places.data} columns={placeColumns} actions={placeActions} emptyMessage="No hay lugares registrados" />
+                    </div>
+
+                    <Pagination links={places.links} />
+                </div>
             </div>
         </AppLayout>
     );
