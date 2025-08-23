@@ -12,7 +12,7 @@ export const categoryColumns: Column<Category>[] = [
         key: 'bg_color',
         label: 'Color de fondo',
         render: (cat) => (
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center gap-2">
                 <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: cat.bg_color! }} />
                 {cat.bg_color}
             </div>
@@ -22,7 +22,7 @@ export const categoryColumns: Column<Category>[] = [
         key: 'text_color',
         label: 'Color de texto',
         render: (cat) => (
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center gap-2">
                 <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: cat.text_color! }} />
                 {cat.text_color}
             </div>
@@ -35,7 +35,7 @@ export const categoryColumns: Column<Category>[] = [
             <div className="flex items-center">
                 <Badge
                     variant="secondary"
-                    className="flex min-w-[120px] items-center gap-2 px-4 py-2"
+                    className="flex min-w-[120px] items-center gap-2 px-4 py-2 font-black"
                     style={{ backgroundColor: cat.bg_color!, color: cat.text_color! }}
                 >
                     {cat.icon} {cat.name}

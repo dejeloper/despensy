@@ -10,7 +10,7 @@ export function DataCards<T>({ data, columns, actions = [], emptyMessage = 'No h
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
                     {data.map((item, idx) => (
                         <div key={idx} className="flex flex-col justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm">
-                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 {columns.map((col) => (
                                     <div key={col.label} className={`flex flex-col ${col.className ?? ''}`}>
                                         <span className="text-xs text-muted-foreground">{col.label}</span>
