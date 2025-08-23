@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -31,6 +32,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/places/{place}/edit', [PlaceController::class, 'edit'])->name('places.edit');
     Route::put('dashboard/places/{place}', [PlaceController::class, 'update'])->name('places.update');
     Route::delete('dashboard/places/{place}', [PlaceController::class, 'destroy'])->name('places.destroy');
+
+    // Units routes
+    Route::get('dashboard/units', [UnitController::class, 'index'])->name('units.index');
+    Route::get('dashboard/units/create', [UnitController::class, 'create'])->name('units.create');
+    Route::post('dashboard/units', [UnitController::class, 'store'])->name('units.store');
+    Route::get('dashboard/units/{unit}', [UnitController::class, 'show'])->name('units.show');
+    Route::get('dashboard/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
+    Route::put('dashboard/units/{unit}', [UnitController::class, 'update'])->name('units.update');
+    Route::delete('dashboard/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
 });
 
 require __DIR__ . '/settings.php';
