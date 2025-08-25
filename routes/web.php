@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\business\CategoryController;
 use App\Http\Controllers\business\PlaceController;
+use App\Http\Controllers\business\ProductController;
 use App\Http\Controllers\business\UnitController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,6 +42,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
     Route::put('dashboard/units/{unit}', [UnitController::class, 'update'])->name('units.update');
     Route::delete('dashboard/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
+
+    // Products routes
+    Route::get('dashboard/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('dashboard/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('dashboard/products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('dashboard/products/{product}', [ProductController::class, 'show'])->name('products.show');
+    Route::get('dashboard/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('dashboard/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('dashboard/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 });
 
 require __DIR__ . '/settings.php';
