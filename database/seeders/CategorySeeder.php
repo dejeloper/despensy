@@ -66,10 +66,10 @@ class CategorySeeder extends Seeder
         ];
 
         $data = array_map(fn($c) => [
-            'name' => $c[0],
-            'icon' => $c[1],
-            'bg_color' => $c[2],
-            'text_color' => $c[3]
+            'name'          => $c[0],
+            'icon'          => $c[1],
+            'bg_color'      => $c[2],
+            'text_color'    => $c[3]
         ], $categories);
 
         DB::table('categories')->insert($data);

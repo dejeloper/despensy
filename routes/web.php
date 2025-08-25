@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\PlaceController;
-use App\Http\Controllers\UnitController;
+use App\Http\Controllers\business\CategoryController;
+use App\Http\Controllers\business\PlaceController;
+use App\Http\Controllers\business\UnitController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Unit;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class UnitSeeder extends Seeder
 {
@@ -37,12 +36,13 @@ class UnitSeeder extends Seeder
             ['Unidad', 'Und'],
         ];
 
-        foreach ($units as $unit) {
-            Unit::create([
-                'name' => $unit[0],
-                'short_name' => $unit[1],
-                'enabled' => true
-            ]);
-        }
+
+        $data = array_map(fn($u) => [
+            'name'          => $u[0],
+            'short_name'    => $u[1],
+            'enabled'       => true,
+        ], $units);
+
+        DB::table('units')->insert($data);
     }
 }

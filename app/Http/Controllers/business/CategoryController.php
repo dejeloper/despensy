@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\business;
 
-use App\Http\Requests\CategoryRequest;
-use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\business\CategoryRequest;
+use App\Models\business\Category;
 use Inertia\Inertia;
 
 class CategoryController extends Controller

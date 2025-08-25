@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\business;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {

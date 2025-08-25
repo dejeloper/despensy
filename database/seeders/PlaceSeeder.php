@@ -40,6 +40,7 @@ class PlaceSeeder extends Seeder
 			'bg_color'   => $p[3],
 			'text_color' => $p[4],
 			'note'       => $p[5],
+			'enabled'    => true,
 		], $places);
 
 		DB::table('places')->insert($data);

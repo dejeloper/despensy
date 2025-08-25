@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\business;
 
-use App\Http\Requests\PlaceRequest;
-use App\Models\Place;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\business\PlaceRequest;
+use App\Models\business\Place;
 use Inertia\Inertia;
 
 class PlaceController extends Controller

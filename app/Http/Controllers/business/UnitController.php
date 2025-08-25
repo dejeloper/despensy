@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\business;
 
-use App\Http\Requests\UnitRequest;
-use App\Models\Unit;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\business\UnitRequest;
+use App\Models\business\Unit;
 use Inertia\Inertia;
 
 class UnitController extends Controller
