@@ -20,7 +20,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('dashboard/categories/create', [CategoryController::class, 'create'])->name('categories.create');
     Route::post('dashboard/categories', [CategoryController::class, 'store'])->name('categories.store');
-    Route::get('dashboard/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
     Route::get('dashboard/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('dashboard/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('dashboard/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
@@ -29,7 +28,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/places', [PlaceController::class, 'index'])->name('places.index');
     Route::get('dashboard/places/create', [PlaceController::class, 'create'])->name('places.create');
     Route::post('dashboard/places', [PlaceController::class, 'store'])->name('places.store');
-    Route::get('dashboard/places/{place}', [PlaceController::class, 'show'])->name('places.show');
     Route::get('dashboard/places/{place}/edit', [PlaceController::class, 'edit'])->name('places.edit');
     Route::put('dashboard/places/{place}', [PlaceController::class, 'update'])->name('places.update');
     Route::delete('dashboard/places/{place}', [PlaceController::class, 'destroy'])->name('places.destroy');
@@ -38,7 +36,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/units', [UnitController::class, 'index'])->name('units.index');
     Route::get('dashboard/units/create', [UnitController::class, 'create'])->name('units.create');
     Route::post('dashboard/units', [UnitController::class, 'store'])->name('units.store');
-    Route::get('dashboard/units/{unit}', [UnitController::class, 'show'])->name('units.show');
     Route::get('dashboard/units/{unit}/edit', [UnitController::class, 'edit'])->name('units.edit');
     Route::put('dashboard/units/{unit}', [UnitController::class, 'update'])->name('units.update');
     Route::delete('dashboard/units/{unit}', [UnitController::class, 'destroy'])->name('units.destroy');
@@ -47,7 +44,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('dashboard/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('dashboard/products', [ProductController::class, 'store'])->name('products.store');
-    Route::get('dashboard/products/{product}', [ProductController::class, 'show'])->name('products.show');
     Route::get('dashboard/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('dashboard/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('dashboard/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
