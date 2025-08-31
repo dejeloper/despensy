@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
 import { Badge } from '@/components/ui/badge';
+import { Place } from '@/types/business/place';
 import { ArrowLeft, LoaderCircle } from 'lucide-react';
 
 type PlaceForm = {
@@ -23,9 +24,12 @@ type PlaceForm = {
     _method: 'POST' | 'PUT';
 };
 
-export default function PlaceForm({ ...props }) {
-    const { place, isView, isEdit } = props;
+interface PlaceFormProps {
+    place?: Place;
+    isEdit: boolean;
+}
 
+export default function PlaceForm({ place, isEdit }: PlaceFormProps) {
     const { data, setData, post, processing, reset, errors } = useForm<Required<PlaceForm>>({
         name: place?.name || '',
         short_name: place?.short_name || '',
@@ -33,7 +37,7 @@ export default function PlaceForm({ ...props }) {
         bg_color: place?.bg_color || '#ffffff',
         text_color: place?.text_color || '#000000',
         note: place?.note || '',
-        enabled: isEdit || isView ? place.enabled : true,
+        enabled: isEdit ? (place?.enabled ?? true) : true,
         _method: isEdit ? 'PUT' : 'POST',
     });
 
@@ -41,7 +45,7 @@ export default function PlaceForm({ ...props }) {
         e.preventDefault();
 
         if (isEdit) {
-            post(route('places.update', place.id), {
+            post(route('places.update', place!.id), {
                 forceFormData: true,
                 onSuccess: () => reset(),
             });
@@ -56,9 +60,7 @@ export default function PlaceForm({ ...props }) {
         <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div className="grid gap-0 sm:grid-cols-2 sm:items-center sm:justify-between sm:gap-4">
                 <div className="flex items-center justify-between gap-2">
-                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">
-                        {isView ? 'Ver' : isEdit ? 'Actualizar' : 'Crear'} Lugar
-                    </h1>
+                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">{isEdit ? 'Actualizar' : 'Crear'} Lugar</h1>
 
                     <Button asChild size={'sm'} title="Volver a Lugares">
                         <Link href={route('places.index')} className="text-muted-foreground hover:text-foreground sm:hidden">
@@ -91,8 +93,8 @@ export default function PlaceForm({ ...props }) {
                                     tabIndex={1}
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Supermercado Ejemplo' : ''}
+                                    disabled={processing}
+                                    placeholder="Supermercado Ejemplo"
                                 />
                                 <InputError message={errors.name} className="mt-1" />
                             </div>
@@ -107,8 +109,8 @@ export default function PlaceForm({ ...props }) {
                                     tabIndex={1}
                                     value={data.short_name}
                                     onChange={(e) => setData('short_name', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Super 1' : ''}
+                                    disabled={processing}
+                                    placeholder="Super 1"
                                 />
                                 <InputError message={errors.short_name} className="mt-1" />
                             </div>
@@ -122,8 +124,8 @@ export default function PlaceForm({ ...props }) {
                                     tabIndex={2}
                                     value={data.address}
                                     onChange={(e) => setData('address', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Calle Falsa 123' : ''}
+                                    disabled={processing}
+                                    placeholder="Calle Falsa 123"
                                 />
                                 <InputError message={errors.address} className="mt-1" />
                             </div>
@@ -138,7 +140,7 @@ export default function PlaceForm({ ...props }) {
                                         tabIndex={4}
                                         value={data.bg_color}
                                         onChange={(e) => setData('bg_color', e.target.value)}
-                                        disabled={processing || isView}
+                                        disabled={processing}
                                     />
                                 </div>
 
@@ -151,7 +153,7 @@ export default function PlaceForm({ ...props }) {
                                         tabIndex={5}
                                         value={data.text_color}
                                         onChange={(e) => setData('text_color', e.target.value)}
-                                        disabled={processing || isView}
+                                        disabled={processing}
                                     />
                                 </div>
                             </div>
@@ -176,8 +178,8 @@ export default function PlaceForm({ ...props }) {
                                     tabIndex={3}
                                     value={data.note}
                                     onChange={(e) => setData('note', e.target.value.slice(0, 200))}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Horario, descuentos, etc.' : ''}
+                                    disabled={processing}
+                                    placeholder="Horario, descuentos, etc."
                                     maxLength={200}
                                 />
                                 <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
@@ -193,17 +195,15 @@ export default function PlaceForm({ ...props }) {
                                     tabIndex={5}
                                     checked={!!data.enabled}
                                     onCheckedChange={(value) => setData('enabled', value)}
-                                    disabled={processing || !isEdit}
+                                    disabled={processing}
                                 />
                                 <Label htmlFor="enabled">{!data.enabled ? 'Desactivado' : 'Activado'}</Label>
                             </div>
 
-                            {!isView && (
-                                <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={6}>
-                                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                    {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Lugar
-                                </Button>
-                            )}
+                            <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={6}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Lugar
+                            </Button>
                         </div>
                     </form>
                 </CardContent>

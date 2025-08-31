@@ -24,7 +24,7 @@ export default function PlaceCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Crear Lugar" />
-            <PlaceForm place={{}} isEdit={false} isView={false} />
+            <PlaceForm isEdit={false} />
         </AppLayout>
     );
 }

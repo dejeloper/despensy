@@ -12,7 +12,7 @@ export default function PlaceEdit({ place }: Props) {
     return (
         <AppLayout>
             <Head title={`Editar Lugar: ${place.name}`} />
-            <PlaceForm place={place} isEdit={true} isView={false} />
+            <PlaceForm place={place} isEdit={true} />
         </AppLayout>
     );
 }

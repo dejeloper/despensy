@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 
 import { Badge } from '@/components/ui/badge';
 import { Place } from '@/types/business/place';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { Edit, Trash } from 'lucide-react';
 
 export const placeColumns: Column<Place>[] = [
     { key: 'name', label: 'Nombre' },
@@ -46,11 +46,6 @@ export const placeColumns: Column<Place>[] = [
 ];
 
 export const placeActions: Action<Place>[] = [
-    {
-        title: 'Ver Lugar',
-        icon: <Eye />,
-        onClick: (p) => router.visit(route('places.show', p.id)),
-    },
     {
         title: 'Editar Lugar',
         icon: <Edit />,
