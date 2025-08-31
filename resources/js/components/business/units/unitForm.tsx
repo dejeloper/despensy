@@ -20,15 +20,14 @@ type UnitFormData = {
 
 interface UnitFormProps {
     unit?: Unit;
-    isView?: boolean;
     isEdit?: boolean;
 }
 
-export default function UnitForm({ unit, isView, isEdit }: UnitFormProps) {
+export default function UnitForm({ unit, isEdit }: UnitFormProps) {
     const initialValues: Required<UnitFormData> = {
         name: unit?.name || '',
         short_name: unit?.short_name || '',
-        enabled: isEdit || isView ? (unit?.enabled ?? true) : true,
+        enabled: isEdit ? (unit?.enabled ?? true) : true,
         _method: isEdit ? 'PUT' : 'POST',
     };
 
@@ -53,9 +52,7 @@ export default function UnitForm({ unit, isView, isEdit }: UnitFormProps) {
         <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div className="grid gap-0 sm:grid-cols-2 sm:items-center sm:justify-between sm:gap-4">
                 <div className="flex items-center justify-between gap-2">
-                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">
-                        {isView ? 'Ver' : isEdit ? 'Actualizar' : 'Crear'} Unidad
-                    </h1>
+                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">{isEdit ? 'Actualizar' : 'Crear'} Unidad</h1>
 
                     <Button asChild size={'sm'} title="Volver a Unidades">
                         <Link href={route('units.index')} className="text-muted-foreground hover:text-foreground sm:hidden">
@@ -89,8 +86,8 @@ export default function UnitForm({ unit, isView, isEdit }: UnitFormProps) {
                                     tabIndex={1}
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Unidad' : ''}
+                                    disabled={processing}
+                                    placeholder="Unidad"
                                 />
                                 <InputError message={errors.name} className="mt-1" />
                             </div>
@@ -106,8 +103,8 @@ export default function UnitForm({ unit, isView, isEdit }: UnitFormProps) {
                                     tabIndex={2}
                                     value={data.short_name}
                                     onChange={(e) => setData('short_name', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Und' : ''}
+                                    disabled={processing}
+                                    placeholder="Und"
                                 />
 
                                 <InputError message={errors.short_name} className="mt-1" />
@@ -120,17 +117,15 @@ export default function UnitForm({ unit, isView, isEdit }: UnitFormProps) {
                                     tabIndex={3}
                                     checked={!!data.enabled}
                                     onCheckedChange={(value) => setData('enabled', value)}
-                                    disabled={processing || !isEdit}
+                                    disabled={processing}
                                 />
                                 <Label htmlFor="enabled">{!data.enabled ? 'Desactivado' : 'Activado'}</Label>
                             </div>
 
-                            {!isView && (
-                                <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={4}>
-                                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                    {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Unidad
-                                </Button>
-                            )}
+                            <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={4}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Unidad
+                            </Button>
                         </div>
                     </form>
                 </CardContent>

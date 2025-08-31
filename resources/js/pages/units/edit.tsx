@@ -24,7 +24,7 @@ export default function UnitEdit({ unit }: { unit: Unit }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar ${unit.name}`} />
-            <UnitForm unit={unit} isEdit={true} isView={false} />
+            <UnitForm unit={unit} isEdit={true} />
         </AppLayout>
     );
 }

@@ -48,15 +48,6 @@ class UnitController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $unit = Unit::findOrFail($id);
-        return Inertia::render('units/show', ['unit' => $unit]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)

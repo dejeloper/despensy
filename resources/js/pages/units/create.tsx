@@ -23,7 +23,7 @@ export default function UnitCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Crear Unidad" />
-            <UnitForm unit={undefined} isEdit={false} isView={false} />
+            <UnitForm unit={undefined} isEdit={false} />
         </AppLayout>
     );
 }

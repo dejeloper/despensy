@@ -2,7 +2,7 @@ import { Action, Column } from '@/types/ui';
 import { router } from '@inertiajs/react';
 
 import { Unit } from '@/types/business/unit';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { Edit, Trash } from 'lucide-react';
 
 export const unitColumns: Column<Unit>[] = [
     { key: 'name', label: 'Nombre' },
@@ -10,11 +10,6 @@ export const unitColumns: Column<Unit>[] = [
 ];
 
 export const unitActions: Action<Unit>[] = [
-    {
-        title: 'Ver Unidad',
-        icon: <Eye />,
-        onClick: (u) => router.visit(route('units.show', u.id)),
-    },
     {
         title: 'Editar Unidad',
         icon: <Edit />,
