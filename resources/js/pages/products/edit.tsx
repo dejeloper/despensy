@@ -35,7 +35,7 @@ export default function ProductEdit({ product, categories, places, units }: Prod
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar ${product.name}`} />
-            <ProductForm product={product} categories={categories} places={places} units={units} isEdit={true} isView={false} />
+            <ProductForm product={product} categories={categories} places={places} units={units} isEdit={true} />
         </AppLayout>
     );
 }

@@ -63,24 +63,6 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $product = Product::with('category', 'place', 'unit')->findOrFail($id);
-        $categories = Category::where('enabled', true)->orderBy('name')->get();
-        $places = Place::where('enabled', true)->orderBy('name')->get();
-        $units = Unit::where('enabled', true)->orderBy('name')->get();
-
-        return Inertia::render('products/show', [
-            'product' => $product,
-            'categories' => $categories,
-            'places' => $places,
-            'units' => $units
-        ]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)

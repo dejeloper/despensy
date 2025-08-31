@@ -32,11 +32,10 @@ interface ProductFormProps {
     categories: Category[];
     places: Place[];
     units: Unit[];
-    isView: boolean;
     isEdit: boolean;
 }
 
-export default function ProductForm({ product, categories, places, units, isView, isEdit }: ProductFormProps) {
+export default function ProductForm({ product, categories, places, units, isEdit }: ProductFormProps) {
     const { data, setData, post, processing, reset, errors } = useForm<Required<ProductForm>>({
         name: product?.name || '',
         description: product?.description || '',
@@ -86,9 +85,7 @@ export default function ProductForm({ product, categories, places, units, isView
         <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div className="grid gap-0 sm:grid-cols-2 sm:items-center sm:justify-between sm:gap-4">
                 <div className="flex items-center justify-between gap-2">
-                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">
-                        {isView ? 'Ver' : isEdit ? 'Actualizar' : 'Crear'} Producto
-                    </h1>
+                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">{isEdit ? 'Actualizar' : 'Crear'} Producto</h1>
 
                     <Button asChild size={'sm'} title="Volver a Productos">
                         <Link href={route('products.index')} className="text-muted-foreground hover:text-foreground sm:hidden">
@@ -121,8 +118,8 @@ export default function ProductForm({ product, categories, places, units, isView
                                     tabIndex={1}
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Supermercado Ejemplo' : ''}
+                                    disabled={processing}
+                                    placeholder="Supermercado Ejemplo"
                                 />
                                 <InputError message={errors.name} className="mt-1" />
                             </div>
@@ -136,8 +133,8 @@ export default function ProductForm({ product, categories, places, units, isView
                                     tabIndex={3}
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Descripción del lugar' : ''}
+                                    disabled={processing}
+                                    placeholder="Descripción del lugar"
                                 />
                                 <InputError message={errors.description} className="mt-1" />
                             </div>
@@ -152,8 +149,8 @@ export default function ProductForm({ product, categories, places, units, isView
                                     tabIndex={4}
                                     value={data.image}
                                     onChange={(e) => setData('image', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'https://ejemplo.com/imagen.jpg' : ''}
+                                    disabled={processing}
+                                    placeholder="https://ejemplo.com/imagen.jpg"
                                 />
                                 <InputError message={errors.image} className="mt-1" />
                             </div>
@@ -167,7 +164,7 @@ export default function ProductForm({ product, categories, places, units, isView
                                     placeholder="Selecciona una categoría"
                                     searchPlaceholder="Buscar categoría..."
                                     emptyText="No se encontraron categorías"
-                                    disabled={processing || isView}
+                                    disabled={processing}
                                     renderItem={(item) => {
                                         const category = categories.find((c) => c.id!.toString() === item.value);
                                         return (
@@ -190,7 +187,7 @@ export default function ProductForm({ product, categories, places, units, isView
                                     placeholder="Selecciona un lugar"
                                     searchPlaceholder="Buscar lugar..."
                                     emptyText="No se encontraron lugares"
-                                    disabled={processing || isView}
+                                    disabled={processing}
                                     renderItem={(item) => {
                                         const place = places.find((p) => p.id!.toString() === item.value);
                                         return (
@@ -213,7 +210,7 @@ export default function ProductForm({ product, categories, places, units, isView
                                     placeholder="Selecciona una unidad"
                                     searchPlaceholder="Buscar unidad..."
                                     emptyText="No se encontraron unidades"
-                                    disabled={processing || isView}
+                                    disabled={processing}
                                     renderItem={(item) => {
                                         const unit = units.find((u) => u.id!.toString() === item.value);
                                         return (
@@ -234,17 +231,15 @@ export default function ProductForm({ product, categories, places, units, isView
                                     tabIndex={5}
                                     checked={!!data.enabled}
                                     onCheckedChange={(value) => setData('enabled', value)}
-                                    disabled={processing || !isEdit}
+                                    disabled={processing}
                                 />
                                 <Label htmlFor="enabled">{!data.enabled ? 'Desactivado' : 'Activado'}</Label>
                             </div>
 
-                            {!isView && (
-                                <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={6}>
-                                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                    {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Producto
-                                </Button>
-                            )}
+                            <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={6}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Producto
+                            </Button>
                         </div>
                     </form>
                 </CardContent>

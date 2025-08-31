@@ -33,7 +33,7 @@ export default function ProductCreate({ categories, places, units }: ProductCrea
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Crear Producto" />
-            <ProductForm categories={categories} places={places} units={units} isEdit={false} isView={false} />
+            <ProductForm categories={categories} places={places} units={units} isEdit={false} />
         </AppLayout>
     );
 }
