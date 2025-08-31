@@ -28,16 +28,22 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9 # cámbialo a la versión que uses
+          run_install: false
 
       - name: Install Node Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build Assets
-        run: npm run build
+        run: pnpm build
 
-      - name: Install Dependencies
+      - name: Install Dependencies (PHP)
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy Environment File
