@@ -5,7 +5,11 @@ export function Pagination({ links }: { links: { url: string | null; label: stri
         <nav className="mt-4 flex w-full justify-center">
             <ul className="flex items-center gap-1">
                 {links.map((link, idx) => {
-                    const label = link.label.replace(/&laquo;|&raquo;/g, '');
+                    const label = link.label
+                        .replace(/&laquo;|&raquo;/g, '')
+                        .replace('Previous', 'Anterior')
+                        .replace('Next', 'Siguiente');
+
                     const isArrow = /Anterior|Siguiente|Previous|Next/i.test(label);
                     return (
                         <li key={idx}>

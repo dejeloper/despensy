@@ -50,7 +50,7 @@ export default function CategoryIndex({ categories }: { categories: PaginatedCat
                         />
                     </div>
 
-                    <Pagination links={categories.links} />
+                    {categories.data.length > 3 && <Pagination links={categories.links} />}
                 </div>
             </div>
         </AppLayout>

@@ -40,7 +40,7 @@ export default function UnitIndex({ units }: { units: PaginatedUnits }) {
                         <DataCards data={units.data} columns={unitColumns} actions={unitActions} emptyMessage="No hay unidades registradas" />
                     </div>
 
-                    <Pagination links={units.links} />
+                    {units.data.length > 3 && <Pagination links={units.links} />}
                 </div>
             </div>
         </AppLayout>

@@ -41,6 +41,8 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
                     </div>
 
                     <Pagination links={places.links} />
+
+                    {places.data.length > 3 && <Pagination links={places.links} />}
                 </div>
             </div>
         </AppLayout>
