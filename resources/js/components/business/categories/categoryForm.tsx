@@ -113,7 +113,7 @@ export default function CategoryForm({ category, isEdit }: CategoryFormProps) {
                                         placeholder="🍔"
                                         readOnly
                                     />
-                                    <ButtonSearchEmojis onSelect={(emoji) => setData('icon', emoji)} disabled={processing} />
+                                    <ButtonSearchEmojis onSelect={(emoji) => setData('icon', emoji)} disabled={processing} tabIndex={3} />
                                 </div>
                                 <InputError message={errors.icon} className="mt-1" />
                             </div>
