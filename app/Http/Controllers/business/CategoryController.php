@@ -50,15 +50,6 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $category = Category::findOrFail($id);
-        return Inertia::render('categories/show', ['category' => $category]);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)

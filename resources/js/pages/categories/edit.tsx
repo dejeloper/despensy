@@ -24,7 +24,7 @@ export default function CategoryEdit({ category }: { category: Category }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar ${category.name}`} />
-            <CategoryForm category={category} isEdit={true} isView={false} />
+            <CategoryForm category={category} isEdit={true} />
         </AppLayout>
     );
 }

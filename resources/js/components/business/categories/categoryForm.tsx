@@ -25,16 +25,15 @@ type CategoryFormData = {
 interface CategoryFormProps {
     category?: Category;
     isEdit: boolean;
-    isView: boolean;
 }
 
-export default function CategoryForm({ category, isView, isEdit }: CategoryFormProps) {
+export default function CategoryForm({ category, isEdit }: CategoryFormProps) {
     const initialValues: Required<CategoryFormData> = {
         name: category?.name || '',
         icon: category?.icon || '',
         bg_color: category?.bg_color || '#ffffff',
         text_color: category?.text_color || '#000000',
-        enabled: isEdit || isView ? (category?.enabled ?? true) : true,
+        enabled: isEdit ? (category?.enabled ?? true) : true,
         _method: isEdit ? 'PUT' : 'POST',
     };
 
@@ -59,9 +58,7 @@ export default function CategoryForm({ category, isView, isEdit }: CategoryFormP
         <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div className="grid gap-0 sm:grid-cols-2 sm:items-center sm:justify-between sm:gap-4">
                 <div className="flex items-center justify-between gap-2">
-                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">
-                        {isView ? 'Ver' : isEdit ? 'Actualizar' : 'Crear'} Categoría
-                    </h1>
+                    <h1 className="scroll-m-20 text-3xl font-semibold tracking-tight xl:text-4xl">{isEdit ? 'Actualizar' : 'Crear'} Categoría</h1>
 
                     <Button asChild size={'sm'} title="Volver a Categorías">
                         <Link href={route('categories.index')} className="text-muted-foreground hover:text-foreground sm:hidden">
@@ -94,8 +91,8 @@ export default function CategoryForm({ category, isView, isEdit }: CategoryFormP
                                     tabIndex={1}
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    disabled={processing || isView}
-                                    placeholder={!isView ? 'Comida rápida' : ''}
+                                    disabled={processing}
+                                    placeholder="Comida rápida"
                                 />
                                 <InputError message={errors.name} className="mt-1" />
                             </div>
@@ -112,11 +109,11 @@ export default function CategoryForm({ category, isView, isEdit }: CategoryFormP
                                         tabIndex={2}
                                         value={data.icon}
                                         onChange={(e) => setData('icon', e.target.value)}
-                                        disabled={processing || isView}
-                                        placeholder={!isView ? '🍔' : ''}
+                                        disabled={processing}
+                                        placeholder="🍔"
                                         readOnly
                                     />
-                                    <ButtonSearchEmojis onSelect={(emoji) => setData('icon', emoji)} disabled={processing || isView} />
+                                    <ButtonSearchEmojis onSelect={(emoji) => setData('icon', emoji)} disabled={processing} />
                                 </div>
                                 <InputError message={errors.icon} className="mt-1" />
                             </div>
@@ -131,7 +128,7 @@ export default function CategoryForm({ category, isView, isEdit }: CategoryFormP
                                         tabIndex={4}
                                         value={data.bg_color}
                                         onChange={(e) => setData('bg_color', e.target.value)}
-                                        disabled={processing || isView}
+                                        disabled={processing}
                                     />
                                 </div>
 
@@ -144,7 +141,7 @@ export default function CategoryForm({ category, isView, isEdit }: CategoryFormP
                                         tabIndex={5}
                                         value={data.text_color}
                                         onChange={(e) => setData('text_color', e.target.value)}
-                                        disabled={processing || isView}
+                                        disabled={processing}
                                     />
                                 </div>
                             </div>
@@ -168,17 +165,15 @@ export default function CategoryForm({ category, isView, isEdit }: CategoryFormP
                                     tabIndex={5}
                                     checked={!!data.enabled}
                                     onCheckedChange={(value) => setData('enabled', value)}
-                                    disabled={processing || !isEdit}
+                                    disabled={processing}
                                 />
                                 <Label htmlFor="enabled">{!data.enabled ? 'Desactivado' : 'Activado'}</Label>
                             </div>
 
-                            {!isView && (
-                                <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={6}>
-                                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                    {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Categoría
-                                </Button>
-                            )}
+                            <Button type="submit" className="mx-auto mt-4 w-fit cursor-pointer" tabIndex={6}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                {processing ? (isEdit ? 'Actualizando ' : 'Creando ') : isEdit ? 'Actualizar' : 'Crear'} Categoría
+                            </Button>
                         </div>
                     </form>
                 </CardContent>

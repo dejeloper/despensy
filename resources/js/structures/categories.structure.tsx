@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 
 import { Badge } from '@/components/ui/badge';
 import { Category } from '@/types/business/category';
-import { Edit, Eye, Trash } from 'lucide-react';
+import { Edit, Trash } from 'lucide-react';
 
 export const categoryColumns: Column<Category>[] = [
     { key: 'name', label: 'Nombre' },
@@ -46,11 +46,6 @@ export const categoryColumns: Column<Category>[] = [
 ];
 
 export const categoryActions: Action<Category>[] = [
-    {
-        title: 'Ver Categoría',
-        icon: <Eye />,
-        onClick: (c) => router.visit(route('categories.show', c.id)),
-    },
     {
         title: 'Editar Categoría',
         icon: <Edit />,

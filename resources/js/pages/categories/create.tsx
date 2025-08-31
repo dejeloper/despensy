@@ -23,7 +23,7 @@ export default function CategoryCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Crear Categoría" />
-            <CategoryForm category={undefined} isEdit={false} isView={false} />
+            <CategoryForm category={undefined} isEdit={false} />
         </AppLayout>
     );
 }
