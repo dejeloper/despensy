@@ -5,7 +5,9 @@ namespace App\Http\Controllers\business;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\ProductRequest;
 use App\Models\business\Product;
-use Illuminate\Http\Request;
+use App\Models\business\Category;
+use App\Models\business\Place;
+use App\Models\business\Unit;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -15,11 +17,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::query()->orderBy('name')
+        $products = Product::query()->orderBy('name')->with('category', 'place', 'unit')
             ->paginate()
             ->withQueryString();
 
-        return  Inertia::render('products/Index', [
+        return  Inertia::render('products/index', [
             'products' => $products
         ]);
     }
@@ -29,7 +31,15 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return Inertia::render('products/Create');
+        $categories = Category::where('enabled', true)->orderBy('name')->get();
+        $places = Place::where('enabled', true)->orderBy('name')->get();
+        $units = Unit::where('enabled', true)->orderBy('name')->get();
+
+        return Inertia::render('products/create', [
+            'categories' => $categories,
+            'places' => $places,
+            'units' => $units
+        ]);
     }
 
     /**
@@ -41,7 +51,6 @@ class ProductController extends Controller
 
         $product = new Product();
         $product->name = $validated['name'];
-        $product->slug = $validated['slug'];
         $product->description = $validated['description'];
         $product->image = $validated['image'];
         $product->category_id = $validated['category_id'];
@@ -58,8 +67,17 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::findOrFail($id);
-        return Inertia::render('products/show', ['product' => $product]);
+        $product = Product::with('category', 'place', 'unit')->findOrFail($id);
+        $categories = Category::where('enabled', true)->orderBy('name')->get();
+        $places = Place::where('enabled', true)->orderBy('name')->get();
+        $units = Unit::where('enabled', true)->orderBy('name')->get();
+
+        return Inertia::render('products/show', [
+            'product' => $product,
+            'categories' => $categories,
+            'places' => $places,
+            'units' => $units
+        ]);
     }
 
     /**
@@ -67,8 +85,17 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        $product = Product::findOrFail($id);
-        return Inertia::render('products/Edit', ['product' => $product]);
+        $product = Product::with('category', 'place', 'unit')->findOrFail($id);
+        $categories = Category::where('enabled', true)->orderBy('name')->get();
+        $places = Place::where('enabled', true)->orderBy('name')->get();
+        $units = Unit::where('enabled', true)->orderBy('name')->get();
+
+        return Inertia::render('products/edit', [
+            'product' => $product,
+            'categories' => $categories,
+            'places' => $places,
+            'units' => $units
+        ]);
     }
 
     /**
