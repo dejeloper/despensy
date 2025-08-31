@@ -1,12 +1,18 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get('/register');
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-    $response->assertStatus(200);
-});
+uses(RefreshDatabase::class);
 
-test('new users can register', function () {
+test('authenticated users can register new users', function () {
+    // Creamos un usuario existente
+    $admin = User::factory()->create();
+
+    // Lo logueamos
+    $this->actingAs($admin);
+
+    // Ahora sí registramos otro usuario
     $response = $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -14,6 +20,13 @@ test('new users can register', function () {
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
+    // Verificamos que el nuevo usuario existe
+    $this->assertDatabaseHas('users', [
+        'email' => 'test@example.com',
+    ]);
+
+    // El admin sigue autenticado (NO el nuevo user)
+    $this->assertAuthenticatedAs($admin);
+
     $response->assertRedirect(route('dashboard', absolute: false));
 });
