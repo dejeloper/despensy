@@ -16,9 +16,10 @@ export interface Emoji {
 interface ButtonSearchEmojisProps {
     onSelect: (emoji: string) => void;
     disabled?: boolean;
+    tabIndex?: number;
 }
 
-export default function ButtonSearchEmojis({ onSelect, disabled = false }: ButtonSearchEmojisProps) {
+export default function ButtonSearchEmojis({ onSelect, disabled = false, tabIndex = 1 }: ButtonSearchEmojisProps) {
     const [search, setSearch] = useState('');
     const [emojis, setEmojis] = useState<Emoji[]>([]);
     const [loading, setLoading] = useState(false);
@@ -51,7 +52,7 @@ export default function ButtonSearchEmojis({ onSelect, disabled = false }: Butto
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant={'outline'} disabled={disabled}>
+                <Button variant={'outline'} disabled={disabled} tabIndex={tabIndex}>
                     {' '}
                     {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : '😀'}
                 </Button>
