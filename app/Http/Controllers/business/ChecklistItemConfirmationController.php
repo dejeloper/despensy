@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\business\ChecklistDetail;
 use App\Models\business\ChecklistItemConfirmation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 
 class ChecklistItemConfirmationController extends Controller
 {
@@ -39,7 +39,7 @@ class ChecklistItemConfirmationController extends Controller
                 'precio_unitario' => $request->float('precio_unitario'),
                 'precio_total' => $request->float('precio_unitario') * $request->integer('cantidad_comprada'),
                 'fecha_compra' => $request->input('fecha_compra'),
-                'usuario_id' => auth()->id(),
+                'usuario_id' => Auth::id(),
             ]);
 
             // Mark the item as processed
@@ -121,4 +121,3 @@ class ChecklistItemConfirmationController extends Controller
         return redirect()->back();
     }
 }
-?>
