@@ -47,6 +47,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/products/{product}', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('dashboard/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('dashboard/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+    // Consumers routes
+    Route::get('dashboard/consumers', [\App\Http\Controllers\business\ConsumerController::class, 'index'])->name('consumers.index');
+    Route::get('dashboard/consumers/create', [\App\Http\Controllers\business\ConsumerController::class, 'create'])->name('consumers.create');
+    Route::post('dashboard/consumers', [\App\Http\Controllers\business\ConsumerController::class, 'store'])->name('consumers.store');
+    Route::get('dashboard/consumers/{consumer}', [\App\Http\Controllers\business\ConsumerController::class, 'edit'])->name('consumers.edit');
+    Route::put('dashboard/consumers/{consumer}', [\App\Http\Controllers\business\ConsumerController::class, 'update'])->name('consumers.update');
+    Route::delete('dashboard/consumers/{consumer}', [\App\Http\Controllers\business\ConsumerController::class, 'destroy'])->name('consumers.destroy');
 });
 
 require __DIR__ . '/settings.php';
