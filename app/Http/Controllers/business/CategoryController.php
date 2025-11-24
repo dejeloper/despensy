@@ -9,75 +9,58 @@ use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $categories = Category::query()->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
-
+        $categories = Category::paginate(10);
         return Inertia::render('categories/index', [
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return Inertia::render('categories/create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(CategoryRequest  $request)
+    public function store(CategoryRequest $request)
     {
-        $validated = $request->validated();
+        $request->validate([
+            'name' => 'required|string',
+            'icon' => 'nullable|string',
+            'bg_color' => 'nullable|string',
+            'text_color' => 'nullable|string',
+            'enabled' => 'boolean',
+        ]);
 
-        $category  = new Category();
-        $category->name = $validated['name'];
-        $category->icon = $validated['icon'];
-        $category->bg_color = $validated['bg_color'];
-        $category->text_color = $validated['text_color'];
-        $category->enabled = true;
-        $category->save();
+        Category::create($request->all());
 
         return redirect()->route('categories.index');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Category $category)
     {
-        $category = Category::findOrFail($id);
-        return Inertia::render('categories/edit', ['category' => $category]);
+        return Inertia::render('categories/edit', [
+            'category' => $category,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(CategoryRequest $request, string $id)
+    public function update(CategoryRequest $request, Category $category)
     {
-        $category = Category::findOrFail($id);
+        $request->validate([
+            'name' => 'string',
+            'icon' => 'nullable|string',
+            'bg_color' => 'nullable|string',
+            'text_color' => 'nullable|string',
+            'enabled' => 'boolean',
+        ]);
 
-        $validated = $request->validated();
-
-        $category->update($validated);
+        $category->update($request->all());
 
         return redirect()->route('categories.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        $category = Category::findOrFail($id);
         $category->delete();
 
         return redirect()->route('categories.index');

@@ -9,79 +9,60 @@ use Inertia\Inertia;
 
 class PlaceController extends Controller
 {
-	/**
-	 * Display a listing of the resource.
-	 */
-	public function index()
-	{
-		$places = Place::query()->orderBy('name')
-			->paginate(10)
-			->withQueryString();
+    public function index()
+    {
+        $places = Place::paginate(10);
+        return Inertia::render('places/index', [
+            'places' => $places,
+        ]);
+    }
 
-		return Inertia::render('places/index', [
-			'places' => $places
-		]);
-	}
+    public function create()
+    {
+        return Inertia::render('places/create');
+    }
 
-	/**
-	 * Show the form for creating a new resource.
-	 */
-	public function create()
-	{
-		return Inertia::render('places/create');
-	}
+    public function store(PlaceRequest $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'icon' => 'nullable|string',
+            'bg_color' => 'nullable|string',
+            'text_color' => 'nullable|string',
+            'enabled' => 'boolean',
+        ]);
 
-	/**
-	 * Store a newly created resource in storage.
-	 */
-	public function store(PlaceRequest $request)
-	{
-		$validated = $request->validated();
+        Place::create($request->all());
 
-		$place = new Place();
-		$place->name = $validated['name'];
-		$place->short_name = $validated['short_name'];
-		$place->address = $validated['address'] ?? null;
-		$place->bg_color = $validated['bg_color'];
-		$place->text_color = $validated['text_color'];
-		$place->note = $validated['note'] ?? null;
-		$place->enabled = true;
-		$place->save();
+        return redirect()->route('places.index');
+    }
 
-		return redirect()->route('places.index');
-	}
+    public function edit(Place $place)
+    {
+        return Inertia::render('places/edit', [
+            'place' => $place,
+        ]);
+    }
 
-	/**
-	 * Show the form for editing the specified resource.
-	 */
-	public function edit(string $id)
-	{
-		$place = Place::findOrFail($id);
-		return Inertia::render('places/edit', ['place' => $place]);
-	}
+    public function update(PlaceRequest $request, Place $place)
+    {
+        $request->validate([
+            'name' => 'string',
+            'icon' => 'nullable|string',
+            'bg_color' => 'nullable|string',
+            'text_color' => 'nullable|string',
+            'enabled' => 'boolean',
+        ]);
 
-	/**
-	 * Update the specified resource in storage.
-	 */
-	public function update(PlaceRequest $request, string $id)
-	{
-		$place = Place::findOrFail($id);
+        $place->update($request->all());
 
-		$validated = $request->validated();
+        return redirect()->route('places.index');
+    }
 
-		$place->update($validated);
+    public function destroy(Place $place)
+    {
+        $place->delete();
 
-		return redirect()->route('places.index');
-	}
-
-	/**
-	 * Remove the specified resource from storage.
-	 */
-	public function destroy(string $id)
-	{
-		$place = Place::findOrFail($id);
-		$place->delete();
-
-		return redirect()->route('places.index');
-	}
+        return redirect()->route('places.index');
+    }
 }

@@ -12,96 +12,93 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $products = Product::query()->orderBy('name')->with('category', 'place', 'unit')
-            ->paginate()
-            ->withQueryString();
-
-        return  Inertia::render('products/index', [
-            'products' => $products
+        $products = Product::with(['category', 'place', 'unit'])->paginate(10);
+        return Inertia::render('products/index', [
+            'products' => $products,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $categories = Category::where('enabled', true)->orderBy('name')->get();
-        $places = Place::where('enabled', true)->orderBy('name')->get();
-        $units = Unit::where('enabled', true)->orderBy('name')->get();
+        $categories = Category::where('enabled', true)->get();
+        $places = Place::where('enabled', true)->get();
+        $units = Unit::where('enabled', true)->get();
 
         return Inertia::render('products/create', [
             'categories' => $categories,
             'places' => $places,
-            'units' => $units
+            'units' => $units,
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(ProductRequest $request)
     {
-        $validated = $request->validated();
+        $request->validate([
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:categories,id',
+            'place_id' => 'required|exists:places,id',
+            'unit_id' => 'required|exists:units,id',
+            'price' => 'nullable|numeric|min:0',
+            'stock' => 'nullable|integer|min:0',
+            'enabled' => 'boolean',
+        ]);
 
-        $product = new Product();
-        $product->name = $validated['name'];
-        $product->description = $validated['description'];
-        $product->image = $validated['image'];
-        $product->category_id = $validated['category_id'];
-        $product->place_id = $validated['place_id'];
-        $product->unit_id = $validated['unit_id'];
-        $product->enabled = true;
-        $product->save();
+        Product::create($request->all());
 
         return redirect()->route('products.index');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Product $product)
     {
-        $product = Product::with('category', 'place', 'unit')->findOrFail($id);
-        $categories = Category::where('enabled', true)->orderBy('name')->get();
-        $places = Place::where('enabled', true)->orderBy('name')->get();
-        $units = Unit::where('enabled', true)->orderBy('name')->get();
+        $categories = Category::where('enabled', true)->get();
+        $places = Place::where('enabled', true)->get();
+        $units = Unit::where('enabled', true)->get();
 
         return Inertia::render('products/edit', [
-            'product' => $product,
+            'product' => $product->load(['category', 'place', 'unit']),
             'categories' => $categories,
             'places' => $places,
-            'units' => $units
+            'units' => $units,
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(ProductRequest $request, string $id)
+    public function update(ProductRequest $request, Product $product)
     {
-        $product = Product::findOrFail($id);
+        $request->validate([
+            'name' => 'string',
+            'description' => 'nullable|string',
+            'category_id' => 'exists:categories,id',
+            'place_id' => 'exists:places,id',
+            'unit_id' => 'exists:units,id',
+            'price' => 'nullable|numeric|min:0',
+            'stock' => 'nullable|integer|min:0',
+            'enabled' => 'boolean',
+        ]);
 
-        $validated = $request->validated();
-
-        $product->update($validated);
+        $product->update($request->all());
 
         return redirect()->route('products.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Product $product)
     {
-        $product = Product::findOrFail($id);
         $product->delete();
 
         return redirect()->route('products.index');
+    }
+
+    public function updatePrice(ProductRequest $request, Product $product)
+    {
+        $request->validate([
+            'price' => 'numeric|min:0',
+            'stock' => 'integer|min:0',
+        ]);
+
+        $product->update($request->only(['price', 'stock']));
+
+        return $product;
     }
 }

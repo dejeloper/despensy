@@ -9,73 +9,54 @@ use Inertia\Inertia;
 
 class UnitController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $units = Unit::query()->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
-
+        $units = Unit::paginate(10);
         return Inertia::render('units/index', [
-            'units' => $units
+            'units' => $units,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return Inertia::render('units/create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(UnitRequest $request)
     {
-        $validated = $request->validated();
+        $request->validate([
+            'name' => 'required|string',
+            'short_name' => 'required|string',
+            'enabled' => 'boolean',
+        ]);
 
-        $unit = new Unit();
-        $unit->name = $validated['name'];
-        $unit->short_name = $validated['short_name'];
-        $unit->enabled = true;
-        $unit->save();
-
-        return redirect()->route('units.index');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $unit = Unit::findOrFail($id);
-        return Inertia::render('units/edit', ['unit' => $unit]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UnitRequest $request, string $id)
-    {
-        $unit = Unit::findOrFail($id);
-
-        $validated = $request->validated();
-
-        $unit->update($validated);
+        Unit::create($request->all());
 
         return redirect()->route('units.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function edit(Unit $unit)
     {
-        $unit = Unit::findOrFail($id);
+        return Inertia::render('units/edit', [
+            'unit' => $unit,
+        ]);
+    }
+
+    public function update(UnitRequest $request, Unit $unit)
+    {
+        $request->validate([
+            'name' => 'string',
+            'short_name' => 'string',
+            'enabled' => 'boolean',
+        ]);
+
+        $unit->update($request->all());
+
+        return redirect()->route('units.index');
+    }
+
+    public function destroy(Unit $unit)
+    {
         $unit->delete();
 
         return redirect()->route('units.index');
