@@ -1,4 +1,6 @@
 import {Category} from "./category";
+import {Place} from "./place";
+import {Unit} from "./unit";
 
 export type Product = {
 	id?: number;
@@ -12,6 +14,8 @@ export type Product = {
 	unit_id?: number;
 	unit?: Unit | null;
 	enabled?: boolean;
+	price?: number;
+	stock?: number;
 }
 
 export type PaginatedProduct = {

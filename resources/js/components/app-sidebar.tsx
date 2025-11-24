@@ -14,6 +14,11 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Checklists',
+        href: '/dashboard/checklists',
+        icon: Folder,
+    },
+    {
         title: 'Productos',
         href: '/dashboard/products',
         icon: Box,

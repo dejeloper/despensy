@@ -55,6 +55,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/consumers/{consumer}', [\App\Http\Controllers\business\ConsumerController::class, 'edit'])->name('consumers.edit');
     Route::put('dashboard/consumers/{consumer}', [\App\Http\Controllers\business\ConsumerController::class, 'update'])->name('consumers.update');
     Route::delete('dashboard/consumers/{consumer}', [\App\Http\Controllers\business\ConsumerController::class, 'destroy'])->name('consumers.destroy');
+
+    // Checklists routes
+    Route::get('dashboard/checklists', [\App\Http\Controllers\business\ChecklistController::class, 'index'])->name('checklists.index');
+    Route::get('dashboard/checklists/create', [\App\Http\Controllers\business\ChecklistController::class, 'create'])->name('checklists.create');
+    Route::post('dashboard/checklists', [\App\Http\Controllers\business\ChecklistController::class, 'store'])->name('checklists.store');
+    Route::get('dashboard/checklists/{id}', [\App\Http\Controllers\business\ChecklistController::class, 'show'])->name('checklists.show');
+    Route::put('dashboard/checklists/{checklistId}/items/{itemId}', [\App\Http\Controllers\business\ChecklistController::class, 'updateItem'])->name('checklists.updateItem');
+    Route::delete('dashboard/checklists/{id}', [\App\Http\Controllers\business\ChecklistController::class, 'destroy'])->name('checklists.destroy');
 });
 
 require __DIR__ . '/settings.php';
