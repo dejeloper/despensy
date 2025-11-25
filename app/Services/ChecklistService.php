@@ -23,7 +23,6 @@ class ChecklistService
                     'checklist_id' => $checklist->id,
                     'product_id' => $item['product_id'],
                     'reported_stock' => $item['reported_stock'] ?? null,
-                    'to_buy' => $item['to_buy'] ?? false,
                     'quantity_planned' => $item['quantity_planned'] ?? null,
                 ]);
             }
@@ -76,7 +75,7 @@ class ChecklistService
     private function checkCompletion($checklistId)
     {
         $checklist = Checklist::find($checklistId);
-        $pendingItems = $checklist->details()->where('to_buy', true)->where('is_processed', false)->count();
+        $pendingItems = $checklist->details()->where('is_processed', false)->count();
 
         if ($pendingItems === 0) {
             $checklist->update(['status' => 'COMPLETED']);

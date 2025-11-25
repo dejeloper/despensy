@@ -23,7 +23,6 @@ return new class extends Migration
             $table->foreignId('checklist_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained();
             $table->integer('reported_stock')->nullable();
-            $table->boolean('to_buy')->default(false);
             $table->integer('quantity_planned')->nullable();
             $table->integer('quantity_bought')->nullable();
             $table->integer('price_paid')->nullable();

@@ -20,7 +20,6 @@ class ChecklistItemConfirmation extends Model
         'cantidad_comprada',
         'precio_unitario',
         'precio_total',
-        'fecha_compra',
         'usuario_id',
     ];
 
@@ -44,4 +43,3 @@ class ChecklistItemConfirmation extends Model
         return $this->belongsTo(User::class, 'usuario_id');
     }
 }
-?>

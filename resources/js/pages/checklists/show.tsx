@@ -12,7 +12,7 @@ import { BreadcrumbItem } from '@/types';
 import { Checklist, ChecklistDetail } from '@/types/business/checklist';
 import { Place } from '@/types/business/place';
 import { Head, router } from '@inertiajs/react';
-import { Check } from 'lucide-react';
+import { Check, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -34,7 +34,6 @@ interface ProcessItemFormData {
     quantity_bought: number;
     price_paid: number;
     place_id: number;
-    fecha_compra: string;
     [key: string]: number | string;
 }
 
@@ -45,7 +44,6 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
         quantity_bought: 0,
         price_paid: 0,
         place_id: places[0]?.id || 0,
-        fecha_compra: '',
     });
 
     const setData = (field: keyof ProcessItemFormData, value: number | string) => {
@@ -57,7 +55,6 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
             quantity_bought: 0,
             price_paid: 0,
             place_id: places[0]?.id || 0,
-            fecha_compra: '',
         });
     };
 
@@ -67,7 +64,6 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
             quantity_bought: detail.quantity_planned || 1,
             price_paid: detail.product?.price || 0,
             place_id: detail.product?.place_id || places[0]?.id || 0,
-            fecha_compra: '',
         });
     };
 
@@ -109,7 +105,6 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                                     <TableRow>
                                         <TableHead>Producto</TableHead>
                                         <TableHead>Stock Reportado</TableHead>
-                                        <TableHead>¿Comprar?</TableHead>
                                         <TableHead>Cant. Planificada</TableHead>
                                         <TableHead>Estado</TableHead>
                                         <TableHead>Acciones</TableHead>
@@ -120,7 +115,6 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                                         <TableRow key={detail.id}>
                                             <TableCell>{detail.product?.name}</TableCell>
                                             <TableCell>{detail.reported_stock ?? '-'}</TableCell>
-                                            <TableCell>{detail.to_buy ? 'Sí' : 'No'}</TableCell>
                                             <TableCell>{detail.quantity_planned ?? '-'}</TableCell>
                                             <TableCell>
                                                 {detail.is_processed ? (
@@ -132,7 +126,7 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {!detail.is_processed && checklist.status === 'ACTIVE' && detail.to_buy && (
+                                                {!detail.is_processed && checklist.status === 'ACTIVE' && (
                                                     <Button size="sm" onClick={() => startProcessing(detail)} disabled={processingItem !== null}>
                                                         Procesar
                                                     </Button>
@@ -150,9 +144,27 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Procesar Compra</DialogTitle>
-                            <DialogDescription>Ingresa los detalles de la compra realizada</DialogDescription>
+                            <DialogDescription className="sr-only">Ingresa los detalles de la compra realizada</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={(e) => submitProcess(e, processingItem!)} className="grid gap-4">
+                            <div className="xs:grid-cols-1 grid grid-cols-2 gap-2">
+                                <div>
+                                    <Label htmlFor="reported_stock">
+                                        Stock Reportado:
+                                        <Badge className="ml-2" variant="default">
+                                            {checklist.details?.find((d) => d.id === processingItem!)?.reported_stock ?? ''}
+                                        </Badge>
+                                    </Label>
+                                </div>
+                                <div>
+                                    <Label htmlFor="quantity_planned">
+                                        Cantidad Planificada
+                                        <Badge className="ml-2" variant="default">
+                                            {checklist.details?.find((d) => d.id === processingItem!)?.quantity_planned ?? ''}
+                                        </Badge>
+                                    </Label>
+                                </div>
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="quantity_bought">Cantidad Comprada</Label>
                                 <Input
@@ -160,6 +172,7 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                                     type="number"
                                     min="1"
                                     required
+                                    autoFocus
                                     value={data.quantity_bought}
                                     onChange={(e) => setData('quantity_bought', Math.max(1, parseInt(e.target.value) || 1))}
                                     disabled={processing}
@@ -167,26 +180,19 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="price_paid">Precio Pagado</Label>
-                                <Input
-                                    id="price_paid"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    required
-                                    value={data.price_paid}
-                                    onChange={(e) => setData('price_paid', parseFloat(e.target.value) || 0)}
-                                    disabled={processing}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="fecha_compra">Fecha de Compra</Label>
-                                <Input
-                                    id="fecha_compra"
-                                    type="date"
-                                    value={data.fecha_compra}
-                                    onChange={(e) => setData('fecha_compra', e.target.value)}
-                                    disabled={processing}
-                                />
+                                <div className="relative">
+                                    <DollarSign className="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="price_paid"
+                                        type="number"
+                                        step="50"
+                                        min="100"
+                                        required
+                                        className="pl-8"
+                                        onChange={(e) => setData('price_paid', parseFloat(e.target.value) || 0)}
+                                        disabled={processing}
+                                    />
+                                </div>
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="place_id">Lugar de Compra</Label>

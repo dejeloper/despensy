@@ -13,7 +13,6 @@ class ChecklistDetail extends Model
         'checklist_id',
         'product_id',
         'reported_stock',
-        'to_buy',
         'quantity_planned',
         'quantity_bought',
         'price_paid',
@@ -52,4 +51,3 @@ class ChecklistDetail extends Model
         return $this->hasOne(ChecklistItemConfirmation::class, 'checklist_item_id');
     }
 }
-

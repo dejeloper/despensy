@@ -22,7 +22,6 @@ class ChecklistItemConfirmationController extends Controller
             'unit_final_id' => 'nullable|exists:units,id',
             'cantidad_comprada' => 'required|integer|min:0',
             'precio_unitario' => 'required|numeric|min:0',
-            'fecha_compra' => 'nullable|date',
         ]);
 
         $item = ChecklistDetail::where('checklist_id', $checklistId)
@@ -38,7 +37,6 @@ class ChecklistItemConfirmationController extends Controller
                 'cantidad_comprada' => $request->integer('cantidad_comprada'),
                 'precio_unitario' => $request->float('precio_unitario'),
                 'precio_total' => $request->float('precio_unitario') * $request->integer('cantidad_comprada'),
-                'fecha_compra' => $request->input('fecha_compra'),
                 'usuario_id' => Auth::id(),
             ]);
 
@@ -73,7 +71,6 @@ class ChecklistItemConfirmationController extends Controller
             'unit_final_id' => 'nullable|exists:units,id',
             'cantidad_comprada' => 'required|integer|min:0',
             'precio_unitario' => 'required|numeric|min:0',
-            'fecha_compra' => 'nullable|date',
         ]);
 
         $confirmation = ChecklistItemConfirmation::whereHas('checklistItem', function ($q) use ($checklistId, $itemId) {
@@ -88,7 +85,6 @@ class ChecklistItemConfirmationController extends Controller
                 'cantidad_comprada' => $request->integer('cantidad_comprada'),
                 'precio_unitario' => $request->float('precio_unitario'),
                 'precio_total' => $request->float('precio_unitario') * $request->integer('cantidad_comprada'),
-                'fecha_compra' => $request->input('fecha_compra'),
             ]);
 
             // Recalculate checklist totals

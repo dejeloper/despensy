@@ -60,7 +60,6 @@ export default function ChecklistEdit({
 
     const itemsPerPage = 20;
 
-    // Client-side filtering: filter the full `products` array locally
     const filteredProducts = useMemo(() => {
         const search = searchTerm.trim().toLowerCase();
         return products.filter((p) => {
@@ -70,7 +69,6 @@ export default function ChecklistEdit({
         });
     }, [products, searchTerm, categoryFilter]);
 
-    // Cargar productos del checklist existente
     useEffect(() => {
         if (checklist && checklist.details) {
             const initialMap = new Map<number, SelectedProduct>();
@@ -78,21 +76,17 @@ export default function ChecklistEdit({
                 initialMap.set(detail.product_id, {
                     product_id: detail.product_id,
                     reported_stock: detail.reported_stock || 0,
-                    quantity_planned: detail.quantity_planned || 1,
+                    quantity_planned: detail.quantity_planned || 0,
                 });
             });
             setSelectedProducts(initialMap);
         }
     }, [checklist]);
 
-    // Apply filters immediately (no debounce) but skip global loading during these requests
-
-    // Resetear página cuando cambian los filtros
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, categoryFilter]);
 
-    // Extraer categorías únicas de los productos
     const categories = useMemo(() => {
         const categoryMap = new Map<number, Category>();
         products.forEach((product) => {
@@ -103,14 +97,12 @@ export default function ChecklistEdit({
         return Array.from(categoryMap.values());
     }, [products]);
 
-    // Paginar productos localmente sobre la lista filtrada
     const paginatedProducts = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         return filteredProducts.slice(startIndex, endIndex);
     }, [filteredProducts, currentPage]);
 
-    // Calcular totales del carrito
     const cartSummary = useMemo(() => {
         const items = Array.from(selectedProducts.values());
         return {
@@ -152,15 +144,6 @@ export default function ChecklistEdit({
         setSelectedProducts(newMap);
     };
 
-    const updateProduct = (productId: number, field: keyof SelectedProduct, value: number) => {
-        const newMap = new Map(selectedProducts);
-        const product = newMap.get(productId);
-        if (product) {
-            newMap.set(productId, { ...product, [field]: value });
-            setSelectedProducts(newMap);
-        }
-    };
-
     const submit = () => {
         const items = Array.from(selectedProducts.values());
         setProcessing(true);
@@ -184,50 +167,25 @@ export default function ChecklistEdit({
         return (
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Productos para comprar ({cartItems.length})</h4>
+                    <h4 className="text-sm font-semibold">Productos para comprar</h4>
                     <div className="max-h-[400px] space-y-2 overflow-y-auto">
                         {cartItems.map((item) => {
                             const product = products.find((p) => p.id === item.product_id);
                             return (
-                                <Card key={item.product_id}>
+                                <Card key={item.product_id} className="p-1">
                                     <CardContent className="p-3">
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex-1 space-y-2">
                                                 <h5 className="text-sm font-medium">{product?.name}</h5>
                                                 <div className="space-y-1">
-                                                    <p className="text-xs text-muted-foreground">Stock reportado: {item.reported_stock}</p>
-                                                    <div>
-                                                        <Label htmlFor={`qty-${item.product_id}`} className="text-xs">
-                                                            Cantidad a comprar
-                                                        </Label>
-                                                        <Input
-                                                            id={`qty-${item.product_id}`}
-                                                            type="number"
-                                                            min={1}
-                                                            placeholder="0"
-                                                            value={item.quantity_planned || ''}
-                                                            onChange={(e) => {
-                                                                const value = e.target.value;
-                                                                updateProduct(
-                                                                    item.product_id,
-                                                                    'quantity_planned',
-                                                                    value === '' ? 0 : parseInt(value),
-                                                                );
-                                                            }}
-                                                            onBlur={(e) => {
-                                                                const value = parseInt(e.target.value) || 0;
-                                                                if (value === 0) {
-                                                                    updateProduct(item.product_id, 'quantity_planned', 1);
-                                                                }
-                                                            }}
-                                                            className="mt-1 h-8"
-                                                        />
-                                                    </div>
-                                                    {product?.price && (
-                                                        <p className="text-xs font-semibold">
-                                                            Total: ${((product.price || 0) * item.quantity_planned).toFixed(2)}
-                                                        </p>
-                                                    )}
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Stock reportado:
+                                                        <span className="ml-2 font-semibold text-foreground">{item.reported_stock}</span>
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Cantidad a comprar:
+                                                        <span className="ml-2 font-semibold text-foreground">{item.quantity_planned}</span>
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1">
@@ -274,11 +232,9 @@ export default function ChecklistEdit({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Editar Checklist" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                {/* Header con título y botón de guardar */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-2xl font-semibold tracking-tight">Editar Checklist #{checklist.id}</h1>
-                    <div className="flex gap-2">
-                        {/* Botón de carrito móvil */}
+                    <div className="flex justify-between gap-2">
                         <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setIsCartModalOpen(true)}>
                             <ShoppingCart className="mr-2 h-4 w-4" />
                             Carrito
@@ -288,7 +244,6 @@ export default function ChecklistEdit({
                                 </Badge>
                             )}
                         </Button>
-                        {/* Botón de guardar - visible si hay productos seleccionados */}
                         {selectedProducts.size > 0 && (
                             <Button onClick={submit} disabled={processing} size="sm">
                                 {processing ? <Loading size="sm" text="Guardando..." /> : 'Actualizar Checklist'}
@@ -297,9 +252,8 @@ export default function ChecklistEdit({
                     </div>
                 </div>
 
-                {/* Filtros */}
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent>
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="search">Buscar producto</Label>
@@ -335,14 +289,12 @@ export default function ChecklistEdit({
                 </Card>
 
                 <div className="grid gap-4 lg:grid-cols-3">
-                    {/* Lista de productos */}
                     <div className="lg:col-span-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Productos ({filteredProducts.length})</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {/* Vista de tabla para pantallas grandes */}
                                 <div className="hidden overflow-x-auto md:block">
                                     <Table>
                                         <TableHeader>
@@ -391,7 +343,6 @@ export default function ChecklistEdit({
                                     </Table>
                                 </div>
 
-                                {/* Vista de cards para pantallas pequeñas */}
                                 <div className="block space-y-4 md:hidden">
                                     {paginatedProducts.map((product) => {
                                         const selected = selectedProducts.get(product.id!);
@@ -434,7 +385,6 @@ export default function ChecklistEdit({
                                     )}
                                 </div>
 
-                                {/* Paginación del lado del cliente */}
                                 {products.length > itemsPerPage && (
                                     <div className="mt-4 flex items-center justify-center gap-2">
                                         <Button
@@ -462,7 +412,6 @@ export default function ChecklistEdit({
                         </Card>
                     </div>
 
-                    {/* Carrito de compras - Desktop */}
                     <div className="hidden lg:col-span-1 lg:block">
                         <Card className="sticky top-4">
                             <CardHeader>
@@ -481,25 +430,23 @@ export default function ChecklistEdit({
                     </div>
                 </div>
 
-                {/* Modal de confirmación de producto */}
                 <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Confirmar Stock - {currentProduct?.name}</DialogTitle>
-                            <DialogDescription>Verifique el stock actual y la cantidad planificada para este producto</DialogDescription>
+                            <DialogTitle>Agregar {currentProduct?.name}</DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Verifique el stock actual y la cantidad planificada para este producto
+                            </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label htmlFor="modal-stock">Stock actual en sistema</Label>
-                                <p className="text-sm text-muted-foreground">Stock registrado: {currentProduct?.stock || 0}</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="modal-reported">Stock reportado (verificado)</Label>
+                                <Label htmlFor="modal-reported">Stock Actual</Label>
                                 <Input
                                     id="modal-reported"
                                     type="number"
                                     min={0}
                                     placeholder="0"
+                                    autoComplete="off"
                                     value={modalData.reported_stock || ''}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -521,6 +468,7 @@ export default function ChecklistEdit({
                                     type="number"
                                     min={1}
                                     placeholder="0"
+                                    autoComplete="off"
                                     value={modalData.quantity_planned || ''}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -531,9 +479,7 @@ export default function ChecklistEdit({
                                     }}
                                     onBlur={(e) => {
                                         const value = parseInt(e.target.value) || 0;
-                                        if (value === 0) {
-                                            setModalData({ ...modalData, quantity_planned: 1 });
-                                        }
+                                        setModalData({ ...modalData, quantity_planned: value });
                                     }}
                                 />
                                 {currentProduct?.price && (
@@ -554,18 +500,13 @@ export default function ChecklistEdit({
                     </DialogContent>
                 </Dialog>
 
-                {/* Modal del carrito - Mobile */}
                 <Dialog open={isCartModalOpen} onOpenChange={setIsCartModalOpen}>
                     <DialogContent className="max-h-[90vh] max-w-md">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                                 <ShoppingCart className="h-5 w-5" />
                                 Carrito de Compras
-                                {cartSummary.count > 0 && (
-                                    <Badge variant="secondary" className="ml-auto">
-                                        {cartSummary.count}
-                                    </Badge>
-                                )}
+                                {cartSummary.count > 0 && <Badge variant="secondary">{cartSummary.count}</Badge>}
                             </DialogTitle>
                         </DialogHeader>
                         <div className="overflow-y-auto">{renderCartContent()}</div>

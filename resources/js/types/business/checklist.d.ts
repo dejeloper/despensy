@@ -14,7 +14,6 @@ export interface ChecklistDetail {
 	checklist_id: number;
 	product_id: number;
 	reported_stock: number | null;
-	to_buy: boolean;
 	quantity_planned: number | null;
 	quantity_bought: number | null;
 	price_paid: number | null;

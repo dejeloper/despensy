@@ -14,7 +14,7 @@ export function DataTable<T>({ data, columns, actions = [], emptyMessage = 'No h
                 <TableHeader>
                     <TableRow>
                         {columns.map((col) => (
-                            <TableHead key={col.label} className={`cursor-default text-center ${col.className ?? ''}`} style={{ width: colWidth }}>
+                            <TableHead key={col.label} className={`cursor-default ${col.className ?? ''}`} style={{ width: colWidth }}>
                                 {col.label}
                             </TableHead>
                         ))}
@@ -64,10 +64,7 @@ export function DataTable<T>({ data, columns, actions = [], emptyMessage = 'No h
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell
-                                colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                                className="h-24 cursor-default text-center text-muted-foreground"
-                            >
+                            <TableCell colSpan={columns.length + (actions.length > 0 ? 1 : 0)} className="h-24 cursor-default text-muted-foreground">
                                 {emptyMessage}
                             </TableCell>
                         </TableRow>
