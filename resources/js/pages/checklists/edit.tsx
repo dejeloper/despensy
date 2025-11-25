@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Category } from '@/types/business/category';
+import { Checklist } from '@/types/business/checklist';
 import { Product } from '@/types/business/product';
 import { Edit2, Search, ShoppingCart, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -26,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard/checklists',
     },
     {
-        title: 'Crear',
+        title: 'Editar',
         href: '#',
     },
 ];
@@ -38,7 +39,15 @@ interface SelectedProduct {
     [key: string]: number;
 }
 
-export default function ChecklistCreate({ products, filters }: { products: Product[]; filters?: { search?: string; category?: string } }) {
+export default function ChecklistEdit({
+    checklist,
+    products,
+    filters,
+}: {
+    checklist: Checklist;
+    products: Product[];
+    filters?: { search?: string; category?: string };
+}) {
     const [selectedProducts, setSelectedProducts] = useState<Map<number, SelectedProduct>>(new Map());
     const [processing, setProcessing] = useState(false);
     const [searchTerm, setSearchTerm] = useState(filters?.search || '');
@@ -60,6 +69,23 @@ export default function ChecklistCreate({ products, filters }: { products: Produ
             return matchesName && matchesCategory;
         });
     }, [products, searchTerm, categoryFilter]);
+
+    // Cargar productos del checklist existente
+    useEffect(() => {
+        if (checklist && checklist.details) {
+            const initialMap = new Map<number, SelectedProduct>();
+            checklist.details.forEach((detail) => {
+                initialMap.set(detail.product_id, {
+                    product_id: detail.product_id,
+                    reported_stock: detail.reported_stock || 0,
+                    quantity_planned: detail.quantity_planned || 1,
+                });
+            });
+            setSelectedProducts(initialMap);
+        }
+    }, [checklist]);
+
+    // Apply filters immediately (no debounce) but skip global loading during these requests
 
     // Resetear página cuando cambian los filtros
     useEffect(() => {
@@ -138,8 +164,8 @@ export default function ChecklistCreate({ products, filters }: { products: Produ
     const submit = () => {
         const items = Array.from(selectedProducts.values());
         setProcessing(true);
-        router.post(
-            route('checklists.store'),
+        router.put(
+            route('checklists.update', checklist.id),
             { items },
             {
                 onSuccess: () => router.visit(route('checklists.index')),
@@ -246,11 +272,11 @@ export default function ChecklistCreate({ products, filters }: { products: Produ
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Crear Checklist" />
+            <Head title="Editar Checklist" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header con título y botón de guardar */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h1 className="text-2xl font-semibold tracking-tight">Crear Checklist</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight">Editar Checklist #{checklist.id}</h1>
                     <div className="flex gap-2">
                         {/* Botón de carrito móvil */}
                         <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setIsCartModalOpen(true)}>
@@ -265,7 +291,7 @@ export default function ChecklistCreate({ products, filters }: { products: Produ
                         {/* Botón de guardar - visible si hay productos seleccionados */}
                         {selectedProducts.size > 0 && (
                             <Button onClick={submit} disabled={processing} size="sm">
-                                {processing ? <Loading size="sm" text="Guardando..." /> : 'Guardar Checklist'}
+                                {processing ? <Loading size="sm" text="Guardando..." /> : 'Actualizar Checklist'}
                             </Button>
                         )}
                     </div>
@@ -303,7 +329,6 @@ export default function ChecklistCreate({ products, filters }: { products: Produ
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {/* category change triggers server filter via onValueChange */}
                             </div>
                         </div>
                     </CardContent>

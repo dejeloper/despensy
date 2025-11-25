@@ -19,13 +19,26 @@ class ChecklistController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $products = Product::with(['category', 'unit', 'place'])
-            ->where('enabled', true)
-            ->paginate(20);
+        $query = Product::with(['category', 'unit', 'place'])
+            ->where('enabled', true);
+
+        // Aplicar filtro de búsqueda
+        if ($request->has('search') && $request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Aplicar filtro de categoría
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('category_id', $request->category);
+        }
+
+        $products = $query->get();
+
         return Inertia::render('checklists/create', [
             'products' => $products,
+            'filters' => $request->only(['search', 'category']),
         ]);
     }
 
@@ -34,11 +47,61 @@ class ChecklistController extends Controller
         $request->validate([
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.to_buy' => 'boolean',
         ]);
 
         $service = new \App\Services\ChecklistService();
         $service->createChecklist($request->user(), $request->items);
+
+        return redirect()->route('checklists.index');
+    }
+
+    public function edit(Request $request, $id)
+    {
+        $checklist = Checklist::with('details.product.category')->findOrFail($id);
+
+        $query = Product::with(['category', 'unit', 'place'])
+            ->where('enabled', true);
+
+        // Aplicar filtro de búsqueda
+        if ($request->has('search') && $request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Aplicar filtro de categoría
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('category_id', $request->category);
+        }
+
+        $products = $query->get();
+
+        return Inertia::render('checklists/edit', [
+            'checklist' => $checklist,
+            'products' => $products,
+            'filters' => $request->only(['search', 'category']),
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.product_id' => 'required|exists:products,id',
+        ]);
+
+        $checklist = Checklist::findOrFail($id);
+
+        // Eliminar items anteriores
+        $checklist->details()->delete();
+
+        // Crear nuevos items
+        $service = new \App\Services\ChecklistService();
+        foreach ($request->items as $item) {
+            $checklist->details()->create([
+                'product_id' => $item['product_id'],
+                'reported_stock' => $item['reported_stock'],
+                'quantity_planned' => $item['quantity_planned'],
+            ]);
+        }
 
         return redirect()->route('checklists.index');
     }

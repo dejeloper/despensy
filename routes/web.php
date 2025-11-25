@@ -60,6 +60,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/checklists', [\App\Http\Controllers\business\ChecklistController::class, 'index'])->name('checklists.index');
     Route::get('dashboard/checklists/create', [\App\Http\Controllers\business\ChecklistController::class, 'create'])->name('checklists.create');
     Route::post('dashboard/checklists', [\App\Http\Controllers\business\ChecklistController::class, 'store'])->name('checklists.store');
+    Route::get('dashboard/checklists/{id}/edit', [\App\Http\Controllers\business\ChecklistController::class, 'edit'])->name('checklists.edit');
+    Route::put('dashboard/checklists/{id}', [\App\Http\Controllers\business\ChecklistController::class, 'update'])->name('checklists.update');
     Route::get('dashboard/checklists/{id}', [\App\Http\Controllers\business\ChecklistController::class, 'show'])->name('checklists.show');
     Route::put('dashboard/checklists/{checklistId}/items/{itemId}', [\App\Http\Controllers\business\ChecklistController::class, 'updateItem'])->name('checklists.updateItem');
     Route::delete('dashboard/checklists/{id}', [\App\Http\Controllers\business\ChecklistController::class, 'destroy'])->name('checklists.destroy');

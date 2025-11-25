@@ -1,8 +1,8 @@
+import { Badge } from '@/components/ui/badge';
 import { Action, Column } from '@/types/ui';
 import { router } from '@inertiajs/react';
-import { Eye } from 'lucide-react';
+import { CheckCircle, Edit, Trash2 } from 'lucide-react';
 import { Checklist } from '../types/business/checklist';
-import { Badge } from '@/components/ui/badge';
 
 export const checklistColumns: Column<Checklist>[] = [
     { key: 'id', label: 'ID' },
@@ -26,8 +26,42 @@ export const checklistColumns: Column<Checklist>[] = [
 
 export const checklistActions: Action<Checklist>[] = [
     {
-        title: 'Ver Checklist',
-        icon: <Eye />,
-        onClick: (c) => router.visit(route('checklists.show', c.id)),
+        title: 'Editar Checklist',
+        icon: <Edit />,
+        onClick: (c) => {
+            try {
+                (window as any).__forceGlobalLoading = true;
+            } catch (e) {
+                /* ignore */
+            }
+            router.visit(route('checklists.edit', c.id));
+        },
+    },
+    {
+        title: 'Hacer confirmación',
+        icon: <CheckCircle />,
+        onClick: (c) => {
+            try {
+                (window as any).__forceGlobalLoading = true;
+            } catch (e) {
+                /* ignore */
+            }
+            router.visit(route('checklists.show', c.id));
+        },
+    },
+    {
+        title: 'Eliminar checklist',
+        icon: <Trash2 />,
+        onClick: (c) => {
+            if (confirm('¿Estás seguro de que deseas eliminar este checklist?')) {
+                try {
+                    (window as any).__forceGlobalLoading = true;
+                } catch (e) {
+                    /* ignore */
+                }
+                router.delete(route('checklists.destroy', c.id));
+            }
+        },
+        variant: 'destructive',
     },
 ];
