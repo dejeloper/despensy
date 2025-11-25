@@ -14,7 +14,7 @@ class ChecklistController extends Controller
     public function index()
     {
         $checklists = Checklist::with('details')->paginate(10);
-        return Inertia::render('checklists.index', [
+        return Inertia::render('checklists/index', [
             'checklists' => $checklists,
         ]);
     }
@@ -22,7 +22,7 @@ class ChecklistController extends Controller
     public function create()
     {
         $products = Product::where('enabled', true)->get();
-        return Inertia::render('checklists.create', [
+        return Inertia::render('checklists/create', [
             'products' => $products,
         ]);
     }
@@ -46,7 +46,7 @@ class ChecklistController extends Controller
         $checklist = Checklist::with('details.product')->findOrFail($id);
         $places = Place::all();
 
-        return Inertia::render('checklists.index', [
+        return Inertia::render('checklists/show', [
             'checklist' => $checklist,
             'places' => $places,
         ]);

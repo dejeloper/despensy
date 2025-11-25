@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             PlaceSeeder::class,
             UnitSeeder::class,
             ConsumerSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }
