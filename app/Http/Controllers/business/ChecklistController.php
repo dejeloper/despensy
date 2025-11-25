@@ -21,7 +21,9 @@ class ChecklistController extends Controller
 
     public function create()
     {
-        $products = Product::where('enabled', true)->get();
+        $products = Product::with(['category', 'unit', 'place'])
+            ->where('enabled', true)
+            ->paginate(20);
         return Inertia::render('checklists/create', [
             'products' => $products,
         ]);
