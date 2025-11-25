@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->foreignId('place_id')->constrained()->onDelete('cascade');
             $table->foreignId('unit_id')->constrained()->onDelete('cascade');
-            $table->integer('total_price')->default(0);
+            $table->decimal('price', 10, 2)->default(0);
             $table->integer('stock')->default(0);
             $table->boolean('enabled')->default(true);
             $table->timestamps();

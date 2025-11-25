@@ -16,8 +16,13 @@ class ChecklistItemConfirmationController extends Controller
      */
     public function store(Request $request, $checklistId, $itemId)
     {
+        $request->merge([
+            'cantidad_comprada' => $request->input('cantidad_comprada', $request->input('quantity_bought')),
+            'precio_unitario' => $request->input('precio_unitario', $request->input('price_paid')),
+            'place_final_id' => $request->input('place_final_id', $request->input('place_id')),
+        ]);
         $request->validate([
-            'se_compro' => 'required|boolean',
+            'se_compro' => 'nullable|boolean',
             'place_final_id' => 'nullable|exists:places,id',
             'unit_final_id' => 'nullable|exists:units,id',
             'cantidad_comprada' => 'required|integer|min:0',
@@ -31,21 +36,21 @@ class ChecklistItemConfirmationController extends Controller
         DB::transaction(function () use ($request, $item) {
             $confirmation = ChecklistItemConfirmation::create([
                 'checklist_item_id' => $item->id,
-                'se_compro' => $request->boolean('se_compro'),
+                'se_compro' => $request->boolean('se_compro', true),
                 'place_final_id' => $request->input('place_final_id'),
                 'unit_final_id' => $request->input('unit_final_id'),
                 'cantidad_comprada' => $request->integer('cantidad_comprada'),
                 'precio_unitario' => $request->float('precio_unitario'),
-                'precio_total' => $request->float('precio_unitario') * $request->integer('cantidad_comprada'),
                 'usuario_id' => Auth::id(),
             ]);
 
-            // Mark the item as processed
             $item->update(['is_processed' => true]);
 
-            // Recalculate checklist totals
             $checklist = $item->checklist;
-            $totalEstimado = $checklist->details()->sum(DB::raw('quantity_planned * price')); // assuming price column exists in product
+            $totalEstimado = $checklist->details()
+                ->join('products', 'checklist_details.product_id', '=', 'products.id')
+                ->select(DB::raw('SUM(checklist_details.quantity_planned * COALESCE(products.price, 0)) as total'))
+                ->value('total') ?? 0;
             $totalReal = $checklist->details()
                 ->whereHas('confirmation')
                 ->join('checklist_item_confirmations', 'checklist_details.id', '=', 'checklist_item_confirmations.checklist_item_id')
@@ -65,8 +70,13 @@ class ChecklistItemConfirmationController extends Controller
      */
     public function update(Request $request, $checklistId, $itemId)
     {
+        $request->merge([
+            'cantidad_comprada' => $request->input('cantidad_comprada', $request->input('quantity_bought')),
+            'precio_unitario' => $request->input('precio_unitario', $request->input('price_paid')),
+            'place_final_id' => $request->input('place_final_id', $request->input('place_id')),
+        ]);
         $request->validate([
-            'se_compro' => 'required|boolean',
+            'se_compro' => 'nullable|boolean',
             'place_final_id' => 'nullable|exists:places,id',
             'unit_final_id' => 'nullable|exists:units,id',
             'cantidad_comprada' => 'required|integer|min:0',
@@ -79,15 +89,13 @@ class ChecklistItemConfirmationController extends Controller
 
         DB::transaction(function () use ($request, $confirmation) {
             $confirmation->update([
-                'se_compro' => $request->boolean('se_compro'),
+                'se_compro' => $request->boolean('se_compro', $confirmation->se_compro),
                 'place_final_id' => $request->input('place_final_id'),
                 'unit_final_id' => $request->input('unit_final_id'),
                 'cantidad_comprada' => $request->integer('cantidad_comprada'),
                 'precio_unitario' => $request->float('precio_unitario'),
-                'precio_total' => $request->float('precio_unitario') * $request->integer('cantidad_comprada'),
             ]);
 
-            // Recalculate checklist totals
             $checklist = $confirmation->checklistItem->checklist;
             $totalReal = $checklist->details()
                 ->whereHas('confirmation')
@@ -107,7 +115,6 @@ class ChecklistItemConfirmationController extends Controller
     {
         $item = ChecklistDetail::where('checklist_id', $checklistId)->where('id', $itemId)->firstOrFail();
         DB::transaction(function () use ($item) {
-            // Ensure a confirmation exists with se_compro = false
             ChecklistItemConfirmation::updateOrCreate(
                 ['checklist_item_id' => $item->id],
                 ['se_compro' => false, 'precio_total' => 0]

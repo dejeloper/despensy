@@ -196,15 +196,6 @@ export default function ChecklistCreate({ products, filters }: { products: Produ
                             );
                         })}
                     </div>
-
-                    {cartSummary.total > 0 && (
-                        <div className="border-t pt-3">
-                            <div className="flex items-center justify-between text-lg font-semibold">
-                                <span>Total estimado:</span>
-                                <span>${cartSummary.total.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         );
@@ -464,11 +455,6 @@ export default function ChecklistCreate({ products, filters }: { products: Produ
                                         setModalData({ ...modalData, quantity_planned: value });
                                     }}
                                 />
-                                {currentProduct?.price && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Costo estimado: ${((currentProduct.price || 0) * modalData.quantity_planned).toFixed(2)}
-                                    </p>
-                                )}
                             </div>
                         </div>
                         <DialogFooter>

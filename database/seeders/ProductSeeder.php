@@ -253,7 +253,7 @@ class ProductSeeder extends Seeder
                 'category_id' => $product[1],
                 'place_id' => $product[2],
                 'unit_id' => $product[3],
-                'total_price' => $product[4],
+                'price' => $product[4],
                 'stock' => $product[5],
                 'enabled' => true,
             ]);

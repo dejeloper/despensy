@@ -70,7 +70,7 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
     const submitProcess = (e: React.FormEvent, detailId: number) => {
         e.preventDefault();
         setProcessing(true);
-        router.put(route('checklists.items.update', { checklist: checklist.id, item: detailId }), data, {
+        router.put(route('checklists.updateItem', { checklistId: checklist.id, itemId: detailId }), data, {
             onSuccess: () => {
                 reset();
                 setProcessingItem(null);
@@ -128,7 +128,7 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                                             <TableCell>
                                                 {!detail.is_processed && checklist.status === 'ACTIVE' && (
                                                     <Button size="sm" onClick={() => startProcessing(detail)} disabled={processingItem !== null}>
-                                                        Procesar
+                                                        Confirmar
                                                     </Button>
                                                 )}
                                             </TableCell>
@@ -143,7 +143,7 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                 <Dialog open={processingItem !== null} onOpenChange={(open) => !open && setProcessingItem(null)}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Procesar Compra</DialogTitle>
+                            <DialogTitle>Confirmar Compra</DialogTitle>
                             <DialogDescription className="sr-only">Ingresa los detalles de la compra realizada</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={(e) => submitProcess(e, processingItem!)} className="grid gap-4">
@@ -218,7 +218,7 @@ export default function ChecklistShow({ checklist, places }: { checklist: Checkl
                                     Cancelar
                                 </Button>
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? <Loading size="sm" text="Guardando..." /> : 'Guardar Compra'}
+                                    {processing ? <Loading size="sm" text="Guardando..." /> : 'Confirmar Compra'}
                                 </Button>
                             </div>
                         </form>
