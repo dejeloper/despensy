@@ -16,11 +16,8 @@ return new class extends Migration
             $table->string('name', 50)->unique();
             $table->text('description')->nullable();
             $table->string('image')->nullable();
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            $table->foreignId('place_id')->constrained()->onDelete('cascade');
-            $table->foreignId('unit_id')->constrained()->onDelete('cascade');
-            $table->decimal('price', 10, 2)->default(0);
-            $table->integer('stock')->default(0);
+            $table->foreignId('category_id')->constrained()->onDelete('restrict');
+            $table->decimal('last_price', 10, 2)->default(0);
             $table->boolean('enabled')->default(true);
             $table->timestamps();
         });
