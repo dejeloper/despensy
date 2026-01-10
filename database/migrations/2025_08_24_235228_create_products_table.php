@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('image')->nullable();
             $table->foreignId('category_id')->constrained()->onDelete('restrict');
-            $table->decimal('last_price', 10, 2)->nullable()->default(0);
             $table->boolean('enabled')->default(true);
             $table->timestamps();
         });
