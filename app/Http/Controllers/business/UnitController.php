@@ -5,15 +5,40 @@ namespace App\Http\Controllers\business;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\UnitRequest;
 use App\Models\business\Unit;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class UnitController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $units = Unit::paginate(10);
+        $query = Unit::query();
+
+        // Búsqueda
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('short_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtro por estado
+        if ($request->filled('enabled')) {
+            $query->where('enabled', $request->enabled);
+        }
+
+        // Ordenamiento
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        $units = $query->paginate($request->get('per_page', 10))
+            ->withQueryString();
+
         return Inertia::render('units/index', [
             'units' => $units,
+            'filters' => $request->only(['search', 'enabled', 'sort', 'direction', 'per_page']),
         ]);
     }
 
@@ -24,15 +49,11 @@ class UnitController extends Controller
 
     public function store(UnitRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'short_name' => 'required|string',
-            'enabled' => 'boolean',
-        ]);
+        Unit::create($request->validated());
 
-        Unit::create($request->all());
-
-        return redirect()->route('units.index');
+        return redirect()
+            ->route('units.index')
+            ->with('success', 'Unidad creada exitosamente.');
     }
 
     public function edit(Unit $unit)
@@ -44,21 +65,25 @@ class UnitController extends Controller
 
     public function update(UnitRequest $request, Unit $unit)
     {
-        $request->validate([
-            'name' => 'string',
-            'short_name' => 'string',
-            'enabled' => 'boolean',
-        ]);
+        $unit->update($request->validated());
 
-        $unit->update($request->all());
-
-        return redirect()->route('units.index');
+        return redirect()
+            ->route('units.index')
+            ->with('success', 'Unidad actualizada exitosamente.');
     }
 
     public function destroy(Unit $unit)
     {
-        $unit->delete();
+        try {
+            $unit->delete();
 
-        return redirect()->route('units.index');
+            return redirect()
+                ->route('units.index')
+                ->with('success', 'Unidad eliminada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('units.index')
+                ->with('error', 'No se pudo eliminar la unidad. Puede estar en uso.');
+        }
     }
 }

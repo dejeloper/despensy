@@ -8,23 +8,86 @@ use App\Models\business\Product;
 use App\Models\business\Category;
 use App\Models\business\Place;
 use App\Models\business\Unit;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'place', 'unit'])->paginate(10);
+        $query = Product::with(['category', 'place', 'unit']);
+
+        // Búsqueda
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtro por categoría
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filtro por lugar
+        if ($request->filled('place_id')) {
+            $query->where('place_id', $request->place_id);
+        }
+
+        // Filtro por unidad
+        if ($request->filled('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        // Filtro por estado
+        if ($request->filled('enabled')) {
+            $query->where('enabled', $request->enabled);
+        }
+
+        // Filtro por stock bajo (productos con stock menor o igual a un valor)
+        if ($request->filled('low_stock')) {
+            $query->where('stock', '<=', $request->low_stock);
+        }
+
+        // Ordenamiento
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        $products = $query->paginate($request->get('per_page', 10))
+            ->withQueryString();
+
+        // Obtener datos para los filtros
+        $categories = Category::where('enabled', true)->get(['id', 'name']);
+        $places = Place::where('enabled', true)->get(['id', 'name']);
+        $units = Unit::where('enabled', true)->get(['id', 'name', 'short_name']);
+
         return Inertia::render('products/index', [
             'products' => $products,
+            'categories' => $categories,
+            'places' => $places,
+            'units' => $units,
+            'filters' => $request->only([
+                'search',
+                'category_id',
+                'place_id',
+                'unit_id',
+                'enabled',
+                'low_stock',
+                'sort',
+                'direction',
+                'per_page'
+            ]),
         ]);
     }
 
     public function create()
     {
-        $categories = Category::where('enabled', true)->get();
-        $places = Place::where('enabled', true)->get();
-        $units = Unit::where('enabled', true)->get();
+        $categories = Category::where('enabled', true)->get(['id', 'name', 'icon', 'bg_color', 'text_color']);
+        $places = Place::where('enabled', true)->get(['id', 'name', 'bg_color', 'text_color']);
+        $units = Unit::where('enabled', true)->get(['id', 'name', 'short_name']);
 
         return Inertia::render('products/create', [
             'categories' => $categories,
@@ -35,27 +98,18 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
-            'place_id' => 'required|exists:places,id',
-            'unit_id' => 'required|exists:units,id',
-            'price' => 'nullable|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
-            'enabled' => 'boolean',
-        ]);
+        Product::create($request->validated());
 
-        Product::create($request->all());
-
-        return redirect()->route('products.index');
+        return redirect()
+            ->route('products.index')
+            ->with('success', 'Producto creado exitosamente.');
     }
 
     public function edit(Product $product)
     {
-        $categories = Category::where('enabled', true)->get();
-        $places = Place::where('enabled', true)->get();
-        $units = Unit::where('enabled', true)->get();
+        $categories = Category::where('enabled', true)->get(['id', 'name', 'icon', 'bg_color', 'text_color']);
+        $places = Place::where('enabled', true)->get(['id', 'name', 'bg_color', 'text_color']);
+        $units = Unit::where('enabled', true)->get(['id', 'name', 'short_name']);
 
         return Inertia::render('products/edit', [
             'product' => $product->load(['category', 'place', 'unit']),
@@ -67,38 +121,40 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, Product $product)
     {
-        $request->validate([
-            'name' => 'string',
-            'description' => 'nullable|string',
-            'category_id' => 'exists:categories,id',
-            'place_id' => 'exists:places,id',
-            'unit_id' => 'exists:units,id',
-            'price' => 'nullable|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
-            'enabled' => 'boolean',
-        ]);
+        $product->update($request->validated());
 
-        $product->update($request->all());
-
-        return redirect()->route('products.index');
+        return redirect()
+            ->route('products.index')
+            ->with('success', 'Producto actualizado exitosamente.');
     }
 
     public function destroy(Product $product)
     {
-        $product->delete();
+        try {
+            $product->delete();
 
-        return redirect()->route('products.index');
+            return redirect()
+                ->route('products.index')
+                ->with('success', 'Producto eliminado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('products.index')
+                ->with('error', 'No se pudo eliminar el producto. Puede estar en uso.');
+        }
     }
 
-    public function updatePrice(ProductRequest $request, Product $product)
+    /**
+     * Actualizar solo el precio y stock de un producto
+     */
+    public function updatePrice(Request $request, Product $product)
     {
-        $request->validate([
-            'price' => 'numeric|min:0',
-            'stock' => 'integer|min:0',
+        $validated = $request->validate([
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
         ]);
 
-        $product->update($request->only(['price', 'stock']));
+        $product->update($validated);
 
-        return $product;
+        return back()->with('success', 'Precio y stock actualizados exitosamente.');
     }
 }

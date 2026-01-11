@@ -3,6 +3,7 @@
 namespace App\Http\Requests\business;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PlaceRequest extends FormRequest
 {
@@ -19,10 +20,22 @@ class PlaceRequest extends FormRequest
 	 */
 	public function rules(): array
 	{
+		$placeId = $this->route('place') ? $this->route('place')->id : null;
+
 		return [
-			'name' => 'required|string|max:50|unique:places,name',
-			'short_name' => 'required|string|max:30|unique:places,short_name',
-			'address' => 'nullable|string|max:50',
+			'name' => [
+				'required',
+				'string',
+				'max:50',
+				Rule::unique('places', 'name')->ignore($placeId)
+			],
+			'short_name' => [
+				'required',
+				'string',
+				'max:30',
+				Rule::unique('places', 'short_name')->ignore($placeId)
+			],
+			'address' => 'nullable|string|max:100',
 			'bg_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
 			'text_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
 			'note' => 'nullable|string|max:200',
@@ -45,11 +58,13 @@ class PlaceRequest extends FormRequest
 			'short_name.string' => 'El nombre corto debe ser una cadena de texto.',
 			'short_name.max' => 'El nombre corto no puede tener más de 30 caracteres.',
 			'address.string' => 'La dirección debe ser una cadena de texto.',
-			'address.max' => 'La dirección no puede tener más de 50 caracteres.',
+			'address.max' => 'La dirección no puede tener más de 100 caracteres.',
 			'bg_color.required' => 'El color de fondo es obligatorio.',
-			'bg_color.regex' => 'El color de fondo debe ser un color hexadecimal válido.',
+			'bg_color.size' => 'El color de fondo debe tener 7 caracteres.',
+			'bg_color.regex' => 'El color de fondo debe ser un color hexadecimal válido (#RRGGBB).',
 			'text_color.required' => 'El color del texto es obligatorio.',
-			'text_color.regex' => 'El color del texto debe ser un color hexadecimal válido.',
+			'text_color.size' => 'El color del texto debe tener 7 caracteres.',
+			'text_color.regex' => 'El color del texto debe ser un color hexadecimal válido (#RRGGBB).',
 			'note.string' => 'La nota debe ser una cadena de texto.',
 			'note.max' => 'La nota no puede tener más de 200 caracteres.',
 			'enabled.required' => 'El estado es obligatorio.',

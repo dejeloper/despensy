@@ -5,15 +5,40 @@ namespace App\Http\Controllers\business;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\PlaceRequest;
 use App\Models\business\Place;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PlaceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $places = Place::paginate(10);
+        $query = Place::query();
+
+        // Búsqueda
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtro por estado
+        if ($request->filled('enabled')) {
+            $query->where('enabled', $request->enabled);
+        }
+
+        // Ordenamiento
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        $places = $query->paginate($request->get('per_page', 10))
+            ->withQueryString();
+
         return Inertia::render('places/index', [
             'places' => $places,
+            'filters' => $request->only(['search', 'enabled', 'sort', 'direction', 'per_page']),
         ]);
     }
 
@@ -24,17 +49,11 @@ class PlaceController extends Controller
 
     public function store(PlaceRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'icon' => 'nullable|string',
-            'bg_color' => 'nullable|string',
-            'text_color' => 'nullable|string',
-            'enabled' => 'boolean',
-        ]);
+        Place::create($request->validated());
 
-        Place::create($request->all());
-
-        return redirect()->route('places.index');
+        return redirect()
+            ->route('places.index')
+            ->with('success', 'Lugar creado exitosamente.');
     }
 
     public function edit(Place $place)
@@ -46,23 +65,25 @@ class PlaceController extends Controller
 
     public function update(PlaceRequest $request, Place $place)
     {
-        $request->validate([
-            'name' => 'string',
-            'icon' => 'nullable|string',
-            'bg_color' => 'nullable|string',
-            'text_color' => 'nullable|string',
-            'enabled' => 'boolean',
-        ]);
+        $place->update($request->validated());
 
-        $place->update($request->all());
-
-        return redirect()->route('places.index');
+        return redirect()
+            ->route('places.index')
+            ->with('success', 'Lugar actualizado exitosamente.');
     }
 
     public function destroy(Place $place)
     {
-        $place->delete();
+        try {
+            $place->delete();
 
-        return redirect()->route('places.index');
+            return redirect()
+                ->route('places.index')
+                ->with('success', 'Lugar eliminado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('places.index')
+                ->with('error', 'No se pudo eliminar el lugar. Puede estar en uso.');
+        }
     }
 }

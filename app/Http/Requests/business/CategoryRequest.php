@@ -3,6 +3,7 @@
 namespace App\Http\Requests\business;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {
@@ -19,8 +20,16 @@ class CategoryRequest extends FormRequest
 	 */
 	public function rules(): array
 	{
+		$categoryId = $this->route('category') ? $this->route('category')->id : null;
+
 		return [
-			'name' => 'required|string|max:50|min:3|unique:categories,name',
+			'name' => [
+				'required',
+				'string',
+				'max:50',
+				'min:3',
+				Rule::unique('categories', 'name')->ignore($categoryId)
+			],
 			'icon' => 'required|string',
 			'bg_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
 			'text_color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
@@ -37,14 +46,16 @@ class CategoryRequest extends FormRequest
 			'name.required' => 'El nombre es obligatorio.',
 			'name.string' => 'El nombre debe ser una cadena de texto.',
 			'name.min' => 'El nombre debe tener al menos 3 caracteres.',
-			'name.max' => 'El nombre no puede tener más de 255 caracteres.',
+			'name.max' => 'El nombre no puede tener más de 50 caracteres.',
 			'name.unique' => 'El nombre ya existe.',
 			'icon.required' => 'El icono es obligatorio.',
 			'icon.string' => 'El icono debe ser una cadena de texto.',
 			'bg_color.required' => 'El color de fondo es obligatorio.',
-			'bg_color.regex' => 'El color de fondo debe ser un color hexadecimal válido.',
+			'bg_color.size' => 'El color de fondo debe tener 7 caracteres.',
+			'bg_color.regex' => 'El color de fondo debe ser un color hexadecimal válido (#RRGGBB).',
 			'text_color.required' => 'El color del texto es obligatorio.',
-			'text_color.regex' => 'El color del texto debe ser un color hexadecimal válido.',
+			'text_color.size' => 'El color del texto debe tener 7 caracteres.',
+			'text_color.regex' => 'El color del texto debe ser un color hexadecimal válido (#RRGGBB).',
 			'enabled.required' => 'El estado es obligatorio.',
 			'enabled.boolean' => 'El estado debe ser verdadero o falso.',
 		];
