@@ -55,7 +55,7 @@ export default function UnitIndex({ units }: { units: PaginatedUnits }) {
                         />
                     </div>
 
-                    {!isLoading && units.data.length > 3 && <Pagination links={units.links} />}
+                    {!isLoading && units.links.length > 3 && <Pagination links={units.links} />}
                 </div>
             </div>
         </AppLayout>

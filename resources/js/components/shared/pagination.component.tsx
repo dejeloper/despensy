@@ -1,10 +1,45 @@
 import { Link } from '@inertiajs/react';
 
 export function Pagination({ links }: { links: { url: string | null; label: string; active: boolean }[] }) {
+    const firstLink = links[0];
+    const lastLink = links[links.length - 1];
+
+    const numberLinks = links.slice(1, -1).filter((link) => {
+        const cleanLabel = link.label.replace(/&hellip;/g, '...').trim();
+        return cleanLabel !== '...' && !isNaN(Number(cleanLabel));
+    });
+
+    let visibleLinks = numberLinks;
+    if (numberLinks.length > 5) {
+        const activeIndex = numberLinks.findIndex((link) => link.active);
+        const totalPages = numberLinks.length;
+
+        if (activeIndex <= 1) {
+            const firstTwo = numberLinks.slice(0, 2);
+            const lastTwo = numberLinks.slice(-2);
+            const ellipsis = { url: null, label: '...', active: false };
+            visibleLinks = [...firstTwo, ellipsis, ...lastTwo];
+        } else if (activeIndex >= totalPages - 2) {
+            const firstTwo = numberLinks.slice(0, 2);
+            const lastTwo = numberLinks.slice(-2);
+            const ellipsis = { url: null, label: '...', active: false };
+            visibleLinks = [...firstTwo, ellipsis, ...lastTwo];
+        } else {
+            const firstPage = numberLinks.slice(0, 1);
+            const middlePages = numberLinks.slice(activeIndex - 1, activeIndex + 2);
+            const lastPage = numberLinks.slice(-1);
+            const ellipsis1 = { url: null, label: '...', active: false };
+            const ellipsis2 = { url: null, label: '...', active: false };
+            visibleLinks = [...firstPage, ellipsis1, ...middlePages, ellipsis2, ...lastPage];
+        }
+    }
+
+    const allLinks = [firstLink, ...visibleLinks, lastLink];
+
     return (
         <nav className="mt-4 flex w-full justify-center">
             <ul className="flex items-center gap-1">
-                {links.map((link, idx) => {
+                {allLinks.map((link, idx) => {
                     const label = link.label
                         .replace(/&laquo;|&raquo;/g, '')
                         .replace('Previous', 'Anterior')

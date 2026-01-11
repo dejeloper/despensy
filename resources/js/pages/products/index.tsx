@@ -55,7 +55,7 @@ export default function ProductIndex({ products }: { products: PaginatedProduct 
                         />
                     </div>
 
-                    {!isLoading && products.data.length > 3 && <Pagination links={products.links} />}
+                    {!isLoading && products.links.length > 3 && <Pagination links={products.links} />}
                 </div>
             </div>
         </AppLayout>

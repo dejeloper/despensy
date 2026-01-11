@@ -55,7 +55,7 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
                         />
                     </div>
 
-                    {!isLoading && places.data.length > 3 && <Pagination links={places.links} />}
+                    {!isLoading && places.links.length > 3 && <Pagination links={places.links} />}
                 </div>
             </div>
         </AppLayout>
