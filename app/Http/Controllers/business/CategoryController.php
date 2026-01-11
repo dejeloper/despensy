@@ -14,28 +14,22 @@ class CategoryController extends Controller
     {
         $query = Category::query();
 
-        // Búsqueda
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        // Filtro por estado
-        if ($request->filled('enabled')) {
-            $query->where('enabled', $request->enabled);
-        }
-
-        // Ordenamiento
         $sortField = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
         $query->orderBy($sortField, $sortDirection);
 
-        $categories = $query->paginate($request->get('per_page', 10))
-            ->withQueryString();
+        $allCategories = $query->get();
+
+        $categories = [
+            'data' => $allCategories,
+            'links' => [],
+            'current_page' => 1,
+            'per_page' => $allCategories->count(),
+            'total' => $allCategories->count(),
+        ];
 
         return Inertia::render('categories/index', [
             'categories' => $categories,
-            'filters' => $request->only(['search', 'enabled', 'sort', 'direction', 'per_page']),
         ]);
     }
 
