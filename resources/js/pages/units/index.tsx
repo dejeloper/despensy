@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
+import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { unitActions, unitColumns } from '@/structures/units.struture';
 import { Plus } from 'lucide-react';
 
@@ -18,6 +19,8 @@ const breadcrumb: BreadcrumbItem[] = [
 ];
 
 export default function UnitIndex({ units }: { units: PaginatedUnits }) {
+    const isLoading = useInertiaLoading();
+
     return (
         <AppLayout breadcrumbs={breadcrumb}>
             <Head title="Unidades" />
@@ -33,14 +36,26 @@ export default function UnitIndex({ units }: { units: PaginatedUnits }) {
 
                 <div className="w-full">
                     <div className="hidden md:block">
-                        <DataTable data={units.data} columns={unitColumns} actions={unitActions} emptyMessage="No hay unidades registradas" />
+                        <DataTable
+                            data={units.data}
+                            columns={unitColumns}
+                            actions={unitActions}
+                            emptyMessage="No hay unidades registradas"
+                            isLoading={isLoading}
+                        />
                     </div>
 
                     <div className="block md:hidden">
-                        <DataCards data={units.data} columns={unitColumns} actions={unitActions} emptyMessage="No hay unidades registradas" />
+                        <DataCards
+                            data={units.data}
+                            columns={unitColumns}
+                            actions={unitActions}
+                            emptyMessage="No hay unidades registradas"
+                            isLoading={isLoading}
+                        />
                     </div>
 
-                    {units.data.length > 3 && <Pagination links={units.links} />}
+                    {!isLoading && units.data.length > 3 && <Pagination links={units.links} />}
                 </div>
             </div>
         </AppLayout>

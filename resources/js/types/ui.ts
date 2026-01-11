@@ -22,6 +22,7 @@ export type DataTableProps<T> = {
 	columns: Column<T>[];
 	actions?: Action<T>[];
 	emptyMessage?: string;
+	isLoading?: boolean;
 };
 
 export type DataCardsProps<T> = DataTableProps<T>;

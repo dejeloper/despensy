@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
+import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { placeActions, placeColumns } from '@/structures/places.structure';
 import { Plus } from 'lucide-react';
 
@@ -18,6 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
+    const isLoading = useInertiaLoading();
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Lugares" />
@@ -33,16 +36,26 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
 
                 <div className="w-full">
                     <div className="hidden md:block">
-                        <DataTable data={places.data} columns={placeColumns} actions={placeActions} emptyMessage="No hay lugares registrados" />
+                        <DataTable
+                            data={places.data}
+                            columns={placeColumns}
+                            actions={placeActions}
+                            emptyMessage="No hay lugares registrados"
+                            isLoading={isLoading}
+                        />
                     </div>
 
                     <div className="block md:hidden">
-                        <DataCards data={places.data} columns={placeColumns} actions={placeActions} emptyMessage="No hay lugares registrados" />
+                        <DataCards
+                            data={places.data}
+                            columns={placeColumns}
+                            actions={placeActions}
+                            emptyMessage="No hay lugares registrados"
+                            isLoading={isLoading}
+                        />
                     </div>
 
-                    <Pagination links={places.links} />
-
-                    {places.data.length > 3 && <Pagination links={places.links} />}
+                    {!isLoading && places.data.length > 3 && <Pagination links={places.links} />}
                 </div>
             </div>
         </AppLayout>

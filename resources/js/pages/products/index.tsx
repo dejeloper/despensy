@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
+import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { productActions, productColumns } from '@/structures/products.structure';
 import { Plus } from 'lucide-react';
 
@@ -18,6 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ProductIndex({ products }: { products: PaginatedProduct }) {
+    const isLoading = useInertiaLoading();
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Productos" />
@@ -38,6 +41,7 @@ export default function ProductIndex({ products }: { products: PaginatedProduct 
                             columns={productColumns}
                             actions={productActions}
                             emptyMessage="No hay Productos registrados"
+                            isLoading={isLoading}
                         />
                     </div>
 
@@ -47,10 +51,11 @@ export default function ProductIndex({ products }: { products: PaginatedProduct 
                             columns={productColumns}
                             actions={productActions}
                             emptyMessage="No hay Productos registrados"
+                            isLoading={isLoading}
                         />
                     </div>
 
-                    {products.data.length > 3 && <Pagination links={products.links} />}
+                    {!isLoading && products.data.length > 3 && <Pagination links={products.links} />}
                 </div>
             </div>
         </AppLayout>

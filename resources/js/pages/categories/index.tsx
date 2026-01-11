@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
+import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { categoryActions, categoryColumns } from '@/structures/categories.structure';
 import { Plus } from 'lucide-react';
 
@@ -18,6 +19,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CategoryIndex({ categories }: { categories: PaginatedCategories }) {
+    const isLoading = useInertiaLoading();
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Categorías" />
@@ -38,6 +41,7 @@ export default function CategoryIndex({ categories }: { categories: PaginatedCat
                             columns={categoryColumns}
                             actions={categoryActions}
                             emptyMessage="No hay categorías registradas"
+                            isLoading={isLoading}
                         />
                     </div>
 
@@ -47,10 +51,11 @@ export default function CategoryIndex({ categories }: { categories: PaginatedCat
                             columns={categoryColumns}
                             actions={categoryActions}
                             emptyMessage="No hay categorías registradas"
+                            isLoading={isLoading}
                         />
                     </div>
 
-                    {categories.data.length > 3 && <Pagination links={categories.links} />}
+                    {!isLoading && categories.data.length > 3 && <Pagination links={categories.links} />}
                 </div>
             </div>
         </AppLayout>
