@@ -2,8 +2,36 @@ import { DataCardsProps } from '@/types/ui';
 import { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export function DataCards<T>({ data, columns, actions = [], emptyMessage = 'No hay registros' }: DataCardsProps<T>) {
+export function DataCards<T>({ data, columns, actions = [], emptyMessage = 'No hay registros', isLoading = false }: DataCardsProps<T>) {
+    if (isLoading) {
+        return (
+            <div className="w-full">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
+                    {Array.from({ length: 4 }).map((_, idx) => (
+                        <div key={idx} className="flex flex-col justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm">
+                            <div className="grid grid-cols-2 gap-2">
+                                {columns.map((_, fieldIdx) => (
+                                    <div key={fieldIdx} className="flex flex-col">
+                                        <Skeleton className="mb-1 h-3 w-16" />
+                                        <Skeleton className="mt-1 h-4 w-full" />
+                                    </div>
+                                ))}
+                            </div>
+                            {actions.length > 0 && (
+                                <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                                    <Skeleton className="h-8 w-8 rounded-full" />
+                                    <Skeleton className="h-8 w-8 rounded-full" />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full">
             {data.length > 0 ? (
