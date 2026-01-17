@@ -15,49 +15,43 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'place', 'unit']);
+        $query = Product::with(['category', 'place', 'unit'])
+            ->leftJoin('checklist_items as ci', function ($join) {
+                $join->on('ci.product_id', '=', 'products.id')
+                     ->where('ci.was_bought', true);
+            })
+            ->leftJoin('places as last_place', 'last_place.id', '=', 'ci.place_id')
+            ->leftJoin('units as last_unit', 'last_unit.id', '=', 'ci.unit_id_bought')
+            ->select([
+                'products.*',
+                'ci.unit_price as last_price',
+                'last_place.name as last_place_name',
+                'last_place.id as last_place_id',
+                'last_unit.name as last_unit_name',
+                'last_unit.id as last_unit_id'
+            ])
+            ->selectRaw('(
+                SELECT MAX(created_at) 
+                FROM checklist_items 
+                WHERE product_id = products.id AND was_bought = true
+            ) as last_purchase_date')
+            ->orderByRaw('COALESCE((
+                SELECT MAX(created_at) 
+                FROM checklist_items 
+                WHERE product_id = products.id AND was_bought = true
+            ), products.created_at) DESC');
 
-        // Búsqueda
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
+        // Obtener todos los productos para búsqueda/paginación en el cliente
+        $allProducts = $query->get();
 
-        // Filtro por categoría
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        // Filtro por lugar
-        if ($request->filled('place_id')) {
-            $query->where('place_id', $request->place_id);
-        }
-
-        // Filtro por unidad
-        if ($request->filled('unit_id')) {
-            $query->where('unit_id', $request->unit_id);
-        }
-
-        // Filtro por estado
-        if ($request->filled('enabled')) {
-            $query->where('enabled', $request->enabled);
-        }
-
-        // Filtro por stock bajo (productos con stock menor o igual a un valor)
-        if ($request->filled('low_stock')) {
-            $query->where('stock', '<=', $request->low_stock);
-        }
-
-        // Ordenamiento
-        $sortField = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('direction', 'desc');
-        $query->orderBy($sortField, $sortDirection);
-
-        $products = $query->paginate($request->get('per_page', 10))
-            ->withQueryString();
+        // Crear estructura compatible con paginación
+        $products = [
+            'data' => $allProducts,
+            'links' => [], // Se generarán en el cliente
+            'current_page' => 1,
+            'per_page' => $allProducts->count(),
+            'total' => $allProducts->count(),
+        ];
 
         // Obtener datos para los filtros
         $categories = Category::where('enabled', true)->get(['id', 'name']);
@@ -69,17 +63,6 @@ class ProductController extends Controller
             'categories' => $categories,
             'places' => $places,
             'units' => $units,
-            'filters' => $request->only([
-                'search',
-                'category_id',
-                'place_id',
-                'unit_id',
-                'enabled',
-                'low_stock',
-                'sort',
-                'direction',
-                'per_page'
-            ]),
         ]);
     }
 

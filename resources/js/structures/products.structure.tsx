@@ -30,38 +30,43 @@ export const productColumns: Column<Product>[] = [
         },
     },
     {
-        key: 'place_id',
+        key: 'last_place_name',
         label: 'Lugar',
         render: (product) => {
-            return product.place_id ? (
+            return product.last_place_name ? (
                 <div className="flex items-center justify-center">
-                    <Badge
-                        className="flex min-w-[120px] items-center gap-2 px-4 py-2 font-black"
-                        style={{
-                            backgroundColor: product.place?.bg_color || undefined,
-                            color: product.place?.text_color || undefined,
-                        }}
-                    >
-                        {product.place?.name}
+                    <Badge variant="secondary" className="flex min-w-[120px] items-center gap-2 px-4 py-2">
+                        {product.last_place_name}
                     </Badge>
                 </div>
             ) : (
-                'Sin lugar'
+                <div className="text-center text-gray-400">Sin lugar</div>
             );
         },
     },
     {
-        key: 'unit_id',
+        key: 'last_price',
+        label: 'Precio',
+        render: (product) => {
+            return product.last_price ? (
+                <div className="text-center font-semibold text-green-600">${product.last_price}</div>
+            ) : (
+                <div className="text-center text-gray-400">Sin precio</div>
+            );
+        },
+    },
+    {
+        key: 'last_unit_name',
         label: 'Unidad',
         render: (product) => {
-            return product.unit_id ? (
+            return product.last_unit_name ? (
                 <div className="flex items-center justify-center">
-                    <Badge variant="outline" className="flex min-w-[120px] items-center gap-2 px-4 py-2 font-black">
-                        {product.unit?.name}
+                    <Badge variant="outline" className="flex min-w-[120px] items-center gap-2 px-4 py-2">
+                        {product.last_unit_name}
                     </Badge>
                 </div>
             ) : (
-                'Sin unidad'
+                <div className="text-center text-gray-400">Sin unidad</div>
             );
         },
     },

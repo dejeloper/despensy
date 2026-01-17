@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
+import { SearchBar } from '@/components/shared/searchbar.component';
+import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { productActions, productColumns } from '@/structures/products.structure';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Inicio', href: '/' },
@@ -20,6 +23,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function ProductIndex({ products }: { products: PaginatedProduct }) {
     const isLoading = useInertiaLoading();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const { paginatedData, paginationLinks, handlePageChange } = useClientPagination({
+        data: products.data,
+        itemsPerPage: 10,
+        searchTerm,
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -34,10 +44,12 @@ export default function ProductIndex({ products }: { products: PaginatedProduct 
                     </Button>
                 </div>
 
+                <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar productos..." />
+
                 <div className="w-full">
                     <div className="hidden md:block">
                         <DataTable
-                            data={products.data}
+                            data={paginatedData}
                             columns={productColumns}
                             actions={productActions}
                             emptyMessage="No hay Productos registrados"
@@ -47,7 +59,7 @@ export default function ProductIndex({ products }: { products: PaginatedProduct 
 
                     <div className="block md:hidden">
                         <DataCards
-                            data={products.data}
+                            data={paginatedData}
                             columns={productColumns}
                             actions={productActions}
                             emptyMessage="No hay Productos registrados"
@@ -55,7 +67,7 @@ export default function ProductIndex({ products }: { products: PaginatedProduct 
                         />
                     </div>
 
-                    {!isLoading && products.links.length > 3 && <Pagination links={products.links} />}
+                    {!isLoading && paginationLinks.length > 0 && <Pagination links={paginationLinks} onPageChange={handlePageChange} />}
                 </div>
             </div>
         </AppLayout>
