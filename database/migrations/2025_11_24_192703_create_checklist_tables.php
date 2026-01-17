@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name')->nullable();
-            $table->string('status')->default('OPEN');
+            $table->foreignId('state_id')->constrained()->onDelete('restrict');
             $table->timestamps();
         });
     }
