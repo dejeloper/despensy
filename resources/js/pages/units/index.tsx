@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
+import { SearchBar } from '@/components/shared/searchbar.component';
+import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { unitActions, unitColumns } from '@/structures/units.struture';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumb: BreadcrumbItem[] = [
     { title: 'Inicio', href: '/' },
@@ -20,6 +23,13 @@ const breadcrumb: BreadcrumbItem[] = [
 
 export default function UnitIndex({ units }: { units: PaginatedUnits }) {
     const isLoading = useInertiaLoading();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const { paginatedData, paginationLinks, handlePageChange } = useClientPagination({
+        data: units.data,
+        itemsPerPage: 10,
+        searchTerm,
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumb}>
@@ -34,10 +44,12 @@ export default function UnitIndex({ units }: { units: PaginatedUnits }) {
                     </Button>
                 </div>
 
+                <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar unidades..." />
+
                 <div className="w-full">
                     <div className="hidden md:block">
                         <DataTable
-                            data={units.data}
+                            data={paginatedData}
                             columns={unitColumns}
                             actions={unitActions}
                             emptyMessage="No hay unidades registradas"
@@ -47,7 +59,7 @@ export default function UnitIndex({ units }: { units: PaginatedUnits }) {
 
                     <div className="block md:hidden">
                         <DataCards
-                            data={units.data}
+                            data={paginatedData}
                             columns={unitColumns}
                             actions={unitActions}
                             emptyMessage="No hay unidades registradas"
@@ -55,7 +67,7 @@ export default function UnitIndex({ units }: { units: PaginatedUnits }) {
                         />
                     </div>
 
-                    {!isLoading && units.links.length > 3 && <Pagination links={units.links} />}
+                    {!isLoading && paginationLinks.length > 0 && <Pagination links={paginationLinks} onPageChange={handlePageChange} />}
                 </div>
             </div>
         </AppLayout>

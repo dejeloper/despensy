@@ -14,31 +14,25 @@ class UnitController extends Controller
     {
         $query = Unit::query();
 
-        // Búsqueda
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('short_name', 'like', "%{$search}%");
-            });
-        }
-
-        // Filtro por estado
-        if ($request->filled('enabled')) {
-            $query->where('enabled', $request->enabled);
-        }
-
         // Ordenamiento
         $sortField = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
         $query->orderBy($sortField, $sortDirection);
 
-        $units = $query->paginate($request->get('per_page', 10))
-            ->withQueryString();
+        // Obtener todas las unidades para búsqueda/paginación en el cliente
+        $allUnits = $query->get();
+
+        // Crear estructura compatible con paginación
+        $units = [
+            'data' => $allUnits,
+            'links' => [], // Se generarán en el cliente
+            'current_page' => 1,
+            'per_page' => $allUnits->count(),
+            'total' => $allUnits->count(),
+        ];
 
         return Inertia::render('units/index', [
             'units' => $units,
-            'filters' => $request->only(['search', 'enabled', 'sort', 'direction', 'per_page']),
         ]);
     }
 
