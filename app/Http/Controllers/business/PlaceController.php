@@ -14,31 +14,25 @@ class PlaceController extends Controller
     {
         $query = Place::query();
 
-        // Búsqueda
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('address', 'like', "%{$search}%");
-            });
-        }
-
-        // Filtro por estado
-        if ($request->filled('enabled')) {
-            $query->where('enabled', $request->enabled);
-        }
-
         // Ordenamiento
         $sortField = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
         $query->orderBy($sortField, $sortDirection);
 
-        $places = $query->paginate($request->get('per_page', 10))
-            ->withQueryString();
+        // Obtener todos los lugares para búsqueda/paginación en el cliente
+        $allPlaces = $query->get();
+
+        // Crear estructura compatible con paginación
+        $places = [
+            'data' => $allPlaces,
+            'links' => [], // Se generarán en el cliente
+            'current_page' => 1,
+            'per_page' => $allPlaces->count(),
+            'total' => $allPlaces->count(),
+        ];
 
         return Inertia::render('places/index', [
             'places' => $places,
-            'filters' => $request->only(['search', 'enabled', 'sort', 'direction', 'per_page']),
         ]);
     }
 

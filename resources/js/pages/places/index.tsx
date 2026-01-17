@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
+import { SearchBar } from '@/components/shared/searchbar.component';
+import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { placeActions, placeColumns } from '@/structures/places.structure';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Inicio', href: '/' },
@@ -20,6 +23,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
     const isLoading = useInertiaLoading();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const { paginatedData, paginationLinks, handlePageChange } = useClientPagination({
+        data: places.data,
+        itemsPerPage: 10,
+        searchTerm,
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -34,10 +44,12 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
                     </Button>
                 </div>
 
+                <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar lugares..." />
+
                 <div className="w-full">
                     <div className="hidden md:block">
                         <DataTable
-                            data={places.data}
+                            data={paginatedData}
                             columns={placeColumns}
                             actions={placeActions}
                             emptyMessage="No hay lugares registrados"
@@ -47,7 +59,7 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
 
                     <div className="block md:hidden">
                         <DataCards
-                            data={places.data}
+                            data={paginatedData}
                             columns={placeColumns}
                             actions={placeActions}
                             emptyMessage="No hay lugares registrados"
@@ -55,7 +67,7 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
                         />
                     </div>
 
-                    {!isLoading && places.links.length > 3 && <Pagination links={places.links} />}
+                    {!isLoading && paginationLinks.length > 0 && <Pagination links={paginationLinks} onPageChange={handlePageChange} />}
                 </div>
             </div>
         </AppLayout>
