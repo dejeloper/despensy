@@ -4,13 +4,18 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Box, ClipboardList, Folder, LayoutGrid, Store, Tags, Weight } from 'lucide-react';
+import { BookOpen, Box, ClipboardList, Folder, LayoutGrid, ShoppingBasket, Store, Tags, Weight } from 'lucide-react';
 import AppLogo from './app-logo';
 
 function useMainNavItems(): NavItem[] {
     const { openChecklistItemsCount } = usePage<SharedData>().props;
 
     return [
+        {
+            title: 'Despensa',
+            href: '/despensy',
+            icon: ShoppingBasket,
+        },
         {
             title: 'Dashboard',
             href: '/dashboard',

@@ -15,6 +15,12 @@ export type Product = {
     last_place_text_color?: string;
     last_unit_name?: string;
     last_purchase_date?: string;
+    // Estado en la checklist activa, presente solo en la vista Despensa
+    active_checklist_item_id?: number;
+    active_quantity_planned?: number;
+    active_unit_id_planned?: number;
+    active_quantity_at_home?: number;
+    active_unit_id_at_home?: number;
     created_at?: string;
     updated_at?: string;
 };
