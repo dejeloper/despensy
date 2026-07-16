@@ -4,6 +4,7 @@ namespace App\Http\Controllers\business;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\CategoryRequest;
+use App\Http\Resources\CategoryResource;
 use App\Models\business\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class CategoryController extends Controller
         $allCategories = $query->get();
 
         $categories = [
-            'data' => $allCategories,
+            'data' => CategoryResource::collection($allCategories),
             'links' => [],
             'current_page' => 1,
             'per_page' => $allCategories->count(),
@@ -50,7 +51,7 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         return Inertia::render('categories/edit', [
-            'category' => $category,
+            'category' => new CategoryResource($category),
         ]);
     }
 

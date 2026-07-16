@@ -24,22 +24,6 @@ class Place extends Model
 	];
 
 	/**
-	 * Get the products for the place.
-	 */
-	public function products()
-	{
-		return $this->hasMany(Product::class);
-	}
-
-	/**
-	 * Get the count of products for the place.
-	 */
-	public function getProductsCountAttribute()
-	{
-		return $this->products()->count();
-	}
-
-	/**
 	 * Scope a query to only include enabled places.
 	 */
 	public function scopeEnabled($query)

@@ -23,9 +23,6 @@ class PlaceResource extends JsonResource
 			'text_color' => $this->text_color,
 			'note' => $this->note,
 			'enabled' => $this->enabled,
-			'products_count' => $this->whenLoaded('products', function () {
-				return $this->products->count();
-			}),
 			'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
 			'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
 		];

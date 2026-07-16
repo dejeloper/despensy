@@ -4,6 +4,7 @@ namespace App\Http\Controllers\business;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\ProductRequest;
+use App\Http\Resources\ProductResource;
 use App\Models\business\Product;
 use App\Models\business\Category;
 use App\Models\business\Place;
@@ -89,7 +90,7 @@ class ProductController extends Controller
         $categories = Category::where('enabled', true)->get(['id', 'name', 'icon', 'bg_color', 'text_color']);
 
         return Inertia::render('products/edit', [
-            'product' => $product->load('category'),
+            'product' => new ProductResource($product->load('category')),
             'categories' => $categories,
         ]);
     }

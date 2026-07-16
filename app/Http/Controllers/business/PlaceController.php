@@ -4,6 +4,7 @@ namespace App\Http\Controllers\business;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\PlaceRequest;
+use App\Http\Resources\PlaceResource;
 use App\Models\business\Place;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,7 +25,7 @@ class PlaceController extends Controller
 
         // Crear estructura compatible con paginación
         $places = [
-            'data' => $allPlaces,
+            'data' => PlaceResource::collection($allPlaces),
             'links' => [], // Se generarán en el cliente
             'current_page' => 1,
             'per_page' => $allPlaces->count(),
@@ -53,7 +54,7 @@ class PlaceController extends Controller
     public function edit(Place $place)
     {
         return Inertia::render('places/edit', [
-            'place' => $place,
+            'place' => new PlaceResource($place),
         ]);
     }
 

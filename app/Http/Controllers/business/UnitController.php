@@ -4,6 +4,7 @@ namespace App\Http\Controllers\business;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\UnitRequest;
+use App\Http\Resources\UnitResource;
 use App\Models\business\Unit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,7 +25,7 @@ class UnitController extends Controller
 
         // Crear estructura compatible con paginación
         $units = [
-            'data' => $allUnits,
+            'data' => UnitResource::collection($allUnits),
             'links' => [], // Se generarán en el cliente
             'current_page' => 1,
             'per_page' => $allUnits->count(),
@@ -53,7 +54,7 @@ class UnitController extends Controller
     public function edit(Unit $unit)
     {
         return Inertia::render('units/edit', [
-            'unit' => $unit,
+            'unit' => new UnitResource($unit),
         ]);
     }
 

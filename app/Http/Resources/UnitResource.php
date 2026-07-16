@@ -19,9 +19,6 @@ class UnitResource extends JsonResource
 			'name' => $this->name,
 			'short_name' => $this->short_name,
 			'enabled' => $this->enabled,
-			'products_count' => $this->whenLoaded('products', function () {
-				return $this->products->count();
-			}),
 			'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
 			'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
 		];
