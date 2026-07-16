@@ -16,8 +16,12 @@ class ProductLastPurchaseService
      * The join is pinned to a single checklist_item per product (the most
      * recent one) via a correlated subquery, so a product with more than one
      * purchase does not fan out into duplicate rows.
+     *
+     * When $activeChecklistId is given, also annotates each product with its
+     * item on that specific checklist (if any) — used by the Despensa view
+     * to know whether a product is already on the active shopping list.
      */
-    public function allWithLastPurchase(): Collection
+    public function allWithLastPurchase(?int $activeChecklistId = null): Collection
     {
         return Product::with('category')
             ->leftJoin('checklist_items as ci', function ($join) {
@@ -40,6 +44,18 @@ class ProductLastPurchaseService
                 'last_place.text_color as last_place_text_color',
                 'last_unit.name as last_unit_name',
             ])
+            ->when($activeChecklistId, function ($query, $activeChecklistId) {
+                $query->leftJoin('checklist_items as active_ci', function ($join) use ($activeChecklistId) {
+                    $join->on('active_ci.product_id', '=', 'products.id')
+                        ->where('active_ci.checklist_id', '=', $activeChecklistId);
+                })->addSelect([
+                    'active_ci.id as active_checklist_item_id',
+                    'active_ci.quantity_planned as active_quantity_planned',
+                    'active_ci.unit_id_planned as active_unit_id_planned',
+                    'active_ci.quantity_at_home as active_quantity_at_home',
+                    'active_ci.unit_id_at_home as active_unit_id_at_home',
+                ]);
+            })
             ->orderByRaw('COALESCE(ci.created_at, products.created_at) DESC')
             ->get();
     }

@@ -5,6 +5,7 @@ namespace App\Services\business;
 use App\Exceptions\ChecklistNotEditableException;
 use App\Models\business\Checklist;
 use App\Models\business\ChecklistItem;
+use App\Models\business\Product;
 use App\Models\business\State;
 
 class ChecklistItemService
@@ -83,6 +84,46 @@ class ChecklistItemService
         ]);
 
         return $item;
+    }
+
+    /**
+     * Sync a product's planned state on the checklist from the Despensa
+     * view: upserts the item when the user wants to buy it (updating it in
+     * place if it was already there, instead of duplicating it), or removes
+     * it when they don't. If `will_buy` is false, nothing gets persisted —
+     * "hay en la casa" without "se va a comprar" is not saved anywhere.
+     *
+     * @throws ChecklistNotEditableException if the checklist is closed or cancelled.
+     */
+    public function syncProduct(Checklist $checklist, Product $product, array $data): ?ChecklistItem
+    {
+        $this->guardEditable($checklist);
+
+        $item = $checklist->items()->where('product_id', $product->id)->first();
+
+        if (! $data['will_buy']) {
+            $item?->delete();
+
+            return null;
+        }
+
+        $attributes = [
+            'quantity_planned' => $data['quantity_planned'] ?? null,
+            'unit_id_planned' => $data['unit_id_planned'] ?? null,
+            'quantity_at_home' => $data['quantity_at_home'] ?? null,
+            'unit_id_at_home' => $data['unit_id_at_home'] ?? null,
+        ];
+
+        if ($item) {
+            $item->update($attributes);
+
+            return $item;
+        }
+
+        return $checklist->items()->create($attributes + [
+            'product_id' => $product->id,
+            'was_bought' => false,
+        ]);
     }
 
     private function guardEditable(Checklist $checklist): void

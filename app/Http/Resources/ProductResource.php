@@ -30,6 +30,13 @@ class ProductResource extends JsonResource
             'last_place_text_color' => $this->last_place_text_color,
             'last_unit_name' => $this->last_unit_name,
             'last_purchase_date' => $this->last_purchase_date,
+            // Estado en la checklist activa, presentes solo cuando el producto viene
+            // de ProductLastPurchaseService::allWithLastPurchase($activeChecklistId).
+            'active_checklist_item_id' => $this->active_checklist_item_id,
+            'active_quantity_planned' => $this->active_quantity_planned,
+            'active_unit_id_planned' => $this->active_unit_id_planned,
+            'active_quantity_at_home' => $this->active_quantity_at_home,
+            'active_unit_id_at_home' => $this->active_unit_id_at_home,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

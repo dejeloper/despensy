@@ -37,6 +37,25 @@ class ChecklistLifecycleService
     }
 
     /**
+     * Get the user's open checklist, creating one if none exists yet. Used
+     * by entry points (like Despensa) that need a checklist to write to
+     * without requiring the user to have visited /checklists/active first.
+     */
+    public function activeChecklistFor(User $user): Checklist
+    {
+        return $this->openChecklistFor($user) ?? $this->openNewFor($user);
+    }
+
+    /**
+     * Whether a checklist hasn't been touched in more than 15 days. Used to
+     * prompt the user to keep working on it or start a fresh one.
+     */
+    public function isStale(Checklist $checklist): bool
+    {
+        return $checklist->updated_at->diffInDays(now()) > 15;
+    }
+
+    /**
      * Open a new checklist for the user. If one is already open, it gets
      * closed first — a user can only have one open checklist at a time.
      */

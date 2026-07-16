@@ -14,6 +14,8 @@ class ChecklistItem extends Model
         'product_id',
         'quantity_planned',
         'unit_id_planned',
+        'quantity_at_home',
+        'unit_id_at_home',
         'was_bought',
         'quantity_bought',
         'unit_id_bought',
@@ -60,6 +62,15 @@ class ChecklistItem extends Model
     public function unitBought()
     {
         return $this->belongsTo(Unit::class, 'unit_id_bought');
+    }
+
+    /**
+     * Get the unit for the quantity the user noted having at home. Purely
+     * informational — see docs/DOMAIN.md, it never accumulates automatically.
+     */
+    public function unitAtHome()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id_at_home');
     }
 
     /**
