@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\business\ProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\business\Category;
-use App\Models\business\Place;
 use App\Models\business\Product;
-use App\Models\business\Unit;
 use App\Services\business\ProductLastPurchaseService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,14 +31,10 @@ class ProductController extends Controller
 
         // Obtener datos para los filtros
         $categories = Category::where('enabled', true)->get(['id', 'name']);
-        $places = Place::where('enabled', true)->get(['id', 'name']);
-        $units = Unit::where('enabled', true)->get(['id', 'name', 'short_name']);
 
         return Inertia::render('products/index', [
             'products' => $products,
             'categories' => $categories,
-            'places' => $places,
-            'units' => $units,
         ]);
     }
 
@@ -62,12 +56,12 @@ class ProductController extends Controller
             ->with('success', 'Producto creado exitosamente.');
     }
 
-    public function edit(Product $product)
+    public function edit(Request $request, Product $product)
     {
         $categories = Category::where('enabled', true)->get(['id', 'name', 'icon', 'bg_color', 'text_color']);
 
         return Inertia::render('products/edit', [
-            'product' => new ProductResource($product->load('category')),
+            'product' => (new ProductResource($product->load('category')))->resolve($request),
             'categories' => $categories,
         ]);
     }

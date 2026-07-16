@@ -51,10 +51,10 @@ class PlaceController extends Controller
             ->with('success', 'Lugar creado exitosamente.');
     }
 
-    public function edit(Place $place)
+    public function edit(Request $request, Place $place)
     {
         return Inertia::render('places/edit', [
-            'place' => new PlaceResource($place),
+            'place' => (new PlaceResource($place))->resolve($request),
         ]);
     }
 

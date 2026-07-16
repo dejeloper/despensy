@@ -51,10 +51,10 @@ class UnitController extends Controller
             ->with('success', 'Unidad creada exitosamente.');
     }
 
-    public function edit(Unit $unit)
+    public function edit(Request $request, Unit $unit)
     {
         return Inertia::render('units/edit', [
-            'unit' => new UnitResource($unit),
+            'unit' => (new UnitResource($unit))->resolve($request),
         ]);
     }
 

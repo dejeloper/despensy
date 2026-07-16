@@ -48,10 +48,10 @@ class CategoryController extends Controller
             ->with('success', 'Categoría creada exitosamente.');
     }
 
-    public function edit(Category $category)
+    public function edit(Request $request, Category $category)
     {
         return Inertia::render('categories/edit', [
-            'category' => new CategoryResource($category),
+            'category' => (new CategoryResource($category))->resolve($request),
         ]);
     }
 
