@@ -65,11 +65,11 @@ class CategorySeeder extends Seeder
             ['Baterías', '🔋', '#d0f4de', '#000000'],
         ];
 
-        $data = array_map(fn($c) => [
-            'name'          => $c[0],
-            'icon'          => $c[1],
-            'bg_color'      => $c[2],
-            'text_color'    => $c[3]
+        $data = array_map(fn ($c) => [
+            'name' => $c[0],
+            'icon' => $c[1],
+            'bg_color' => $c[2],
+            'text_color' => $c[3],
         ], $categories);
 
         DB::table('categories')->insert($data);

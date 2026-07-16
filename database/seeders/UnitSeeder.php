@@ -36,11 +36,10 @@ class UnitSeeder extends Seeder
             ['Unidad', 'Und'],
         ];
 
-
-        $data = array_map(fn($u) => [
-            'name'          => $u[0],
-            'short_name'    => $u[1],
-            'enabled'       => true,
+        $data = array_map(fn ($u) => [
+            'name' => $u[0],
+            'short_name' => $u[1],
+            'enabled' => true,
         ], $units);
 
         DB::table('units')->insert($data);

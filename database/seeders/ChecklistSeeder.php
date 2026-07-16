@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ChecklistSeeder extends Seeder
 {
@@ -13,16 +13,16 @@ class ChecklistSeeder extends Seeder
         $now = Carbon::parse('2026-01-17 00:00:00');
         $purchaseDate = Carbon::parse('2026-01-17');
 
-        // Crear checklist 
+        // Crear checklist
         $checklistId = DB::table('checklists')->insertGetId([
             'user_id' => 1,
             'name' => 'Mes de Enero - Prueba',
-            'state_id' => 1, // Estado "Abierta" 
+            'state_id' => 1, // Estado "Abierta"
             'created_at' => $now,
-            'updated_at' =>  $now,
+            'updated_at' => $now,
         ]);
 
-        // [checklist_id, product_id, qty_planned, unit_planned, was_bought, qty_bought, unit_bought, place_id, unit_price, total_price] 
+        // [checklist_id, product_id, qty_planned, unit_planned, was_bought, qty_bought, unit_bought, place_id, unit_price, total_price]
         $items = [
             // Proteínas
             [$checklistId, 80, 1, 9, true, 1, 9, 7, 12000, 12000], // Pechuga pollo
@@ -42,7 +42,7 @@ class ChecklistSeeder extends Seeder
             [$checklistId, 15, 1, 21, true, 1, 21, 10, 18000, 18000], // Alimento mascota
         ];
 
-        $data = array_map(fn($item) => [
+        $data = array_map(fn ($item) => [
             'checklist_id' => $item[0],
             'product_id' => $item[1],
             'quantity_planned' => $item[2],

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\business\Product;
 use App\Models\business\Category;
+use App\Models\business\Product;
+use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
@@ -238,7 +238,7 @@ class ProductSeeder extends Seeder
         foreach ($products as $product) {
             Product::create([
                 'name' => $product[0],
-                'category_id' => $product[1]
+                'category_id' => $product[1],
             ]);
         }
     }
