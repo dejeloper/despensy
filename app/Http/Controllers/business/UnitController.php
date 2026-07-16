@@ -25,7 +25,7 @@ class UnitController extends Controller
 
         // Crear estructura compatible con paginación
         $units = [
-            'data' => UnitResource::collection($allUnits),
+            'data' => $allUnits->map(fn ($unit) => (new UnitResource($unit))->resolve($request)),
             'links' => [], // Se generarán en el cliente
             'current_page' => 1,
             'per_page' => $allUnits->count(),

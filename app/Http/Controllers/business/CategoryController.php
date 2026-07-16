@@ -22,7 +22,7 @@ class CategoryController extends Controller
         $allCategories = $query->get();
 
         $categories = [
-            'data' => CategoryResource::collection($allCategories),
+            'data' => $allCategories->map(fn ($cat) => (new CategoryResource($cat))->resolve($request)),
             'links' => [],
             'current_page' => 1,
             'per_page' => $allCategories->count(),

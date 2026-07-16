@@ -24,7 +24,7 @@ class ProductController extends Controller
 
         // Crear estructura compatible con paginación
         $products = [
-            'data' => ProductResource::collection($allProducts),
+            'data' => $allProducts->map(fn ($product) => (new ProductResource($product))->resolve($request)),
             'links' => [], // Se generarán en el cliente
             'current_page' => 1,
             'per_page' => $allProducts->count(),

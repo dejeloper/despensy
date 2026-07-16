@@ -25,7 +25,7 @@ class PlaceController extends Controller
 
         // Crear estructura compatible con paginación
         $places = [
-            'data' => PlaceResource::collection($allPlaces),
+            'data' => $allPlaces->map(fn ($place) => (new PlaceResource($place))->resolve($request)),
             'links' => [], // Se generarán en el cliente
             'current_page' => 1,
             'per_page' => $allPlaces->count(),
