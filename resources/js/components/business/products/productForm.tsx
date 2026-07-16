@@ -11,9 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
 import { Category } from '@/types/business/category';
-import { Place } from '@/types/business/place';
 import { Product } from '@/types/business/product';
-import { Unit } from '@/types/business/unit';
 import { ArrowLeft, LoaderCircle } from 'lucide-react';
 
 type ProductForm = {
@@ -21,8 +19,6 @@ type ProductForm = {
     description: string;
     image: string;
     category_id: number;
-    place_id: number;
-    unit_id: number;
     enabled: boolean;
     _method: 'POST' | 'PUT';
 };
@@ -30,19 +26,15 @@ type ProductForm = {
 interface ProductFormProps {
     product?: Product;
     categories: Category[];
-    places: Place[];
-    units: Unit[];
     isEdit: boolean;
 }
 
-export default function ProductForm({ product, categories, places, units, isEdit }: ProductFormProps) {
+export default function ProductForm({ product, categories, isEdit }: ProductFormProps) {
     const { data, setData, post, processing, reset, errors } = useForm<Required<ProductForm>>({
         name: product?.name || '',
         description: product?.description || '',
         image: product?.image || '',
         category_id: product?.category_id || 0,
-        place_id: product?.place_id || 0,
-        unit_id: product?.unit_id || 0,
         enabled: product?.enabled || true,
         _method: isEdit ? 'PUT' : 'POST',
     });
@@ -51,18 +43,6 @@ export default function ProductForm({ product, categories, places, units, isEdit
         value: category.id!.toString(),
         label: category.name,
         searchText: `${category.name} ${category.icon}`,
-    }));
-
-    const placeItems: ComboboxItem[] = places.map((place) => ({
-        value: place.id!.toString(),
-        label: place.name,
-        searchText: `${place.name} ${place.short_name || ''}`,
-    }));
-
-    const unitItems: ComboboxItem[] = units.map((unit) => ({
-        value: unit.id!.toString(),
-        label: unit.name,
-        searchText: `${unit.name} ${unit.short_name}`,
     }));
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -176,52 +156,6 @@ export default function ProductForm({ product, categories, places, units, isEdit
                                     }}
                                 />
                                 <InputError message={errors.category_id} className="mt-1" />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="place">Lugar</Label>
-                                <Combobox
-                                    items={placeItems}
-                                    value={data.place_id > 0 ? data.place_id.toString() : ''}
-                                    onValueChange={(value) => setData('place_id', parseInt(value))}
-                                    placeholder="Selecciona un lugar"
-                                    searchPlaceholder="Buscar lugar..."
-                                    emptyText="No se encontraron lugares"
-                                    disabled={processing}
-                                    renderItem={(item) => {
-                                        const place = places.find((p) => p.id!.toString() === item.value);
-                                        return (
-                                            <div className="flex items-center gap-2">
-                                                <span>{place?.name}</span>
-                                                {place?.short_name && <span className="text-muted-foreground">({place.short_name})</span>}
-                                            </div>
-                                        );
-                                    }}
-                                />
-                                <InputError message={errors.place_id} className="mt-1" />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="unit">Unidad</Label>
-                                <Combobox
-                                    items={unitItems}
-                                    value={data.unit_id > 0 ? data.unit_id.toString() : ''}
-                                    onValueChange={(value) => setData('unit_id', parseInt(value))}
-                                    placeholder="Selecciona una unidad"
-                                    searchPlaceholder="Buscar unidad..."
-                                    emptyText="No se encontraron unidades"
-                                    disabled={processing}
-                                    renderItem={(item) => {
-                                        const unit = units.find((u) => u.id!.toString() === item.value);
-                                        return (
-                                            <div className="flex items-center gap-2">
-                                                <span>{unit?.name}</span>
-                                                <span className="text-muted-foreground">({unit?.short_name})</span>
-                                            </div>
-                                        );
-                                    }}
-                                />
-                                <InputError message={errors.unit_id} className="mt-1" />
                             </div>
 
                             <div className="grid justify-start gap-2">

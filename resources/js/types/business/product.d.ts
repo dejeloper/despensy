@@ -1,6 +1,4 @@
 import { Category } from './category';
-import { Place } from './place';
-import { Unit } from './unit';
 
 export type Product = {
     id: number;
@@ -9,14 +7,8 @@ export type Product = {
     image: string | null;
     category_id: number;
     category?: Category;
-    place_id?: number;
-    place?: Place;
-    unit_id?: number;
-    unit?: Unit;
     enabled: boolean;
-    price?: number;
-    stock?: number;
-    // Nuevos campos del último purchase
+    // Derivados de la última compra (ChecklistItem), no columnas propias del producto
     last_price?: number;
     last_place_name?: string;
     last_place_id?: number;

@@ -3,9 +3,7 @@ import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Category } from '@/types/business/category';
-import { Place } from '@/types/business/place';
 import { Product } from '@/types/business/product';
-import { Unit } from '@/types/business/unit';
 
 import ProductForm from '@/components/business/products/productForm';
 
@@ -27,15 +25,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface ProductEditProps {
     product: Product;
     categories: Category[];
-    places: Place[];
-    units: Unit[];
 }
 
-export default function ProductEdit({ product, categories, places, units }: ProductEditProps) {
+export default function ProductEdit({ product, categories }: ProductEditProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar ${product.name}`} />
-            <ProductForm product={product} categories={categories} places={places} units={units} isEdit={true} />
+            <ProductForm product={product} categories={categories} isEdit={true} />
         </AppLayout>
     );
 }
