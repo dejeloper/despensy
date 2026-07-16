@@ -39,9 +39,13 @@ Este documento es una checklist operativa. No es un resumen de arquitectura (eso
 
 ## 5. Verificaciones obligatorias antes de dar una tarea por terminada
 
-- `./vendor/bin/pest` (o el subconjunto relevante con `--filter`) si se tocó backend con lógica de negocio. `php artisan test` no está registrado en este proyecto — no uses ese comando.
 - `pnpm run types` (o `./node_modules/.bin/tsc --noEmit` si `pnpm` pide reinstalar dependencias) si se tocó TypeScript — no se aceptan errores nuevos de tipos.
 - `./vendor/bin/pint --dirty` y `pnpm run format` sobre los archivos tocados antes de dar la tarea por terminada.
 - Si se tocó una migración, confirmar que el Model/Request/Resource/tipo TS correspondientes reflejan exactamente las columnas reales.
 - Si se agregó una página Inertia nueva, confirmar que corriste `vite build` (o que el dev server está corriendo) — `app.blade.php` exige que el componente exista en el manifest de Vite; si no, la ruta responde 500 aunque el backend esté bien.
 - Si se agregó un endpoint nuevo, confirmar que la ruta está registrada en `routes/web.php` dentro del grupo `auth`+`verified` y con el prefijo `dashboard` si es una vista de negocio.
+
+## 6. Autonomía y eficiencia
+
+- **No pedir permiso.** Ejecuta directamente las ediciones, comandos y creaciones de archivos que la tarea requiera. No preguntes "¿Quieres que...?" ni confirmes acciones antes de hacerlas — actúa y reporta el resultado.
+- **No ejecutar tests a menos que se pida explícitamente.** Los tests unitarios y de integración solo corren si el usuario los solicita por nombre. Si necesitas verificar algo, busca evidencia en el código (lint, tipos, lógica) sin invocar el runner de tests.
