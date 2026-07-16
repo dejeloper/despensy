@@ -43,7 +43,7 @@ describe('ProductLastPurchaseService', function () {
     test('a product never purchased has null last purchase data', function () {
         $product = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
 
-        $result = (new ProductLastPurchaseService())->allWithLastPurchase();
+        $result = (new ProductLastPurchaseService)->allWithLastPurchase();
 
         $entry = $result->firstWhere('id', $product->id);
 
@@ -61,7 +61,7 @@ describe('ProductLastPurchaseService', function () {
         $checklistId = createChecklist();
         createChecklistItem($checklistId, $product, $place, $unit, 4500, '2026-01-10 10:00:00');
 
-        $result = (new ProductLastPurchaseService())->allWithLastPurchase();
+        $result = (new ProductLastPurchaseService)->allWithLastPurchase();
         $entry = $result->firstWhere('id', $product->id);
 
         expect((float) $entry->last_price)->toBe(4500.0)
@@ -79,7 +79,7 @@ describe('ProductLastPurchaseService', function () {
         createChecklistItem($checklistId, $product, $oldPlace, $unit, 3000, '2026-01-01 10:00:00');
         createChecklistItem($checklistId, $product, $newPlace, $unit, 3500, '2026-01-15 10:00:00');
 
-        $result = (new ProductLastPurchaseService())->allWithLastPurchase();
+        $result = (new ProductLastPurchaseService)->allWithLastPurchase();
         $matches = $result->where('id', $product->id);
 
         expect($matches)->toHaveCount(1);
