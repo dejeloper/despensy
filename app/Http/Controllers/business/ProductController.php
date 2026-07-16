@@ -15,7 +15,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'place', 'unit'])
+        $query = Product::with('category')
             ->leftJoin('checklist_items as ci', function ($join) {
                 $join->on('ci.product_id', '=', 'products.id')
                      ->where('ci.was_bought', true);
@@ -69,13 +69,9 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::where('enabled', true)->get(['id', 'name', 'icon', 'bg_color', 'text_color']);
-        $places = Place::where('enabled', true)->get(['id', 'name', 'bg_color', 'text_color']);
-        $units = Unit::where('enabled', true)->get(['id', 'name', 'short_name']);
 
         return Inertia::render('products/create', [
             'categories' => $categories,
-            'places' => $places,
-            'units' => $units,
         ]);
     }
 
@@ -91,14 +87,10 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::where('enabled', true)->get(['id', 'name', 'icon', 'bg_color', 'text_color']);
-        $places = Place::where('enabled', true)->get(['id', 'name', 'bg_color', 'text_color']);
-        $units = Unit::where('enabled', true)->get(['id', 'name', 'short_name']);
 
         return Inertia::render('products/edit', [
-            'product' => $product->load(['category', 'place', 'unit']),
+            'product' => $product->load('category'),
             'categories' => $categories,
-            'places' => $places,
-            'units' => $units,
         ]);
     }
 
@@ -124,20 +116,5 @@ class ProductController extends Controller
                 ->route('products.index')
                 ->with('error', 'No se pudo eliminar el producto. Puede estar en uso.');
         }
-    }
-
-    /**
-     * Actualizar solo el precio y stock de un producto
-     */
-    public function updatePrice(Request $request, Product $product)
-    {
-        $validated = $request->validate([
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-        ]);
-
-        $product->update($validated);
-
-        return back()->with('success', 'Precio y stock actualizados exitosamente.');
     }
 }

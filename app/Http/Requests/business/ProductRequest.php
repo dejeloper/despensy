@@ -33,10 +33,6 @@ class ProductRequest extends FormRequest
 			'description' => 'nullable|string|max:500',
 			'image' => 'nullable|string|min:5',
 			'category_id' => 'required|exists:categories,id',
-			'place_id' => 'required|exists:places,id',
-			'unit_id' => 'required|exists:units,id',
-			'price' => 'nullable|numeric|min:0|max:9999999.99',
-			'stock' => 'nullable|integer|min:0|max:999999',
 			'enabled' => 'required|boolean',
 		];
 	}
@@ -58,16 +54,6 @@ class ProductRequest extends FormRequest
 			'image.string' => 'La imagen debe ser una cadena de texto.',
 			'category_id.required' => 'La categoría es obligatoria.',
 			'category_id.exists' => 'La categoría seleccionada no existe.',
-			'place_id.required' => 'El lugar es obligatorio.',
-			'place_id.exists' => 'El lugar seleccionado no existe.',
-			'unit_id.required' => 'La unidad es obligatoria.',
-			'unit_id.exists' => 'La unidad seleccionada no existe.',
-			'price.numeric' => 'El precio debe ser un número.',
-			'price.min' => 'El precio debe ser mayor o igual a 0.',
-			'price.max' => 'El precio no puede ser mayor a 9,999,999.99.',
-			'stock.integer' => 'El stock debe ser un número entero.',
-			'stock.min' => 'El stock debe ser mayor o igual a 0.',
-			'stock.max' => 'El stock no puede ser mayor a 999,999.',
 			'enabled.required' => 'El estado es obligatorio.',
 			'enabled.boolean' => 'El estado debe ser verdadero o falso.',
 		];

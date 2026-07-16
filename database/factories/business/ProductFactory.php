@@ -4,8 +4,6 @@ namespace Database\Factories\business;
 
 use App\Models\business\Product;
 use App\Models\business\Category;
-use App\Models\business\Place;
-use App\Models\business\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -57,8 +55,6 @@ class ProductFactory extends Factory
 			'description' => $product[1] . '. ' . $this->faker->sentence(),
 			'image' => $this->faker->optional(60)->imageUrl(400, 400, 'food'), // 60% probabilidad de tener imagen
 			'category_id' => Category::factory(),
-			'place_id' => Place::factory(),
-			'unit_id' => Unit::factory(),
 			'enabled' => $this->faker->boolean(85), // 85% probabilidad de estar habilitado
 		];
 	}
@@ -94,14 +90,12 @@ class ProductFactory extends Factory
 	}
 
 	/**
-	 * Create a product with existing relationships.
+	 * Create a product with an existing category.
 	 */
-	public function withRelationships(int $categoryId, int $placeId, int $unitId): static
+	public function withRelationships(int $categoryId): static
 	{
 		return $this->state(fn(array $attributes) => [
 			'category_id' => $categoryId,
-			'place_id' => $placeId,
-			'unit_id' => $unitId,
 		]);
 	}
 
