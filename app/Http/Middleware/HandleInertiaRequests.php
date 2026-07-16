@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\business\ChecklistLifecycleService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -51,6 +52,9 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'openChecklistItemsCount' => fn (): int => $request->user()
+                ? app(ChecklistLifecycleService::class)->openChecklistItemsCountFor($request->user())
+                : 0,
         ];
     }
 }
