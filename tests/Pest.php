@@ -49,3 +49,22 @@ function something()
 {
     // ..
 }
+
+/**
+ * Seed the four checklist states (Abierta, En Progreso, Cerrada, Cancelada)
+ * used throughout the Checklist domain tests.
+ */
+function seedChecklistStates(): void
+{
+    foreach ([
+        \App\Models\business\State::CHECKLIST_OPEN,
+        \App\Models\business\State::CHECKLIST_IN_PROGRESS,
+        \App\Models\business\State::CHECKLIST_CLOSED,
+        \App\Models\business\State::CHECKLIST_CANCELLED,
+    ] as $name) {
+        \App\Models\business\State::factory()->create([
+            'name' => $name,
+            'type' => \App\Models\business\State::TYPE_CHECKLIST,
+        ]);
+    }
+}
