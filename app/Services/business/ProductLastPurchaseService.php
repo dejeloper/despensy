@@ -36,9 +36,9 @@ class ProductLastPurchaseService
                 'ci.unit_price as last_price',
                 'ci.created_at as last_purchase_date',
                 'last_place.name as last_place_name',
-                'last_place.id as last_place_id',
+                'last_place.bg_color as last_place_bg_color',
+                'last_place.text_color as last_place_text_color',
                 'last_unit.name as last_unit_name',
-                'last_unit.id as last_unit_id',
             ])
             ->orderByRaw('COALESCE(ci.created_at, products.created_at) DESC')
             ->get();
