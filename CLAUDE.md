@@ -13,7 +13,6 @@ Este archivo es solo un índice. La documentación real vive en `docs/` y en `AI
 | [`docs/BACKEND_CONVENTIONS.md`](./docs/BACKEND_CONVENTIONS.md)   | Antes de escribir PHP.                                                           |
 | [`docs/FRONTEND_CONVENTIONS.md`](./docs/FRONTEND_CONVENTIONS.md) | Antes de escribir React/TypeScript.                                              |
 | [`docs/DATABASE.md`](./docs/DATABASE.md)                         | Antes de crear o modificar una migración.                                        |
-| [`docs/TECH_DEBT.md`](./docs/TECH_DEBT.md)                       | Antes de tocar Product (price/stock fantasma) o el tipo `Consumer`.              |
 | [`planning.md`](./planning.md)                                   | Backlog de funcionalidad. No se modifica desde una sesión de documentación.      |
 
 No copies esta tabla en otros documentos; si necesitas contexto, sigue el enlace.

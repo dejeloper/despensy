@@ -1,6 +1,6 @@
 # Dominio de Despensy
 
-Este documento describe las entidades del negocio y sus reglas **tal como deberían ser**, no necesariamente como el código las tiene hoy. Cuando hay diferencia entre esta descripción y el código actual, la diferencia está registrada en `docs/TECH_DEBT.md` — este documento no documenta bugs, los excluye a propósito.
+Este documento describe las entidades del negocio y sus reglas correctas del dominio — no documenta bugs a propósito. Si en algún momento el código se desvía de esto (por ejemplo, un campo que referencia una columna que ya no existe), es una inconsistencia a corregir, no una variante válida de este modelo.
 
 ## Entidades
 

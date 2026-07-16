@@ -15,8 +15,8 @@ Reglas concretas para código en `resources/js/`. Stack real: Inertia.js 2 + Rea
 ## Tipado
 
 - Todo prop que venga de Inertia (`usePage().props`) tiene un tipo definido en `types/business/` o `types/index.d.ts` — nunca `any` ni objeto anónimo para datos de dominio.
-- El tipo de una entidad se actualiza en el mismo cambio que su API Resource — si el backend deja de exponer un campo, el tipo lo refleja de inmediato (ver `docs/TECH_DEBT.md`: `product.d.ts` hoy todavía declara `price?`/`stock?`, que no existen en el backend real).
-- Se prefiere `interface` para formas de objeto de dominio y `type` para uniones/alias — hoy el proyecto mezcla ambos de forma inconsistente entre archivos (`type Product = {...}` vs `interface Consumer {...}`); el código nuevo usa `interface` para entidades.
+- El tipo de una entidad se actualiza en el mismo cambio que su API Resource — si el backend deja de exponer un campo, el tipo lo refleja de inmediato.
+- Se prefiere `interface` para formas de objeto de dominio y `type` para uniones/alias; el código nuevo usa `interface` para entidades cuando no necesite unión.
 - Los tipos de paginación (`Paginated<Entidad>`) siguen la forma ya usada: `{ data: T[]; current_page; last_page; per_page; total; links: {url, label, active}[] }`. No se inventa una forma distinta por recurso.
 
 ## Páginas y componentes
@@ -24,6 +24,7 @@ Reglas concretas para código en `resources/js/`. Stack real: Inertia.js 2 + Rea
 - Una página Inertia orquesta: pide datos vía props, arma el estado de UI (filtros, paginación vía hook), y renderiza componentes — no contiene lógica de transformación de datos pesada inline.
 - Un componente se divide cuando mezcla más de una responsabilidad (ej. fetch/estado + presentación) o cuando su JSX crece más allá de lo legible en una pantalla. No hay un número mágico de líneas; el criterio es "¿puedo describir este componente en una frase sin usar 'y'?".
 - La lógica de negocio de UI (cálculos, formateo, reglas de habilitado/deshabilitado de un botón) vive en un hook, no en el cuerpo del componente ni en el JSX.
+- **Toda página nueva en `pages/<recurso>/` debe existir como archivo antes de registrar su ruta.** `resources/views/app.blade.php` usa `@vite([..., "resources/js/pages/{$page['component']}.tsx"])` — si el componente no está en el manifest de Vite, la ruta responde 500 aunque el backend esté perfecto. Después de crear una página nueva, correr `pnpm run build` (o tener `pnpm run dev` corriendo) antes de darla por terminada.
 
 ## El patrón `structure.tsx`
 
@@ -40,10 +41,10 @@ Reglas concretas para código en `resources/js/`. Stack real: Inertia.js 2 + Rea
 ## Estilo y formato
 
 - Tailwind vía las clases utilitarias existentes; `clsx`/`cn` para condicionales, ya configurado en Prettier (`tailwindFunctions`).
-- Prettier (`tabWidth: 4`, espacios, comillas simples) es la fuente de verdad de formato — se corre `pnpm run format` antes de dar una tarea por terminada si se tocaron archivos `.tsx`/`.ts`. Ver `docs/TECH_DEBT.md`: hoy varios archivos de `types/business/` están en tabs porque no se les corrió Prettier; no se toma eso como referencia de estilo.
+- Prettier (`tabWidth: 4`, espacios, comillas simples) es la fuente de verdad de formato — se corre `pnpm run format` antes de dar una tarea por terminada si se tocaron archivos `.tsx`/`.ts`.
 - `pnpm run lint` y `pnpm run types` deben pasar sin errores nuevos antes de cerrar una tarea.
 
 ## Qué no hacer
 
 - No usar `npm`/`yarn` — el proyecto usa `pnpm` exclusivamente (ver `package.json`/`pnpm-lock.yaml`).
-- No crear un tipo o componente "por si se necesita después" sin una página que lo use ya (ver `docs/TECH_DEBT.md`: `consumer.d.ts` es exactamente ese caso — un tipo sin modelo, controlador ni página asociada).
+- No crear un tipo, componente o página "por si se necesita después" sin que algo lo use ya.

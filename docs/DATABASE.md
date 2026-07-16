@@ -38,4 +38,4 @@ En vez de una tabla de estados por entidad (`checklist_states`, `product_states`
 
 1. Confirmar que el nombre de columna no choca con una convención ya usada en otra tabla del dominio.
 2. Elegir `onDelete` según la tabla de arriba, explícitamente — nunca dejar el default de Laravel sin pensarlo.
-3. Verificar contra `docs/DOMAIN.md` que la columna representa lo que el negocio necesita hoy, no un campo especulativo (ver `docs/TECH_DEBT.md` para el caso de `price`/`stock` que nunca debieron estar en el Model/Request si no están en la migración).
+3. Verificar contra `docs/DOMAIN.md` que la columna representa lo que el negocio necesita hoy, no un campo especulativo — y que el Model/Request/Resource/tipo TS correspondientes solo referencian columnas que existen realmente en la migración.

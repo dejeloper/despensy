@@ -2,7 +2,7 @@
 
 Este documento describe **cómo** se construye Despensy: capas, flujo de datos y decisiones técnicas estructurales. Las reglas de negocio (qué es correcto para el dominio) están en `docs/DOMAIN.md`; las reglas de sintaxis/estilo por stack están en `docs/BACKEND_CONVENTIONS.md` y `docs/FRONTEND_CONVENTIONS.md`.
 
-> Estado actual vs. estado objetivo: los controladores existentes (`CategoryController`, `PlaceController`, `UnitController`, `ProductController`) **no** siguen todavía el patrón de capas descrito aquí — hacen queries directas y devuelven modelos crudos. Ese patrón está registrado como deuda en `docs/TECH_DEBT.md`. Lo que sigue es el patrón que debe usar todo código nuevo, y el objetivo al que migrar el código existente cuando se toque.
+> `ProductController`, `ChecklistController` y `ChecklistItemController` ya siguen este patrón (Service para la lógica, Resource para la respuesta). `CategoryController`, `PlaceController` y `UnitController` son CRUD simple sin lógica adicional, así que no tienen Service dedicado — eso es correcto según el criterio de la sección siguiente, no una migración pendiente.
 
 ## Capas y responsabilidad única
 

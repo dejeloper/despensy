@@ -1,13 +1,15 @@
-# 🛒 Despensy - Sistema de Gestión de Compras y Gastos
+# 🛒 Despensy
 
-Sistema completo de gestión de compras, inventario y control de gastos desarrollado con Laravel + React + TypeScript + Inertia.js.
+Herramienta personal para tomar mejores decisiones al momento de comprar productos de despensa: qué comprar, dónde y a qué precio, basándose en el historial real de compras. Construida con Laravel + React + TypeScript + Inertia.js.
+
+> Para las decisiones de arquitectura, convenciones y reglas del proyecto, la fuente de verdad es [`CLAUDE.md`](CLAUDE.md), [`AI_RULES.md`](AI_RULES.md) y los documentos en [`docs/`](docs/) — este README cubre solo instalación y operación. El backlog de funcionalidad vive en [`planning.md`](planning.md).
 
 ---
 
 ## 📋 Tabla de Contenidos
 
 - [Stack Tecnológico](#-stack-tecnológico)
-- [Características Principales](#-características-principales)
+- [Estado del Proyecto](#-estado-del-proyecto)
 - [Requisitos Previos](#-requisitos-previos)
 - [Instalación Local](#-instalación-local)
 - [Scripts Disponibles](#-scripts-disponibles)
@@ -21,70 +23,32 @@ Sistema completo de gestión de compras, inventario y control de gastos desarrol
 
 ## 🚀 Stack Tecnológico
 
-- **Backend**: Laravel 11.x (PHP 8.2+)
-- **Frontend**: React 18 + TypeScript
-- **Framework UI**: Inertia.js
-- **Estilos**: TailwindCSS + shadcn/ui
-- **Base de datos**: SQLite (desarrollo) / MySQL/PostgreSQL (producción)
+- **Backend**: Laravel 12.x (PHP 8.2+)
+- **Frontend**: React 19 + TypeScript
+- **Framework UI**: Inertia.js 2
+- **Estilos**: TailwindCSS 4 + shadcn/ui (Radix)
+- **Base de datos**: SQLite (desarrollo/tests) / MySQL (producción/local)
 - **Package Manager**: pnpm
 - **Build Tool**: Vite
 - **Testing**: Pest PHP
 
 ---
 
-## ✨ Características Principales
+## ✅ Estado del Proyecto
 
-### Módulos Implementados
+Lo que ya está construido y funcionando:
 
-1. **🗂️ Gestión de Categorías**
-    - CRUD completo con personalización visual (íconos, colores)
-    - Estado habilitado/deshabilitado
-    - 38 categorías predefinidas
+1. **🗂️ Categorías** — CRUD completo, personalización visual (íconos, colores).
+2. **📍 Lugares** — CRUD completo, tiendas/establecimientos con colores y notas.
+3. **📏 Unidades** — CRUD completo, unidades de medida con nombre corto.
+4. **📦 Productos** — CRUD completo. Un producto es catálogo (nombre, descripción, imagen, categoría) — **no tiene precio ni stock propios**; esos datos se derivan de la última compra registrada en `checklist_items` (`ProductLastPurchaseService`) y se muestran en el listado (`last_price`, `last_place_name`, `last_unit_name`, `last_purchase_date`).
+5. **✅ Listas de compra (Checklist)** — crear una lista (`ChecklistLifecycleService`, cierra automáticamente cualquier lista abierta previa del mismo usuario), agregar/quitar productos, marcar como comprado con precio/lugar/unidad reales (`ChecklistItemService`), completar o cancelar. Una lista cerrada o cancelada es inmutable. Historial de listas anteriores con detalle de lo comprado.
+6. **🔐 Autenticación completa** — login/logout, recuperación de contraseña, verificación de email, perfil de usuario.
+7. **🎨 Sistema de temas** — modo claro/oscuro/sistema, persistencia con cookies.
 
-2. **📍 Gestión de Lugares**
-    - Tiendas y establecimientos con colores personalizados
-    - Direcciones y notas
-    - 28 lugares predefinidos
+No existen (a pesar de builds/documentación anteriores que los mencionaban): gestión de consumidores, confirmación de compras como módulo separado, ni gestión de gastos. Si se retoman, entran primero por `planning.md`.
 
-3. **📏 Gestión de Unidades**
-    - Unidades de medida (kg, litros, cajas, etc.)
-    - 30+ unidades predefinidas
-
-4. **📦 Gestión de Productos**
-    - Relaciones con categorías, lugares y unidades
-    - Control de stock y precios
-    - Imágenes de productos
-    - 100+ productos de ejemplo
-
-5. **👥 Gestión de Consumidores**
-    - Tipos: humano, mascota
-    - Asociación con gastos
-
-6. **✅ Sistema de Checklists**
-    - Crear listas de compras desde productos
-    - Carrito con cantidades
-    - Estados: activo/completado
-    - Filtrado por búsqueda y categoría
-
-7. **✔️ Confirmación de Compras**
-    - Confirmar qué se compró del checklist
-    - Registrar precios, cantidades y lugares reales
-    - Marcar productos como "no comprados"
-
-8. **💰 Gestión de Gastos**
-    - Registro detallado de compras
-    - Validaciones con servicio dedicado
-
-9. **🔐 Autenticación Completa**
-    - Login/Logout
-    - Recuperación de contraseña
-    - Verificación de email
-    - Perfil de usuario
-
-10. **🎨 Sistema de Temas**
-    - Modo claro/oscuro/sistema
-    - Persistencia con cookies
-    - Variables CSS personalizadas
+La UI de Checklist es funcional pero mínima (sin pulir): `<select>`/Combobox básicos, sin toasts (usa los mismos mensajes flash `success`/`error` que el resto de la app). Ver `planning.md` para lo que sigue.
 
 ---
 
@@ -96,7 +60,7 @@ Asegúrate de tener instalado:
 - **Composer** >= 2.x
 - **Node.js** >= 18.x
 - **pnpm** >= 8.x (o npm/yarn)
-- **SQLite** (para desarrollo) o **MySQL/PostgreSQL** (para producción)
+- **SQLite** (para desarrollo) o **MySQL** (para producción/local con datos reales)
 
 ---
 
@@ -178,11 +142,6 @@ php artisan migrate
 php artisan db:seed
 ```
 
-**Usuario de prueba creado:**
-
-- Email: `admin@despensy.com`
-- Password: `password`
-
 ### 8. Crear enlace simbólico para storage
 
 ```bash
@@ -238,8 +197,10 @@ php artisan db:seed                    # Ejecutar todos los seeders
 php artisan db:seed --class=UserSeeder # Ejecutar seeder específico
 
 # Testing
-php artisan test                       # Ejecutar tests con PHPUnit
 ./vendor/bin/pest                      # Ejecutar tests con Pest
+
+# Formato de código PHP
+./vendor/bin/pint                      # Aplicar estilo (PSR-12 + reglas Laravel)
 
 # Desarrollo
 php artisan serve                      # Servidor de desarrollo
@@ -253,7 +214,8 @@ pnpm install            # Instalar dependencias
 pnpm run dev            # Servidor de desarrollo con HMR
 pnpm run build          # Compilar para producción
 pnpm run lint           # Ejecutar linter (ESLint)
-pnpm run type-check     # Verificar tipos TypeScript
+pnpm run format         # Aplicar formato (Prettier)
+pnpm run types          # Verificar tipos TypeScript (tsc --noEmit)
 ```
 
 ### Script de Deploy
@@ -374,25 +336,29 @@ despensy/
 │   │   │   ├── Shared/            # Controladores compartidos (emojis)
 │   │   │   └── business/          # Controladores de negocio
 │   │   ├── Middleware/            # Middleware personalizado
-│   │   └── Requests/              # Form requests con validación
+│   │   ├── Requests/              # Form requests con validación
+│   │   └── Resources/             # API Resources (transforman modelos para el frontend)
 │   ├── Models/                    # Modelos Eloquent
 │   │   └── business/
 │   ├── Providers/                 # Service providers
 │   └── Services/                  # Servicios de negocio
+│       └── business/
 ├── config/                        # Configuración de Laravel
 ├── database/
 │   ├── factories/                 # Model factories
 │   ├── migrations/                # Migraciones
 │   └── seeders/                   # Seeders
+├── docs/                          # Documentación de arquitectura, dominio y convenciones
 ├── public/                        # Punto de entrada web
 │   └── build/                     # Assets compilados
 ├── resources/
 │   ├── css/                       # Estilos globales
 │   ├── js/                        # Código React + TypeScript
 │   │   ├── components/            # Componentes reutilizables
+│   │   ├── hooks/                 # Hooks reutilizables
 │   │   ├── layouts/               # Layouts de página
 │   │   ├── pages/                 # Páginas de Inertia
-│   │   ├── structures/            # Definiciones de columnas
+│   │   ├── structures/            # Definiciones de columnas de tabla
 │   │   └── types/                 # Tipos TypeScript
 │   └── views/                     # Vistas Blade (solo app.blade.php)
 ├── routes/
@@ -402,14 +368,18 @@ despensy/
 │   └── api.php                    # Rutas API
 ├── storage/                       # Almacenamiento (logs, cache, uploads)
 ├── tests/                         # Tests (Pest PHP)
+├── CLAUDE.md                      # Índice de documentación para asistentes de IA
+├── AI_RULES.md                    # Reglas operativas para asistentes de IA
+├── planning.md                    # Backlog de funcionalidad
 ├── deploy.js                      # Script de deploy
-├── deploy.config.json             # Configuración FTP
-└── production/                    # Carpeta temporal de build
+└── deploy.config.json             # Configuración FTP
 ```
 
 ---
 
 ## 📦 Módulos Implementados
+
+Los cuatro módulos de catálogo (Categorías, Lugares, Unidades, Productos) siguen el mismo patrón de rutas: `Route::resource(...)->except(['show'])` dentro de `Route::prefix('dashboard')->middleware(['auth', 'verified'])`, es decir `index`, `create`, `store`, `edit`, `update`, `destroy` — sin vista de detalle (`show`) para ninguno de los cuatro.
 
 ### 1. Categorías ([CategoryController.php](app/Http/Controllers/business/CategoryController.php))
 
@@ -418,20 +388,9 @@ despensy/
 - CRUD completo
 - Personalización visual (íconos emoji, colores de fondo y texto)
 - Estado habilitado/deshabilitado
-- Paginación
+- Búsqueda y paginación del lado del cliente
 
-**Rutas:**
-
-```
-GET    /dashboard/categories         # Listar
-GET    /dashboard/categories/create  # Formulario crear
-POST   /dashboard/categories         # Guardar
-GET    /dashboard/categories/{id}    # Ver
-PUT    /dashboard/categories/{id}    # Actualizar
-DELETE /dashboard/categories/{id}    # Eliminar
-```
-
-**Seeders:** 38 categorías predefinidas (Alimentos, Bebidas, Limpieza, Medicamentos, etc.)
+**Seeders:** 49 categorías predefinidas
 
 ---
 
@@ -442,18 +401,8 @@ DELETE /dashboard/categories/{id}    # Eliminar
 - Gestión de tiendas y establecimientos
 - Nombre corto, dirección, notas
 - Colores personalizados (bg/text en hexadecimal)
-- Validación de colores
 
-**Rutas:**
-
-```
-GET    /dashboard/places
-POST   /dashboard/places
-PUT    /dashboard/places/{id}
-DELETE /dashboard/places/{id}
-```
-
-**Seeders:** 28 lugares (Supermercados, farmacias, tiendas especializadas)
+**Seeders:** 17 lugares (supermercados, tiendas especializadas)
 
 ---
 
@@ -462,18 +411,8 @@ DELETE /dashboard/places/{id}
 **Funcionalidades:**
 
 - Unidades de medida con nombre corto
-- Estado habilitado/deshabilitado
 
-**Rutas:**
-
-```
-GET    /dashboard/units
-POST   /dashboard/units
-PUT    /dashboard/units/{id}
-DELETE /dashboard/units/{id}
-```
-
-**Seeders:** 30+ unidades (Kilogramo, Litro, Caja, Bulto, etc.)
+**Seeders:** 21 unidades (Kilogramo, Litro, Caja, Docena, etc.)
 
 ---
 
@@ -481,112 +420,32 @@ DELETE /dashboard/units/{id}
 
 **Funcionalidades:**
 
-- Relaciones: Categoría, Lugar, Unidad
-- Campos: nombre, descripción, imagen, precio, stock, cantidad máxima
-- Validación completa
+- Relación: Categoría (única relación propia del producto — lugar y unidad son de cada compra, no del producto, ver [`docs/DOMAIN.md`](docs/DOMAIN.md))
+- Campos propios: nombre, descripción, imagen, categoría, estado
+- Campos derivados de la última compra (calculados por `ProductLastPurchaseService`, no almacenados en `products`): `last_price`, `last_place_name`, `last_unit_name`, `last_purchase_date`
 
-**Rutas:**
-
-```
-GET    /dashboard/products
-POST   /dashboard/products
-PUT    /dashboard/products/{id}
-DELETE /dashboard/products/{id}
-```
-
-**Seeders:** 100+ productos de ejemplo
+**Seeders:** 182 productos de ejemplo
 
 ---
 
-### 5. Consumidores ([ConsumerController.php](app/Http/Controllers/business/ConsumerController.php))
+### 5. Listas de compra ([ChecklistController.php](app/Http/Controllers/business/ChecklistController.php), [ChecklistItemController.php](app/Http/Controllers/business/ChecklistItemController.php))
 
 **Funcionalidades:**
 
-- Tipos: `human`, `pet`
-- Asociación con gastos
+- Un usuario tiene a lo sumo una lista abierta a la vez — crear una nueva cierra automáticamente la anterior (`ChecklistLifecycleService`)
+- Agregar/quitar productos de la lista, marcar como comprado con cantidad/unidad/lugar/precio reales, deshacer (`ChecklistItemService`)
+- Completar o cancelar una lista; una lista `Cerrada`/`Cancelada` es inmutable (lanza `ChecklistNotEditableException` si se intenta modificar)
+- Historial de listas anteriores con detalle de lo comprado y total gastado
 
-**Rutas:**
-
-```
-GET    /dashboard/consumers
-POST   /dashboard/consumers
-PUT    /dashboard/consumers/{id}
-DELETE /dashboard/consumers/{id}
-```
+**Rutas:** `checklists.{index,active,show,store,complete,cancel}`, `checklist-items.{store,destroy,mark-bought,mark-not-bought}` — ver `routes/web.php`
 
 ---
 
-### 6. Checklists ([ChecklistController.php](app/Http/Controllers/business/ChecklistController.php))
-
-**Funcionalidades:**
-
-- Crear listas de compras desde productos
-- Carrito con cantidades
-- Filtrado por búsqueda y categoría
-- Estados: `ACTIVE` / `COMPLETED`
-- Servicio dedicado: [ChecklistService.php](app/Services/ChecklistService.php)
-
-**Rutas:**
-
-```
-GET    /dashboard/checklists
-GET    /dashboard/checklists/create
-POST   /dashboard/checklists
-GET    /dashboard/checklists/{id}
-PUT    /dashboard/checklists/{id}
-DELETE /dashboard/checklists/{id}
-```
-
-**Tablas:**
-
-- `checklists`: Checklist principal
-- `checklist_details`: Items del checklist
-
----
-
-### 7. Confirmación de Compras ([ChecklistItemConfirmationController.php](app/Http/Controllers/business/ChecklistItemConfirmationController.php))
-
-**Funcionalidades:**
-
-- Confirmar productos comprados del checklist
-- Registrar: cantidad real, precio unitario, lugar, unidad
-- Marcar productos como "no comprados"
-- Asociación con usuario que confirma
-
-**Rutas:**
-
-```
-GET    /dashboard/checklists/{id}/confirm
-POST   /dashboard/checklist-confirmations
-PUT    /dashboard/checklist-confirmations/{id}/no-buy
-```
-
----
-
-### 8. Gastos ([ExpenseController.php](app/Http/Controllers/business/ExpenseController.php))
-
-**Funcionalidades:**
-
-- Registro de gastos con validaciones
-- Servicio: [PurchaseValidationService.php](app/Services/PurchaseValidationService.php)
-- Validaciones: producto habilitado, cantidad máxima, lugar sugerido
-
-**Rutas:**
-
-```
-GET    /dashboard/expenses
-POST   /dashboard/expenses
-DELETE /dashboard/expenses/{id}
-```
-
----
-
-### 9. Autenticación ([routes/auth.php](routes/auth.php))
+### 6. Autenticación ([routes/auth.php](routes/auth.php))
 
 **Funcionalidades:**
 
 - Login/Logout
-- Registro (deshabilitado en rutas)
 - Recuperación de contraseña
 - Verificación de email
 - Confirmación de contraseña
@@ -595,7 +454,7 @@ DELETE /dashboard/expenses/{id}
 
 ---
 
-### 10. Configuración ([routes/settings.php](routes/settings.php))
+### 7. Configuración ([routes/settings.php](routes/settings.php))
 
 **Funcionalidades:**
 
@@ -621,11 +480,7 @@ GET    /settings/appearance
 ### Ejecutar Tests
 
 ```bash
-# Con Pest (recomendado)
 ./vendor/bin/pest
-
-# Con PHPUnit
-php artisan test
 
 # Tests específicos
 ./vendor/bin/pest tests/Feature/Auth
@@ -636,13 +491,15 @@ php artisan test
 
 **Feature Tests:**
 
-- ✅ Autenticación (login, registro, verificación email)
-- ✅ Dashboard
+- ✅ Autenticación (login, registro, verificación de email, recuperación de contraseña)
+- ✅ Dashboard, Configuración (perfil, contraseña)
+- ✅ Controladores de negocio: Categorías, Lugares, Unidades, Productos (CRUD + validación + reglas de integridad)
+- ✅ Checklist y ChecklistItem: ciclo de vida completo, autorización entre usuarios, inmutabilidad de listas cerradas
 
 **Unit Tests:**
 
-- ✅ Modelos: Unit, Place
-- ✅ Relaciones y factories
+- ✅ Modelos: `User`, `Category`, `Place`, `Product`, `Unit`, `State`, `Checklist`, `ChecklistItem` — relaciones, scopes y factories
+- ✅ Services: `ProductLastPurchaseService`, `ChecklistLifecycleService`, `ChecklistItemService`
 
 ---
 
@@ -705,16 +562,13 @@ MAIL_PORT=2525
 
 ---
 
-## 🔮 Roadmap / Mejoras Pendientes
+## 🔮 Roadmap
 
-- [ ] Dashboard con estadísticas y gráficas
-- [ ] Historial completo de compras
-- [ ] Reportes y análisis de gastos
-- [ ] Exportación de datos (Excel/PDF)
-- [ ] Automatizar desempaquetado en cPanel (API de hosting)
-- [ ] API REST pública documentada
-- [ ] Notificaciones push
-- [ ] App móvil (React Native/Flutter)
+El backlog completo y priorizado vive en [`planning.md`](planning.md). Resumen de lo más próximo:
+
+- Pulir la UI de Checklist (Combobox en vez de `<select>`, toasts, historial más detallado)
+- Vista de "Despensa" con indicador de producto en lista activa y botón rápido +/− para agregar/quitar desde el listado
+- Vista de detalle de producto con historial de compras
 
 ---
 
