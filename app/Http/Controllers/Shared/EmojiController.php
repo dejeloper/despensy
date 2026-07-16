@@ -4,63 +4,67 @@ namespace App\Http\Controllers\Shared;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class EmojiController extends Controller
 {
-	protected $baseUrl;
-	protected $accessKey;
+    protected $baseUrl;
 
-	public function __construct()
-	{
-		$this->baseUrl = config('services.emoji.url');
-		$this->accessKey = config('services.emoji.key');
-	}
+    protected $accessKey;
 
-	public function index(Request $request)
-	{
-		$search = strtolower($request->query('search', ''));
+    public function __construct()
+    {
+        $this->baseUrl = config('services.emoji.url');
+        $this->accessKey = config('services.emoji.key');
+    }
 
-		$allEmojis = Cache::remember('all_emojis', now()->addHour(), function () {
-			$url = "{$this->baseUrl}/emojis?access_key={$this->accessKey}";
-			$res = Http::get($url);
-			return $res->ok() ? $res->json() : [];
-		});
+    public function index(Request $request)
+    {
+        $search = strtolower($request->query('search', ''));
 
-		if ($search) {
-			$filtered = collect($allEmojis)->filter(function ($emoji) use ($search) {
-				return str_contains(strtolower($emoji['unicodeName']), $search)
-					|| str_contains(strtolower($emoji['slug']), $search);
-			})->values()->all();
+        $allEmojis = Cache::remember('all_emojis', now()->addHour(), function () {
+            $url = "{$this->baseUrl}/emojis?access_key={$this->accessKey}";
+            $res = Http::get($url);
 
-			return response()->json($filtered);
-		}
+            return $res->ok() ? $res->json() : [];
+        });
 
-		return response()->json($allEmojis);
-	}
+        if ($search) {
+            $filtered = collect($allEmojis)->filter(function ($emoji) use ($search) {
+                return str_contains(strtolower($emoji['unicodeName']), $search)
+                    || str_contains(strtolower($emoji['slug']), $search);
+            })->values()->all();
 
-	public function categories()
-	{
-		$url = "{$this->baseUrl}/categories?access_key={$this->accessKey}";
+            return response()->json($filtered);
+        }
 
-		$data = Cache::remember('emoji_categories', now()->addHours(1), function () use ($url) {
-			$res = Http::get($url);
-			return $res->ok() ? $res->json() : [];
-		});
+        return response()->json($allEmojis);
+    }
 
-		return response()->json($data);
-	}
+    public function categories()
+    {
+        $url = "{$this->baseUrl}/categories?access_key={$this->accessKey}";
 
-	public function byCategory($slug)
-	{
-		$url = "{$this->baseUrl}/categories/{$slug}?access_key={$this->accessKey}";
+        $data = Cache::remember('emoji_categories', now()->addHours(1), function () use ($url) {
+            $res = Http::get($url);
 
-		$data = Cache::remember("emojis_category_{$slug}", now()->addMinutes(30), function () use ($url) {
-			$res = Http::get($url);
-			return $res->ok() ? $res->json() : [];
-		});
+            return $res->ok() ? $res->json() : [];
+        });
 
-		return response()->json($data);
-	}
+        return response()->json($data);
+    }
+
+    public function byCategory($slug)
+    {
+        $url = "{$this->baseUrl}/categories/{$slug}?access_key={$this->accessKey}";
+
+        $data = Cache::remember("emojis_category_{$slug}", now()->addMinutes(30), function () use ($url) {
+            $res = Http::get($url);
+
+            return $res->ok() ? $res->json() : [];
+        });
+
+        return response()->json($data);
+    }
 }

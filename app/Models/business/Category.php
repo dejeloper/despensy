@@ -14,7 +14,7 @@ class Category extends Model
         'icon',
         'bg_color',
         'text_color',
-        'enabled'
+        'enabled',
     ];
 
     protected $casts = [

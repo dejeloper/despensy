@@ -5,9 +5,9 @@ namespace App\Http\Controllers\business;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\ProductRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\business\Product;
 use App\Models\business\Category;
 use App\Models\business\Place;
+use App\Models\business\Product;
 use App\Models\business\Unit;
 use App\Services\business\ProductLastPurchaseService;
 use Illuminate\Http\Request;
@@ -15,9 +15,7 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    public function __construct(private ProductLastPurchaseService $lastPurchaseService)
-    {
-    }
+    public function __construct(private ProductLastPurchaseService $lastPurchaseService) {}
 
     public function index(Request $request)
     {

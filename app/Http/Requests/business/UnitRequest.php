@@ -27,15 +27,15 @@ class UnitRequest extends FormRequest
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('units', 'name')->ignore($unitId)
+                Rule::unique('units', 'name')->ignore($unitId),
             ],
             'short_name' => [
                 'required',
                 'string',
                 'max:10',
-                Rule::unique('units', 'short_name')->ignore($unitId)
+                Rule::unique('units', 'short_name')->ignore($unitId),
             ],
-            'enabled' => 'required|boolean'
+            'enabled' => 'required|boolean',
         ];
     }
 
@@ -54,7 +54,7 @@ class UnitRequest extends FormRequest
             'short_name.max' => 'El nombre corto no puede tener más de 10 caracteres.',
             'short_name.unique' => 'El nombre corto ya está en uso.',
             'enabled.required' => 'El estado es obligatorio.',
-            'enabled.boolean' => 'El estado debe ser verdadero o falso.'
+            'enabled.boolean' => 'El estado debe ser verdadero o falso.',
         ];
     }
 }
