@@ -44,25 +44,25 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 ### Modelos Eloquent (Alta Prioridad)
 
 - [x] Eliminar campos `price` y `stock` de la tabla `products` - YA NO NECESARIO (la migración no los tiene)
-- [ ] **CORREGIR modelo Product.php** - Eliminar price y stock del $fillable y $casts (la migración no los tiene)
-- [ ] **Crear modelo State.php** con relaciones
-- [ ] **Crear modelo Checklist.php** con relaciones (State, Items, User)
-- [ ] **Crear modelo ChecklistItem.php** con todas las relaciones (Producto, unidad planeada, unidad comprada, lugar)
+- [x] **CORREGIR modelo Product.php** - Eliminar price y stock del $fillable y $casts (la migración no los tiene)
+- [x] **Crear modelo State.php** con relaciones
+- [x] **Crear modelo Checklist.php** con relaciones (State, Items, User)
+- [x] **Crear modelo ChecklistItem.php** con todas las relaciones (Producto, unidad planeada, unidad comprada, lugar)
 
 ### Lógica de Negocio (Alta Prioridad)
 
-- [ ] **Helper o Service para obtener última compra de un producto**
+- [x] **Helper o Service para obtener última compra de un producto**
     - Último precio pagado
     - Última fecha de compra
     - Último lugar de compra
     - Reutilizable en controladores y vistas
 
-- [ ] **Regla de negocio: Solo una lista abierta por usuario**
+- [x] **Regla de negocio: Solo una lista abierta por usuario**
     - Validación en ChecklistController
     - Middleware o método que cierre lista anterior al crear nueva
     - Tests para verificar la regla
 
-- [ ] **Normalizar estados de checklist**
+- [x] **Normalizar estados de checklist**
     - Usar solo: open, in_progress, closed, cancelled
     - Eliminar cualquier referencia a estados hardcoded como strings
     - Centralizar lógica de cambio de estados
@@ -92,24 +92,24 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Vista de Lista de Compra Activa (Alta Prioridad)
 
-- [ ] **Nueva vista: /checklists/active**
+- [x] **Nueva vista: /checklists/active**
     - Diseño optimizado para móvil
     - Lista de productos agregados
     - Checkbox para marcar como comprado
     - Campos rápidos: cantidad, precio, lugar
-- [ ] **Flujo de marcar producto como comprado**
+- [x] **Flujo de marcar producto como comprado**
     - Registrar precio pagado
     - Registrar cantidad comprada
     - Registrar lugar de compra
     - Registrar fecha de compra
     - Actualizar estado del item en la lista
 
-- [ ] **Acción: Completar lista**
+- [x] **Acción: Completar lista**
     - Cambiar estado a "closed"
     - Validar que no se pueda modificar después
     - Redirigir a resumen o a crear nueva lista
 
-- [ ] **Acción: Cancelar lista**
+- [x] **Acción: Cancelar lista**
     - Cambiar estado a "cancelled"
     - No registrar compras
     - Permitir crear nueva lista
@@ -129,14 +129,14 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Backend - Controllers Checklist (Alta Prioridad)
 
-- [ ] **Crear ChecklistController**
+- [x] **Crear ChecklistController**
     - index() - Ver listas del usuario
     - active() - Ver lista activa
     - store() - Crear nueva lista (cerrar anterior)
     - complete(id) - Completar lista
     - cancel(id) - Cancelar lista
 
-- [ ] **Crear ChecklistItemController**
+- [x] **Crear ChecklistItemController**
     - addProduct(checklist_id, product_id) - Agregar producto a lista
     - removeProduct(checklist_id, product_id) - Quitar producto
     - markAsBought(item_id) - Marcar como comprado con datos
@@ -168,22 +168,22 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Tipos TypeScript (Prioridad Media)
 
-- [ ] Crear tipo `State`
-- [ ] Crear tipo `Checklist` con relaciones
-- [ ] Crear tipo `ChecklistItem` con relaciones
-- [ ] Actualizar tipo `Product` (quitar price y stock)
+- [x] Crear tipo `State`
+- [x] Crear tipo `Checklist` con relaciones
+- [x] Crear tipo `ChecklistItem` con relaciones
+- [x] Actualizar tipo `Product` (quitar price y stock)
 - [ ] Crear tipo `PurchaseHistory` o `LastPurchase`
 
 ### Rutas (Alta Prioridad)
 
-- [ ] Definir rutas para checklists
+- [x] Definir rutas para checklists
     - GET /dashboard/checklists - Listar
     - GET /dashboard/checklists/active - Ver activa
     - POST /dashboard/checklists - Crear
     - POST /dashboard/checklists/{id}/complete - Completar
     - POST /dashboard/checklists/{id}/cancel - Cancelar
 
-- [ ] Definir rutas para items
+- [x] Definir rutas para items
     - POST /dashboard/checklists/{id}/items - Agregar producto
     - DELETE /dashboard/checklists/{id}/items/{product_id} - Quitar
     - PATCH /dashboard/checklist-items/{id}/mark-bought - Marcar comprado
@@ -198,16 +198,16 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - Mi Lista (lista activa)
     - Historial (listas anteriores)
 
-- [ ] Badge en menú "Mi Lista" con contador de items
+- [x] Badge en menú "Mi Lista" con contador de items
 - [ ] Breadcrumbs actualizados en todas las vistas
 - [ ] Mensajes de éxito/error con toasts
 
 ### Validaciones (Prioridad Media)
 
-- [ ] Validar que no se pueda crear lista si ya hay una abierta
-- [ ] Validar que no se pueda modificar lista cerrada/cancelada
-- [ ] Validar que precio sea numérico positivo
-- [ ] Validar que cantidad sea numérica positiva
+- [x] Validar que no se pueda crear lista si ya hay una abierta
+- [x] Validar que no se pueda modificar lista cerrada/cancelada
+- [x] Validar que precio sea numérico positivo
+- [x] Validar que cantidad sea numérica positiva
 
 ### Tests (Prioridad Baja - Futuro)
 
@@ -234,4 +234,4 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ## Actualizado
 
-- 2026-07-15
+- 2026-07-16
