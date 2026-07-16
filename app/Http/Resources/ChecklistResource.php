@@ -15,8 +15,8 @@ class ChecklistResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'state' => new StateResource($this->whenLoaded('state')),
-            'items' => ChecklistItemResource::collection($this->whenLoaded('items')),
+            'state' => $this->whenLoaded('state', fn () => (new StateResource($this->state))->resolve($request)),
+            'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => (new ChecklistItemResource($item))->resolve($request))->all()),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

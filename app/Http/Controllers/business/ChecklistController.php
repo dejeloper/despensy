@@ -25,7 +25,7 @@ class ChecklistController extends Controller
             ->get();
 
         return Inertia::render('checklists/index', [
-            'checklists' => ChecklistResource::collection($checklists),
+            'checklists' => $checklists->map(fn ($checklist) => (new ChecklistResource($checklist))->resolve($request))->all(),
         ]);
     }
 
@@ -36,7 +36,7 @@ class ChecklistController extends Controller
         $checklist?->load(['state', 'items.product', 'items.unitPlanned', 'items.unitBought', 'items.place']);
 
         return Inertia::render('checklists/active', [
-            'checklist' => $checklist ? new ChecklistResource($checklist) : null,
+            'checklist' => $checklist ? (new ChecklistResource($checklist))->resolve($request) : null,
             'products' => Product::where('enabled', true)->get(['id', 'name']),
             'units' => Unit::where('enabled', true)->get(['id', 'name', 'short_name']),
             'places' => Place::where('enabled', true)->get(['id', 'name']),
@@ -50,7 +50,7 @@ class ChecklistController extends Controller
         $checklist->load(['state', 'items.product', 'items.unitPlanned', 'items.unitBought', 'items.place']);
 
         return Inertia::render('checklists/show', [
-            'checklist' => new ChecklistResource($checklist),
+            'checklist' => (new ChecklistResource($checklist))->resolve($request),
         ]);
     }
 
