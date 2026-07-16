@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
 import ButtonSearchEmojis from '@/components/shared/button-search-emojis';
-import { Badge } from '@/components/ui/badge';
+import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Category } from '@/types/business/category';
 import { ArrowLeft, LoaderCircle } from 'lucide-react';
 
@@ -148,13 +148,13 @@ export default function CategoryForm({ category, isEdit }: CategoryFormProps) {
 
                             <div className="grid gap-4">
                                 <div className="flex items-center justify-center">
-                                    <Badge
-                                        variant="secondary"
-                                        className="flex min-w-[120px] items-center gap-2 px-4 py-2 text-lg transition-colors"
-                                        style={{ backgroundColor: data.bg_color, color: data.text_color }}
-                                    >
-                                        {data.icon} {data.name || 'Preview'}
-                                    </Badge>
+                                    <ColorBadge
+                                        text={data.name || 'Preview'}
+                                        icon={data.icon}
+                                        bgColor={data.bg_color}
+                                        textColor={data.text_color}
+                                        className="text-lg transition-colors"
+                                    />
                                 </div>
                             </div>
 

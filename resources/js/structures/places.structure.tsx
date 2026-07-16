@@ -1,7 +1,7 @@
 import { Action, Column } from '@/types/ui';
 import { router } from '@inertiajs/react';
 
-import { Badge } from '@/components/ui/badge';
+import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Place } from '@/types/business/place';
 import { Edit, Trash } from 'lucide-react';
 
@@ -31,15 +31,9 @@ export const placeColumns: Column<Place>[] = [
     {
         key: 'preview',
         label: 'Vista previa',
-        render: (cat) => (
+        render: (place) => (
             <div className="flex items-center">
-                <Badge
-                    variant="secondary"
-                    className="flex min-w-[120px] items-center gap-2 px-4 py-2 font-black"
-                    style={{ backgroundColor: cat.bg_color!, color: cat.text_color! }}
-                >
-                    {cat.short_name}
-                </Badge>
+                <ColorBadge text={place.short_name ?? place.name} bgColor={place.bg_color} textColor={place.text_color} />
             </div>
         ),
     },

@@ -35,7 +35,7 @@ export default function ProductForm({ product, categories, isEdit }: ProductForm
         description: product?.description || '',
         image: product?.image || '',
         category_id: product?.category_id || 0,
-        enabled: product?.enabled || true,
+        enabled: product?.enabled ?? true,
         _method: isEdit ? 'PUT' : 'POST',
     });
 
@@ -108,13 +108,12 @@ export default function ProductForm({ product, categories, isEdit }: ProductForm
                                 <Label htmlFor="description">Descripción</Label>
                                 <CustomTextarea
                                     id="description"
-                                    required
                                     autoComplete="off"
                                     tabIndex={3}
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
                                     disabled={processing}
-                                    placeholder="Descripción del lugar"
+                                    placeholder="Descripción del producto"
                                 />
                                 <InputError message={errors.description} className="mt-1" />
                             </div>
@@ -124,7 +123,6 @@ export default function ProductForm({ product, categories, isEdit }: ProductForm
                                 <Input
                                     id="image"
                                     type="text"
-                                    required
                                     autoComplete="off"
                                     tabIndex={4}
                                     value={data.image}

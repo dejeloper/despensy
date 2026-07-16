@@ -5,6 +5,7 @@ import { Edit, Trash } from 'lucide-react';
 import { Product } from '../types/business/product';
 
 import { Badge } from '@/components/ui/badge';
+import { ColorBadge } from '@/components/shared/colorBadge.component';
 
 export const productColumns: Column<Product>[] = [
     { key: 'name', label: 'Nombre' },
@@ -14,15 +15,12 @@ export const productColumns: Column<Product>[] = [
         render: (product) => {
             return product.category_id ? (
                 <div className="flex items-center justify-center">
-                    <Badge
-                        className="flex min-w-[120px] items-center gap-2 px-4 py-2 font-black"
-                        style={{
-                            backgroundColor: product.category?.bg_color || undefined,
-                            color: product.category?.text_color || undefined,
-                        }}
-                    >
-                        {product.category?.icon} {product.category?.name}
-                    </Badge>
+                    <ColorBadge
+                        text={product.category?.name ?? ''}
+                        icon={product.category?.icon}
+                        bgColor={product.category?.bg_color}
+                        textColor={product.category?.text_color}
+                    />
                 </div>
             ) : (
                 'Sin categoría'
@@ -35,9 +33,7 @@ export const productColumns: Column<Product>[] = [
         render: (product) => {
             return product.last_place_name ? (
                 <div className="flex items-center justify-center">
-                    <Badge variant="secondary" className="flex min-w-[120px] items-center gap-2 px-4 py-2">
-                        {product.last_place_name}
-                    </Badge>
+                    <ColorBadge text={product.last_place_name} bgColor={product.last_place_bg_color} textColor={product.last_place_text_color} />
                 </div>
             ) : (
                 <div className="text-center text-gray-400">Sin lugar</div>

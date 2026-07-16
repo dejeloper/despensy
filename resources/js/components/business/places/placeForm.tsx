@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
-import { Badge } from '@/components/ui/badge';
+import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Place } from '@/types/business/place';
 import { ArrowLeft, LoaderCircle } from 'lucide-react';
 
@@ -160,13 +160,12 @@ export default function PlaceForm({ place, isEdit }: PlaceFormProps) {
 
                             <div className="grid gap-4">
                                 <div className="flex items-center justify-center">
-                                    <Badge
-                                        variant="secondary"
-                                        className="flex min-w-[120px] items-center gap-2 px-4 py-2 text-lg transition-colors"
-                                        style={{ backgroundColor: data.bg_color, color: data.text_color }}
-                                    >
-                                        {data.short_name || 'Preview'}
-                                    </Badge>
+                                    <ColorBadge
+                                        text={data.short_name || 'Preview'}
+                                        bgColor={data.bg_color}
+                                        textColor={data.text_color}
+                                        className="text-lg transition-colors"
+                                    />
                                 </div>
                             </div>
 

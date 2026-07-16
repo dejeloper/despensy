@@ -1,7 +1,7 @@
 import { Action, Column } from '@/types/ui';
 import { router } from '@inertiajs/react';
 
-import { Badge } from '@/components/ui/badge';
+import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Category } from '@/types/business/category';
 import { Edit, Trash } from 'lucide-react';
 
@@ -33,13 +33,7 @@ export const categoryColumns: Column<Category>[] = [
         label: 'Vista previa',
         render: (cat) => (
             <div className="flex items-center">
-                <Badge
-                    variant="secondary"
-                    className="flex min-w-[120px] items-center gap-2 px-4 py-2 font-black"
-                    style={{ backgroundColor: cat.bg_color!, color: cat.text_color! }}
-                >
-                    {cat.icon} {cat.name}
-                </Badge>
+                <ColorBadge text={cat.name} icon={cat.icon} bgColor={cat.bg_color} textColor={cat.text_color} />
             </div>
         ),
     },

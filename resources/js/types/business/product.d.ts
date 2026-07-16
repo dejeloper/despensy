@@ -11,9 +11,9 @@ export type Product = {
     // Derivados de la última compra (ChecklistItem), no columnas propias del producto
     last_price?: number;
     last_place_name?: string;
-    last_place_id?: number;
+    last_place_bg_color?: string;
+    last_place_text_color?: string;
     last_unit_name?: string;
-    last_unit_id?: number;
     last_purchase_date?: string;
     created_at?: string;
     updated_at?: string;
