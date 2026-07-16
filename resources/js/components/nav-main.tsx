@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -13,7 +14,12 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                         <SidebarMenuButton asChild isActive={page.url.startsWith(item.href)} tooltip={{ children: item.title }}>
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
-                                <span>{item.title}</span>
+                                <span className="flex-1">{item.title}</span>
+                                {!!item.badge && (
+                                    <Badge variant="secondary" className="ml-auto">
+                                        {item.badge}
+                                    </Badge>
+                                )}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
