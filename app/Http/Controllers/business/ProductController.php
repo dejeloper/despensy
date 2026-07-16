@@ -9,45 +9,24 @@ use App\Models\business\Product;
 use App\Models\business\Category;
 use App\Models\business\Place;
 use App\Models\business\Unit;
+use App\Services\business\ProductLastPurchaseService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProductController extends Controller
 {
+    public function __construct(private ProductLastPurchaseService $lastPurchaseService)
+    {
+    }
+
     public function index(Request $request)
     {
-        $query = Product::with('category')
-            ->leftJoin('checklist_items as ci', function ($join) {
-                $join->on('ci.product_id', '=', 'products.id')
-                     ->where('ci.was_bought', true);
-            })
-            ->leftJoin('places as last_place', 'last_place.id', '=', 'ci.place_id')
-            ->leftJoin('units as last_unit', 'last_unit.id', '=', 'ci.unit_id_bought')
-            ->select([
-                'products.*',
-                'ci.unit_price as last_price',
-                'last_place.name as last_place_name',
-                'last_place.id as last_place_id',
-                'last_unit.name as last_unit_name',
-                'last_unit.id as last_unit_id'
-            ])
-            ->selectRaw('(
-                SELECT MAX(created_at) 
-                FROM checklist_items 
-                WHERE product_id = products.id AND was_bought = true
-            ) as last_purchase_date')
-            ->orderByRaw('COALESCE((
-                SELECT MAX(created_at) 
-                FROM checklist_items 
-                WHERE product_id = products.id AND was_bought = true
-            ), products.created_at) DESC');
-
         // Obtener todos los productos para búsqueda/paginación en el cliente
-        $allProducts = $query->get();
+        $allProducts = $this->lastPurchaseService->allWithLastPurchase();
 
         // Crear estructura compatible con paginación
         $products = [
-            'data' => $allProducts,
+            'data' => ProductResource::collection($allProducts),
             'links' => [], // Se generarán en el cliente
             'current_page' => 1,
             'per_page' => $allProducts->count(),
