@@ -87,6 +87,72 @@ describe('ChecklistItemService', function () {
         ]))->toThrow(ChecklistNotEditableException::class);
     });
 
+    test('syncProduct creates an item when will_buy is true', function () {
+        $checklist = Checklist::factory()->open()->create();
+        $product = Product::factory()->create();
+        $unit = Unit::factory()->create();
+
+        $item = (new ChecklistItemService)->syncProduct($checklist, $product, [
+            'will_buy' => true,
+            'quantity_planned' => 2,
+            'unit_id_planned' => $unit->id,
+            'quantity_at_home' => 1,
+            'unit_id_at_home' => $unit->id,
+        ]);
+
+        expect($item)->not->toBeNull()
+            ->and($item->checklist_id)->toBe($checklist->id)
+            ->and($item->product_id)->toBe($product->id)
+            ->and($item->quantity_planned)->toBe(2)
+            ->and($item->quantity_at_home)->toBe(1);
+    });
+
+    test('syncProduct updates the existing item instead of duplicating it', function () {
+        $checklist = Checklist::factory()->open()->create();
+        $product = Product::factory()->create();
+        $unit = Unit::factory()->create();
+        $service = new ChecklistItemService;
+
+        $first = $service->syncProduct($checklist, $product, ['will_buy' => true, 'quantity_planned' => 1]);
+        $second = $service->syncProduct($checklist, $product, ['will_buy' => true, 'quantity_planned' => 5, 'unit_id_planned' => $unit->id]);
+
+        expect($second->id)->toBe($first->id)
+            ->and($second->quantity_planned)->toBe(5)
+            ->and(ChecklistItem::where('checklist_id', $checklist->id)->where('product_id', $product->id)->count())->toBe(1);
+    });
+
+    test('syncProduct removes the item when will_buy is false', function () {
+        $checklist = Checklist::factory()->open()->create();
+        $product = Product::factory()->create();
+        $item = ChecklistItem::factory()->create(['checklist_id' => $checklist->id, 'product_id' => $product->id]);
+
+        $result = (new ChecklistItemService)->syncProduct($checklist, $product, ['will_buy' => false]);
+
+        expect($result)->toBeNull()
+            ->and(ChecklistItem::find($item->id))->toBeNull();
+    });
+
+    test('syncProduct persists nothing when will_buy is false and there is no existing item', function () {
+        $checklist = Checklist::factory()->open()->create();
+        $product = Product::factory()->create();
+
+        $result = (new ChecklistItemService)->syncProduct($checklist, $product, [
+            'will_buy' => false,
+            'quantity_at_home' => 3,
+        ]);
+
+        expect($result)->toBeNull()
+            ->and(ChecklistItem::where('checklist_id', $checklist->id)->where('product_id', $product->id)->exists())->toBeFalse();
+    });
+
+    test('syncProduct throws when the checklist is closed', function () {
+        $checklist = Checklist::factory()->closed()->create();
+        $product = Product::factory()->create();
+
+        expect(fn () => (new ChecklistItemService)->syncProduct($checklist, $product, ['will_buy' => true]))
+            ->toThrow(ChecklistNotEditableException::class);
+    });
+
     test('markAsNotBought clears the purchase data', function () {
         $checklist = Checklist::factory()->open()->create();
         $item = ChecklistItem::factory()->bought()->create(['checklist_id' => $checklist->id]);

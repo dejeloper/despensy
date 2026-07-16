@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\business\Category;
+use App\Models\business\Checklist;
 use App\Models\business\Place;
 use App\Models\business\Product;
 use App\Models\business\Unit;
+use App\Services\business\ChecklistItemService;
 use App\Services\business\ProductLastPurchaseService;
 use Illuminate\Support\Facades\DB;
 
@@ -88,5 +90,30 @@ describe('ProductLastPurchaseService', function () {
 
         expect((float) $entry->last_price)->toBe(3500.0)
             ->and($entry->last_place_name)->toBe('D1');
+    });
+
+    test('annotates a product with its item on the given active checklist', function () {
+        $product = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
+        $otherProduct = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
+        $unit = Unit::factory()->create();
+        $checklist = Checklist::factory()->open()->create();
+
+        (new ChecklistItemService)->syncProduct($checklist, $product, [
+            'will_buy' => true,
+            'quantity_planned' => 3,
+            'unit_id_planned' => $unit->id,
+            'quantity_at_home' => 1,
+            'unit_id_at_home' => $unit->id,
+        ]);
+
+        $result = (new ProductLastPurchaseService)->allWithLastPurchase($checklist->id);
+
+        $entry = $result->firstWhere('id', $product->id);
+        $otherEntry = $result->firstWhere('id', $otherProduct->id);
+
+        expect($entry->active_checklist_item_id)->not->toBeNull()
+            ->and($entry->active_quantity_planned)->toBe(3)
+            ->and($entry->active_quantity_at_home)->toBe(1)
+            ->and($otherEntry->active_checklist_item_id)->toBeNull();
     });
 });

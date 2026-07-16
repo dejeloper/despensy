@@ -23,6 +23,8 @@ describe('ChecklistItem Model', function () {
             'product_id',
             'quantity_planned',
             'unit_id_planned',
+            'quantity_at_home',
+            'unit_id_at_home',
             'was_bought',
             'quantity_bought',
             'unit_id_bought',

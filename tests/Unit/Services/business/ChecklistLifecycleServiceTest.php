@@ -79,4 +79,36 @@ describe('ChecklistLifecycleService', function () {
 
         expect($checklist->fresh()->state->name)->toBe(State::CHECKLIST_CANCELLED);
     });
+
+    test('activeChecklistFor creates one when the user has none open', function () {
+        $user = User::factory()->create();
+
+        $checklist = (new ChecklistLifecycleService)->activeChecklistFor($user);
+
+        expect($checklist->user_id)->toBe($user->id)
+            ->and($checklist->state->name)->toBe(State::CHECKLIST_OPEN);
+    });
+
+    test('activeChecklistFor returns the existing open checklist without creating another', function () {
+        $user = User::factory()->create();
+        $service = new ChecklistLifecycleService;
+        $existing = $service->openNewFor($user);
+
+        $result = $service->activeChecklistFor($user);
+
+        expect($result->id)->toBe($existing->id)
+            ->and(Checklist::forUser($user->id)->count())->toBe(1);
+    });
+
+    test('isStale is false for a checklist updated within 15 days', function () {
+        $checklist = Checklist::factory()->open()->create(['updated_at' => now()->subDays(10)]);
+
+        expect((new ChecklistLifecycleService)->isStale($checklist))->toBeFalse();
+    });
+
+    test('isStale is true for a checklist not updated in over 15 days', function () {
+        $checklist = Checklist::factory()->open()->create(['updated_at' => now()->subDays(16)]);
+
+        expect((new ChecklistLifecycleService)->isStale($checklist))->toBeTrue();
+    });
 });
