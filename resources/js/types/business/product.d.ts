@@ -21,6 +21,11 @@ export type Product = {
     active_unit_id_planned?: number;
     active_quantity_at_home?: number;
     active_unit_id_at_home?: number;
+    active_was_bought?: boolean | null;
+    active_quantity_bought?: number;
+    active_unit_id_bought?: number;
+    active_place_id?: number;
+    active_unit_price?: number;
     created_at?: string;
     updated_at?: string;
 };

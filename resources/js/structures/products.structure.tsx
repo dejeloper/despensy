@@ -6,6 +6,7 @@ import { Product } from '../types/business/product';
 
 import { Badge } from '@/components/ui/badge';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
+import { formatCurrency } from '@/lib/utils';
 
 export const productColumns: Column<Product>[] = [
     { key: 'name', label: 'Nombre' },
@@ -45,7 +46,7 @@ export const productColumns: Column<Product>[] = [
         label: 'Precio',
         render: (product) => {
             return product.last_price ? (
-                <div className="text-center font-semibold text-green-600">${product.last_price}</div>
+                <div className="text-center font-semibold text-green-600">{formatCurrency(product.last_price)}</div>
             ) : (
                 <div className="text-center text-gray-400">Sin precio</div>
             );
