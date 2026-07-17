@@ -32,6 +32,7 @@ class UnitSeeder extends Seeder
             ['Onza', 'Oz'],
             ['Paquete', 'Paq'],
             ['Par', 'Par'],
+            ['Porción', 'Porc'],
             ['Promoción', 'Promo'],
             ['Unidad', 'Und'],
         ];
