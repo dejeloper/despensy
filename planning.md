@@ -69,23 +69,23 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Vista Principal de Productos (CRÍTICA - Máxima Prioridad)
 
-- [ ] **Rediseñar vista de productos como "Despensa"**
+- [x] **Rediseñar vista de productos como "Despensa"**
     - Mostrar último precio (desde última compra)
     - Mostrar última fecha de compra
     - Mostrar último lugar de compra
     - Indicador visual si está en lista activa o no
-- [ ] **Filtros en vista de productos**
+- [x] **Filtros en vista de productos**
     - Filtro por categoría
     - Filtro por estado (en lista / fuera de lista)
     - Mantener búsqueda global existente
 
-- [ ] **Acción rápida: Agregar a lista activa**
+- [x] **Acción rápida: Agregar a lista activa**
     - Botón "+/−" en cada producto
     - Si no hay lista abierta, crearla automáticamente
     - Feedback visual inmediato
     - Funcionar desde el listado sin modal
 
-- [ ] **Acción rápida: Quitar de lista activa**
+- [x] **Acción rápida: Quitar de lista activa**
     - Mismo botón "+/−" (toggle)
     - Actualización inmediata
     - Confirmación opcional solo si ya tiene datos de compra
@@ -104,7 +104,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - Registrar fecha de compra
     - Actualizar estado del item en la lista
 
-- [x] **Acción: Completar lista**
+- [x] **Acción: Cerrar lista**
     - Cambiar estado a "closed"
     - Validar que no se pueda modificar después
     - Redirigir a resumen o a crear nueva lista
@@ -133,7 +133,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - index() - Ver listas del usuario
     - active() - Ver lista activa
     - store() - Crear nueva lista (cerrar anterior)
-    - complete(id) - Completar lista
+    - complete(id) - Cerrar lista
     - cancel(id) - Cancelar lista
 
 - [x] **Crear ChecklistItemController**
@@ -193,7 +193,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Navegación y UX (Prioridad Media)
 
-- [ ] Actualizar menú principal
+- [x] Actualizar menú principal
     - Despensa (productos)
     - Mi Lista (lista activa)
     - Historial (listas anteriores)
@@ -211,9 +211,9 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Tests (Prioridad Baja - Futuro)
 
-- [ ] Tests unitarios para lógica de última compra
-- [ ] Tests de integración para flujo de checklist
-- [ ] Tests de regla "solo una lista abierta"
+- [x] Tests unitarios para lógica de última compra
+- [x] Tests de integración para flujo de checklist
+- [x] Tests de regla "solo una lista abierta"
 
 ### Mejoras Futuras (Backlog)
 
@@ -234,4 +234,4 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ## Actualizado
 
-- 2026-07-16
+- 2026-07-17
