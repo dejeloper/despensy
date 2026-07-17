@@ -7,6 +7,7 @@ import { Checklist } from '@/types/business/checklist';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 import { ArrowLeft } from 'lucide-react';
 
 interface ChecklistShowProps {
@@ -47,7 +48,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
                     <Card>
                         <CardContent className="flex items-center justify-between">
                             <p className="font-medium">Total comprado</p>
-                            <p className="text-lg font-semibold">${total.toLocaleString()}</p>
+                            <p className="text-lg font-semibold">{formatCurrency(total)}</p>
                         </CardContent>
                     </Card>
                 )}
@@ -65,7 +66,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
                                             {item.quantity_bought} {item.unit_bought?.short_name} en {item.place?.name} · {item.purchase_date}
                                         </p>
                                     </div>
-                                    <Badge variant="secondary">${item.unit_price}</Badge>
+                                    <Badge variant="secondary">{formatCurrency(item.unit_price)}</Badge>
                                 </CardContent>
                             </Card>
                         ))}

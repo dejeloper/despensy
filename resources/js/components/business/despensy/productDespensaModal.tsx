@@ -1,7 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 import { ColorBadge } from '@/components/shared/colorBadge.component';
+import { Money } from '@/components/shared/money.component';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox, ComboboxItem } from '@/components/ui/combobox';
@@ -9,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { Place } from '@/types/business/place';
 import { Product } from '@/types/business/product';
 import { Unit } from '@/types/business/unit';
 import { LoaderCircle } from 'lucide-react';
@@ -16,6 +18,7 @@ import { LoaderCircle } from 'lucide-react';
 interface ProductDespensaModalProps {
     product: Product | null;
     units: Unit[];
+    places: Place[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
@@ -29,7 +32,108 @@ type DespensaForm = {
     unit_id_at_home: string;
 };
 
-export function ProductDespensaModal({ product, units, open, onOpenChange }: ProductDespensaModalProps) {
+type MarkBoughtForm = {
+    quantity_bought: string;
+    unit_id_bought: string;
+    place_id: string;
+    unit_price: string;
+};
+
+function MarkBoughtSection({ product, units, places, onSaved }: { product: Product; units: Unit[]; places: Place[]; onSaved: () => void }) {
+    const { data, setData, patch, processing } = useForm<MarkBoughtForm>({
+        quantity_bought: product.active_quantity_bought?.toString() || product.active_quantity_planned?.toString() || '1',
+        unit_id_bought: product.active_unit_id_bought?.toString() || product.active_unit_id_planned?.toString() || '',
+        place_id: product.active_place_id?.toString() || '',
+        unit_price: product.active_unit_price?.toString() || '',
+    });
+
+    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.short_name, searchText: `${u.name} ${u.short_name}` }));
+    const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
+
+    const submit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        patch(route('checklist-items.mark-bought', product.active_checklist_item_id), {
+            preserveScroll: true,
+            onSuccess: onSaved,
+        });
+    };
+
+    if (product.active_was_bought) {
+        return (
+            <div className="flex flex-col gap-3 rounded-md border p-3">
+                <p className="font-medium">Comprado</p>
+                <p className="text-sm text-muted-foreground">
+                    {product.active_quantity_bought} · <Money value={product.active_unit_price} />
+                </p>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-fit"
+                    onClick={() => {
+                        router.patch(route('checklist-items.mark-not-bought', product.active_checklist_item_id), undefined, {
+                            preserveScroll: true,
+                            onSuccess: onSaved,
+                        });
+                    }}
+                >
+                    Deshacer
+                </Button>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={submit} className="flex flex-col gap-3 rounded-md border p-3">
+            <p className="font-medium">Marcar como comprado</p>
+            <div className="flex flex-wrap gap-2">
+                <Input
+                    type="number"
+                    min={1}
+                    placeholder="Cantidad"
+                    className="w-24"
+                    value={data.quantity_bought}
+                    onChange={(e) => setData('quantity_bought', e.target.value)}
+                    required
+                />
+                <Combobox
+                    items={unitItems}
+                    value={data.unit_id_bought}
+                    onValueChange={(value) => setData('unit_id_bought', value)}
+                    placeholder="Unidad"
+                    searchPlaceholder="Buscar unidad..."
+                    emptyText="No se encontraron unidades"
+                    className="w-32"
+                />
+                <Combobox
+                    items={placeItems}
+                    value={data.place_id}
+                    onValueChange={(value) => setData('place_id', value)}
+                    placeholder="Lugar"
+                    searchPlaceholder="Buscar lugar..."
+                    emptyText="No se encontraron lugares"
+                    className="w-36"
+                />
+                <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder="Precio"
+                    className="w-28"
+                    value={data.unit_price}
+                    onChange={(e) => setData('unit_price', e.target.value)}
+                    required
+                />
+            </div>
+            <Button type="submit" size="sm" className="w-fit" disabled={processing}>
+                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                Marcar comprado
+            </Button>
+        </form>
+    );
+}
+
+export function ProductDespensaModal({ product, units, places, open, onOpenChange }: ProductDespensaModalProps) {
     const { data, setData, put, processing, reset, transform } = useForm<DespensaForm>({
         will_buy: false,
         quantity_planned: '',
@@ -53,7 +157,7 @@ export function ProductDespensaModal({ product, units, open, onOpenChange }: Pro
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [product]);
 
-    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.short_name, searchText: `${u.name} ${u.short_name}` }));
+    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.short_name}` }));
 
     if (!product) return null;
 
@@ -100,9 +204,9 @@ export function ProductDespensaModal({ product, units, open, onOpenChange }: Pro
                     <div className="flex items-center justify-between rounded-md border p-3 text-sm">
                         <div>
                             <p className="text-muted-foreground">Última compra</p>
-                            <p className="font-semibold">
-                                {product.last_price ? `$${product.last_price}` : 'Sin compras'}
-                                {product.last_place_name && ` · ${product.last_place_name}`}
+                            <p className="flex items-center gap-1 font-semibold">
+                                <Money value={product.last_price} emptyText="Sin compras" className="font-semibold text-foreground" />
+                                {product.last_price && product.last_place_name && ` · ${product.last_place_name}`}
                             </p>
                             {product.last_purchase_date && <p className="text-xs text-muted-foreground">{product.last_purchase_date}</p>}
                         </div>
@@ -180,6 +284,10 @@ export function ProductDespensaModal({ product, units, open, onOpenChange }: Pro
                         </Button>
                     </DialogFooter>
                 </form>
+
+                {product.active_checklist_item_id && (
+                    <MarkBoughtSection product={product} units={units} places={places} onSaved={() => onOpenChange(false)} />
+                )}
             </DialogContent>
         </Dialog>
     );

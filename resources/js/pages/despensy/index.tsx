@@ -4,18 +4,20 @@ import { useMemo, useState } from 'react';
 
 import { BreadcrumbItem } from '@/types';
 import { Category } from '@/types/business/category';
+import { Place } from '@/types/business/place';
 import { Product } from '@/types/business/product';
 import { Unit } from '@/types/business/unit';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+import { ProductDespensaModal } from '@/components/business/despensy/productDespensaModal';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
-import { ProductDespensaModal } from '@/components/business/despensy/productDespensaModal';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { despensyColumns } from '@/structures/despensy.structure';
@@ -28,13 +30,14 @@ interface DespensyProps {
     products: Product[];
     categories: Category[];
     units: Unit[];
-    checklist: { id: number; name: string | null; updated_at: string | null };
+    places: Place[];
+    checklist: { id: number; name: string | null; updated_at: string | null; state: { name: string; color: string | null } };
     checklistIsStale: boolean;
 }
 
 type ListFilter = 'all' | 'in_list' | 'out_of_list';
 
-export default function DespensyIndex({ products, categories, units, checklistIsStale }: DespensyProps) {
+export default function DespensyIndex({ products, categories, units, places, checklist, checklistIsStale }: DespensyProps) {
     const isLoading = useInertiaLoading();
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -75,8 +78,27 @@ export default function DespensyIndex({ products, categories, units, checklistIs
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Despensa" />
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold tracking-tight">Despensa</h1>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-2xl font-semibold tracking-tight">Despensa</h1>
+                        <Badge style={{ backgroundColor: checklist.state.color || undefined }}>
+                            {checklist.name || `Lista #${checklist.id}`} · {checklist.state.name}
+                        </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => router.post(route('checklists.complete', checklist.id))}>
+                            Cerrar lista
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                                if (confirm('¿Cancelar esta lista?')) router.post(route('checklists.cancel', checklist.id));
+                            }}
+                        >
+                            Cancelar lista
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -133,7 +155,7 @@ export default function DespensyIndex({ products, categories, units, checklistIs
                 </div>
             </div>
 
-            <ProductDespensaModal product={selectedProduct} units={units} open={modalOpen} onOpenChange={setModalOpen} />
+            <ProductDespensaModal product={selectedProduct} units={units} places={places} open={modalOpen} onOpenChange={setModalOpen} />
 
             <Dialog open={staleDialogOpen} onOpenChange={setStaleDialogOpen}>
                 <DialogContent className="sm:max-w-md">

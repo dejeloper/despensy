@@ -33,7 +33,7 @@ export default function ChecklistIndex({ checklists }: ChecklistIndexProps) {
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold tracking-tight">Listas de compra</h1>
-                    <Link href={route('checklists.active')}>
+                    <Link href={route('despensy.index')}>
                         <Button variant="outline" size="sm">
                             Ver lista activa
                         </Button>
