@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Box, ClipboardList, Folder, LayoutGrid, ShoppingBasket, Store, Tags, Weight } from 'lucide-react';
+import { BookOpen, Box, Folder, LayoutGrid, ShoppingBasket, Store, Tags, Weight } from 'lucide-react';
 import AppLogo from './app-logo';
 
 function useMainNavItems(): NavItem[] {
@@ -15,6 +15,7 @@ function useMainNavItems(): NavItem[] {
             title: 'Despensa',
             href: '/despensy',
             icon: ShoppingBasket,
+            badge: openChecklistItemsCount || undefined,
         },
         {
             title: 'Dashboard',
@@ -25,12 +26,6 @@ function useMainNavItems(): NavItem[] {
             title: 'Productos',
             href: '/dashboard/products',
             icon: Box,
-        },
-        {
-            title: 'Mi Lista',
-            href: '/dashboard/checklists/active',
-            icon: ClipboardList,
-            badge: openChecklistItemsCount || undefined,
         },
         {
             title: 'Categorías',
