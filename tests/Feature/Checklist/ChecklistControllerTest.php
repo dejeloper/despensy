@@ -27,7 +27,7 @@ test('store creates a new open checklist for the user', function () {
 
     $this->actingAs($user)
         ->post('/dashboard/checklists', ['name' => 'Mercado de la semana'])
-        ->assertRedirect(route('checklists.active'));
+        ->assertRedirect(route('despensy.index'));
 
     $checklist = Checklist::forUser($user->id)->first();
 
@@ -45,15 +45,6 @@ test('store closes any previously open checklist for the same user', function ()
     $this->post('/dashboard/checklists', ['name' => 'Segunda']);
 
     expect($first->fresh()->state->name)->toBe(State::CHECKLIST_CLOSED);
-});
-
-test('active shows the user open checklist', function () {
-    $user = User::factory()->create();
-    Checklist::factory()->open()->create(['user_id' => $user->id]);
-
-    $this->actingAs($user)
-        ->get('/dashboard/checklists/active')
-        ->assertOk();
 });
 
 test('complete transitions the checklist to closed', function () {

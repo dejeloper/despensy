@@ -116,4 +116,29 @@ describe('ProductLastPurchaseService', function () {
             ->and($entry->active_quantity_at_home)->toBe(1)
             ->and($otherEntry->active_checklist_item_id)->toBeNull();
     });
+
+    test('annotates a product with its purchase data once marked as bought on the active checklist', function () {
+        $product = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
+        $unit = Unit::factory()->create();
+        $place = Place::factory()->create();
+        $checklist = Checklist::factory()->open()->create();
+        $itemService = new ChecklistItemService;
+
+        $item = $itemService->syncProduct($checklist, $product, ['will_buy' => true, 'quantity_planned' => 2]);
+        $itemService->markAsBought($item, [
+            'quantity_bought' => 2,
+            'unit_id_bought' => $unit->id,
+            'place_id' => $place->id,
+            'unit_price' => 3200,
+        ]);
+
+        $result = (new ProductLastPurchaseService)->allWithLastPurchase($checklist->id);
+        $entry = $result->firstWhere('id', $product->id);
+
+        expect($entry->active_was_bought)->toBeTruthy()
+            ->and($entry->active_quantity_bought)->toBe(2)
+            ->and($entry->active_unit_id_bought)->toBe($unit->id)
+            ->and($entry->active_place_id)->toBe($place->id)
+            ->and((float) $entry->active_unit_price)->toBe(3200.0);
+    });
 });

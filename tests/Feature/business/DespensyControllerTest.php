@@ -3,9 +3,11 @@
 use App\Models\business\Category;
 use App\Models\business\Checklist;
 use App\Models\business\ChecklistItem;
+use App\Models\business\Place;
 use App\Models\business\Product;
 use App\Models\business\Unit;
 use App\Models\User;
+use App\Services\business\ChecklistItemService;
 
 beforeEach(function () {
     seedChecklistStates();
@@ -78,6 +80,31 @@ test('updateProductState removes the product from the checklist when will_buy is
         ->assertRedirect();
 
     expect(ChecklistItem::find($item->id))->toBeNull();
+});
+
+test('despensy shows a product as bought once its checklist item was marked as bought', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->open()->create(['user_id' => $user->id]);
+    $product = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
+    $unit = Unit::factory()->create();
+    $place = Place::factory()->create();
+
+    $item = (new ChecklistItemService)->syncProduct($checklist, $product, ['will_buy' => true, 'quantity_planned' => 1]);
+    (new ChecklistItemService)->markAsBought($item, [
+        'quantity_bought' => 1,
+        'unit_id_bought' => $unit->id,
+        'place_id' => $place->id,
+        'unit_price' => 1500,
+    ]);
+
+    $response = $this->actingAs($user)->get('/despensy')->assertOk();
+
+    $products = $response->inertiaProps('products');
+    $entry = collect($products)->firstWhere('id', $product->id);
+
+    expect($entry['active_was_bought'])->toBeTrue()
+        ->and($entry['active_quantity_bought'])->toBe(1)
+        ->and($entry['active_place_id'])->toBe($place->id);
 });
 
 test('renewChecklist closes the stale checklist and opens a new one', function () {

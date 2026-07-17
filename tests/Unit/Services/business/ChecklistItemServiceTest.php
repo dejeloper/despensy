@@ -9,49 +9,6 @@ use App\Models\business\Unit;
 use App\Services\business\ChecklistItemService;
 
 describe('ChecklistItemService', function () {
-    test('addProduct creates an item with the planned quantity and unit', function () {
-        $checklist = Checklist::factory()->open()->create();
-        $product = Product::factory()->create();
-        $unit = Unit::factory()->create();
-
-        $item = (new ChecklistItemService)->addProduct($checklist, [
-            'product_id' => $product->id,
-            'quantity_planned' => 3,
-            'unit_id_planned' => $unit->id,
-        ]);
-
-        expect($item->checklist_id)->toBe($checklist->id)
-            ->and($item->product_id)->toBe($product->id)
-            ->and($item->quantity_planned)->toBe(3)
-            ->and($item->unit_id_planned)->toBe($unit->id)
-            ->and($item->was_bought)->toBeFalse();
-    });
-
-    test('addProduct throws when the checklist is closed', function () {
-        $checklist = Checklist::factory()->closed()->create();
-        $product = Product::factory()->create();
-
-        expect(fn () => (new ChecklistItemService)->addProduct($checklist, ['product_id' => $product->id]))
-            ->toThrow(ChecklistNotEditableException::class);
-    });
-
-    test('removeProduct deletes the item', function () {
-        $checklist = Checklist::factory()->open()->create();
-        $item = ChecklistItem::factory()->create(['checklist_id' => $checklist->id]);
-
-        (new ChecklistItemService)->removeProduct($item);
-
-        expect(ChecklistItem::find($item->id))->toBeNull();
-    });
-
-    test('removeProduct throws when the checklist is cancelled', function () {
-        $checklist = Checklist::factory()->cancelled()->create();
-        $item = ChecklistItem::factory()->create(['checklist_id' => $checklist->id]);
-
-        expect(fn () => (new ChecklistItemService)->removeProduct($item))
-            ->toThrow(ChecklistNotEditableException::class);
-    });
-
     test('markAsBought fills purchase data and computes total_price', function () {
         $checklist = Checklist::factory()->open()->create();
         $item = ChecklistItem::factory()->create(['checklist_id' => $checklist->id]);
