@@ -7,6 +7,8 @@ use App\Http\Controllers\business\DespensyController;
 use App\Http\Controllers\business\PlaceController;
 use App\Http\Controllers\business\ProductController;
 use App\Http\Controllers\business\UnitController;
+use App\Services\business\ChecklistLifecycleService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -15,8 +17,21 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+    Route::get('dashboard', function (Request $request, ChecklistLifecycleService $lifecycleService) {
+        $checklist = $lifecycleService->openChecklistFor($request->user());
+        $checklist?->load('state');
+
+        return Inertia::render('dashboard', [
+            'activeChecklist' => $checklist ? [
+                'id' => $checklist->id,
+                'name' => $checklist->name,
+                'state' => [
+                    'name' => $checklist->state->name,
+                    'color' => $checklist->state->color,
+                ],
+                'itemsCount' => $checklist->items()->count(),
+            ] : null,
+        ]);
     })->name('dashboard');
 
     Route::get('despensy', [DespensyController::class, 'index'])->name('despensy.index');
@@ -33,18 +48,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('products', ProductController::class)->except(['show']);
 
         Route::get('checklists', [ChecklistController::class, 'index'])->name('checklists.index');
-        Route::get('checklists/active', [ChecklistController::class, 'active'])->name('checklists.active');
         Route::post('checklists', [ChecklistController::class, 'store'])->name('checklists.store');
         Route::get('checklists/{checklist}', [ChecklistController::class, 'show'])->name('checklists.show');
         Route::post('checklists/{checklist}/complete', [ChecklistController::class, 'complete'])->name('checklists.complete');
         Route::post('checklists/{checklist}/cancel', [ChecklistController::class, 'cancel'])->name('checklists.cancel');
 
-        Route::post('checklists/{checklist}/items', [ChecklistItemController::class, 'store'])->name('checklist-items.store');
-        Route::delete('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'destroy'])->name('checklist-items.destroy');
         Route::patch('checklist-items/{item}/mark-bought', [ChecklistItemController::class, 'markBought'])->name('checklist-items.mark-bought');
         Route::patch('checklist-items/{item}/mark-not-bought', [ChecklistItemController::class, 'markNotBought'])->name('checklist-items.mark-not-bought');
     });
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

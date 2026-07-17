@@ -37,6 +37,11 @@ class ProductResource extends JsonResource
             'active_unit_id_planned' => $this->active_unit_id_planned,
             'active_quantity_at_home' => $this->active_quantity_at_home,
             'active_unit_id_at_home' => $this->active_unit_id_at_home,
+            'active_was_bought' => is_null($this->active_was_bought) ? null : (bool) $this->active_was_bought,
+            'active_quantity_bought' => $this->active_quantity_bought,
+            'active_unit_id_bought' => $this->active_unit_id_bought,
+            'active_place_id' => $this->active_place_id,
+            'active_unit_price' => $this->active_unit_price,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];

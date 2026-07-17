@@ -11,35 +11,6 @@ use App\Models\business\State;
 class ChecklistItemService
 {
     /**
-     * Add a product to a checklist with the planned quantity/unit.
-     *
-     * @throws ChecklistNotEditableException if the checklist is closed or cancelled.
-     */
-    public function addProduct(Checklist $checklist, array $data): ChecklistItem
-    {
-        $this->guardEditable($checklist);
-
-        return $checklist->items()->create([
-            'product_id' => $data['product_id'],
-            'quantity_planned' => $data['quantity_planned'] ?? null,
-            'unit_id_planned' => $data['unit_id_planned'] ?? null,
-            'was_bought' => false,
-        ]);
-    }
-
-    /**
-     * Remove a product from a checklist.
-     *
-     * @throws ChecklistNotEditableException if the checklist is closed or cancelled.
-     */
-    public function removeProduct(ChecklistItem $item): void
-    {
-        $this->guardEditable($item->checklist);
-
-        $item->delete();
-    }
-
-    /**
      * Mark a checklist item as bought, recording what was actually purchased.
      *
      * @throws ChecklistNotEditableException if the checklist is closed or cancelled.

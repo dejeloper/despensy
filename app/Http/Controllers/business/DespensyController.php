@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\business\DespensaProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\business\Category;
+use App\Models\business\Place;
 use App\Models\business\Product;
 use App\Models\business\Unit;
 use App\Services\business\ChecklistItemService;
@@ -25,6 +26,7 @@ class DespensyController extends Controller
     public function index(Request $request)
     {
         $checklist = $this->lifecycleService->activeChecklistFor($request->user());
+        $checklist->load('state');
 
         $products = $this->lastPurchaseService->allWithLastPurchase($checklist->id)
             ->map(fn ($product) => (new ProductResource($product))->resolve($request));
@@ -33,10 +35,15 @@ class DespensyController extends Controller
             'products' => $products,
             'categories' => Category::where('enabled', true)->get(['id', 'name']),
             'units' => Unit::where('enabled', true)->get(['id', 'name', 'short_name']),
+            'places' => Place::where('enabled', true)->get(['id', 'name']),
             'checklist' => [
                 'id' => $checklist->id,
                 'name' => $checklist->name,
                 'updated_at' => $checklist->updated_at?->format('Y-m-d H:i:s'),
+                'state' => [
+                    'name' => $checklist->state->name,
+                    'color' => $checklist->state->color,
+                ],
             ],
             'checklistIsStale' => $this->lifecycleService->isStale($checklist),
         ]);
