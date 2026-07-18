@@ -1,9 +1,0 @@
-{
-	"ftp": {
-		"host": "despensy.dejeloper.com",
-		"user": "despensy@despensy.dejeloper.com",
-		"password": "levvyILUGcRVcu7F74",
-		"secure": false,
-		"remoteDir": "/production"
-	}
-}

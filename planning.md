@@ -30,6 +30,8 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] CRUD completo para Units
 - [x] CRUD completo para Products (sin métodos show, lastPurchase, purchaseHistory)
 - [x] Todos los controladores traen todos los datos (preparados para búsqueda/paginación del cliente)
+- [ ] **Bug: Despensa muestra productos desactivados** — `DespensyController::index` no filtra por `enabled = true`, entonces un producto que desactivás sigue apareciendo en la vista de compra y se puede seguir agregando a la lista
+- [ ] **Mover la lógica de `/dashboard` a un `DashboardController`** — Hoy es un closure en `routes/web.php` que ya orquesta 2 Services (`ChecklistLifecycleService` y `DashboardStatsService`) — es la única vista de negocio que no sigue el patrón Controller del resto de la app
 
 ### Frontend - Vistas
 
@@ -161,6 +163,8 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - Optimizado para móvil
 
 - [x] Historial de compras en `products/show.tsx` como lista de tarjetas (mismo patrón visual que `checklists/show.tsx` y "Comprados" en checkout) — no se creó un componente `PurchaseHistoryTable` ni paginación de cliente porque el historial de un solo producto no alcanza el volumen que justifique paginar (ver `docs/ARCHITECTURE.md`)
+- [ ] **Unificar el filtro de categoría + búsqueda (despensy y checkout)** — `despensy/index.tsx` y `checkout/index.tsx` repiten casi el mismo `useState` + `useMemo` + `<Select>` de categorías. Extraerlo a un hook (`useCategoryFilter`) o componente compartido
+- [ ] **Unificar las tarjetas "Top" del dashboard en un solo componente** — `TopCategoriesCard`, `TopPlacesCard` y `TopProductsCard` son casi idénticas (ícono + título + lista con badge y contador). Se pueden fusionar en un componente genérico con un `renderItem`, como ya se hace con `Column<T>` en los `structure.tsx`
 
 ### Tipos TypeScript (Prioridad Media)
 
@@ -210,9 +214,11 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] Tests unitarios para lógica de última compra
 - [x] Tests de integración para flujo de checklist
 - [x] Tests de regla "solo una lista abierta"
+- [ ] **Agregar tests que falten para lo último agregado** — No hay test que verifique que `/dashboard` devuelve `topCategories`/`topPlaces`/`topProducts`, ni que `/despensy/checkout` devuelve `categories`
 
 ### Mejoras Futuras (Backlog)
 
+- [ ] **Actualizar `docs/DOMAIN.md` y `docs/ARCHITECTURE.md`** — Ambos todavía dicen que el cálculo de "última compra" vive inline en `ProductController::index` y que falta moverlo a un Service — pero eso ya se hizo (`ProductLastPurchaseService`). Solo hay que corregir el texto
 - [ ] Estadísticas de gasto por categoría
 - [ ] Gráficas de evolución de precios
 - [ ] Comparativa de precios entre lugares
