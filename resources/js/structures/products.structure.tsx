@@ -4,8 +4,8 @@ import { router } from '@inertiajs/react';
 import { Edit, Trash } from 'lucide-react';
 import { Product } from '../types/business/product';
 
-import { Badge } from '@/components/ui/badge';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
+import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 
 export const productColumns: Column<Product>[] = [

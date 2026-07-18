@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { BreadcrumbItem } from '@/types';
 import { ChecklistItem } from '@/types/business/checklist';
 import { Place } from '@/types/business/place';
+import { Product } from '@/types/business/product';
 import { Unit } from '@/types/business/unit';
 
+import { AddOutOfListProductModal } from '@/components/business/checkout/addOutOfListProductModal';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ interface CheckoutProps {
     boughtItems: ChecklistItem[];
     places: Place[];
     units: Unit[];
+    products: Product[];
 }
 
 function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units: Unit[]; placeId: string }) {
@@ -137,10 +140,11 @@ function BoughtItemsList({ boughtItems }: { boughtItems: ChecklistItem[] }) {
     );
 }
 
-export default function CheckoutIndex({ items, boughtItems, places, units }: CheckoutProps) {
+export default function CheckoutIndex({ items, boughtItems, places, units, products }: CheckoutProps) {
     const [placeId, setPlaceId] = useState('');
     // Abre el modal automáticamente en la primera carga si aún no hay lugar elegido.
     const [changePlaceOpen, setChangePlaceOpen] = useState(() => !placeId);
+    const [addProductOpen, setAddProductOpen] = useState(false);
 
     const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
     const selectedPlace = places.find((p) => p.id!.toString() === placeId);
@@ -162,9 +166,14 @@ export default function CheckoutIndex({ items, boughtItems, places, units }: Che
                             )}
                         </p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setChangePlaceOpen(true)}>
-                        {selectedPlace ? 'Cambiar lugar' : 'Elegir lugar'}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setAddProductOpen(true)} disabled={!placeId}>
+                            Fuera de la lista
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setChangePlaceOpen(true)}>
+                            {selectedPlace ? 'Cambiar lugar' : 'Elegir lugar'}
+                        </Button>
+                    </div>
                 </div>
 
                 <Card>
@@ -199,6 +208,8 @@ export default function CheckoutIndex({ items, boughtItems, places, units }: Che
                     />
                 </DialogContent>
             </Dialog>
+
+            <AddOutOfListProductModal open={addProductOpen} onOpenChange={setAddProductOpen} products={products} units={units} placeId={placeId} />
         </AppLayout>
     );
 }

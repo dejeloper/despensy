@@ -1,8 +1,8 @@
 import { Column } from '@/types/ui';
 
-import { Badge } from '@/components/ui/badge';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
+import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types/business/product';
 
 export const despensyColumns: Column<Product>[] = [
