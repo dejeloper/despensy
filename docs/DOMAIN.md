@@ -45,7 +45,7 @@ Un producto dentro de una checklist, con dos "capas" de datos: lo planeado y lo 
 - Planeado: `quantity_planned`, `unit_id_planned`.
 - Comprado (se llenan al marcar `was_bought = true`): `quantity_bought`, `unit_id_bought`, `place_id`, `unit_price`, `total_price`, `purchase_date`.
 
-Este es el registro que alimenta el historial de compras de un producto. "Última compra de un producto" = el `ChecklistItem` más reciente de ese producto con `was_bought = true`, ordenado por `purchase_date` (o `created_at` si `purchase_date` es nulo — ver la lógica ya usada en `ProductController::index`, que debe migrarse a un Service según `docs/ARCHITECTURE.md`, pero cuya *regla* de negocio sí es correcta).
+Este es el registro que alimenta el historial de compras de un producto. "Última compra de un producto" = el `ChecklistItem` más reciente de ese producto con `was_bought = true`, ordenado por `purchase_date` (o `created_at` si `purchase_date` es nulo — ver la lógica ya usada en `ProductController::index`, que debe migrarse a un Service según `docs/ARCHITECTURE.md`, pero cuya _regla_ de negocio sí es correcta).
 
 `product_id` usa `onDelete('restrict')`: no se puede borrar un producto que tiene historial de compras. Es una decisión deliberada — perder el historial de precios de un producto sería perder el propósito principal de la app.
 

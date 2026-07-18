@@ -22,9 +22,9 @@ Request → Form Request (valida) → Controller (orquesta) → Service (lógica
 
 - CRUD simple sin lógica adicional (ej. `Category`, `Place`, `Unit` tal como son hoy: crear/editar/borrar sin reglas especiales) **no necesita** un Service dedicado — el Controller puede llamar directamente al Model (`Category::create($request->validated())`) sin perder el patrón, porque no hay lógica que orquestar.
 - Un Service es obligatorio cuando existe alguna de estas condiciones:
-  - Hay una **query compuesta** (joins, subqueries, agregaciones) — ejemplo real: el cálculo de "última compra" de un producto que hoy vive inline en `ProductController::index`.
-  - Hay una **regla de negocio con más de un paso** — ejemplo: crear una checklist debe primero cerrar/cancelar la anterior (`docs/DOMAIN.md`).
-  - La misma lógica se necesita en **más de un lugar** (controlador + comando artisan + job, etc.).
+    - Hay una **query compuesta** (joins, subqueries, agregaciones) — ejemplo real: el cálculo de "última compra" de un producto que hoy vive inline en `ProductController::index`.
+    - Hay una **regla de negocio con más de un paso** — ejemplo: crear una checklist debe primero cerrar/cancelar la anterior (`docs/DOMAIN.md`).
+    - La misma lógica se necesita en **más de un lugar** (controlador + comando artisan + job, etc.).
 - Nombrar el Service por lo que hace, no por la entidad que toca: `ProductLastPurchaseService`, `ChecklistOpenerService` — no `ProductService` genérico que termine acumulando métodos sin relación.
 
 ## Flujo de datos con Inertia

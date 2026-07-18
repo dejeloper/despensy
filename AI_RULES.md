@@ -8,8 +8,8 @@ Este documento es una checklist operativa. No es un resumen de arquitectura (eso
 
 1. Lee `docs/DOMAIN.md` si la tarea toca Product, Category, Place, Unit, Checklist, ChecklistItem o State — no asumas el modelo de datos, verifícalo contra la migración real en `database/migrations/`. Ya ha pasado que un Model/Request/Resource referenciaba columnas que no existían en la tabla real (`price`/`stock`/`place_id`/`unit_id` en `Product`) — antes de escribir una regla o un campo nuevo, confirma contra la migración, no contra el código existente.
 2. Busca si ya existe un Service, hook, componente o tipo que resuelva lo que vas a construir. Rutas típicas donde buscar:
-   - Backend: `app/Services/business/`, `app/Http/Resources/`, `app/Models/business/`.
-   - Frontend: `resources/js/hooks/`, `resources/js/components/{business,shared,ui}/`, `resources/js/structures/`.
+    - Backend: `app/Services/business/`, `app/Http/Resources/`, `app/Models/business/`.
+    - Frontend: `resources/js/hooks/`, `resources/js/components/{business,shared,ui}/`, `resources/js/structures/`.
 3. Sigue `docs/ARCHITECTURE.md` para el patrón Controller→Service→Resource. `ProductController`, `ChecklistController` y `ChecklistItemController` ya lo siguen (Service para lógica compuesta, Resource para la respuesta); `CategoryController`/`PlaceController`/`UnitController` son CRUD simple sin lógica adicional y por eso no tienen Service dedicado — eso es intencional, no deuda (ver el criterio de "cuándo crear un Service" en `docs/ARCHITECTURE.md`), así que sí sirven de ejemplo de patrón para CRUD sin lógica extra.
 
 ## 2. Reutilización antes que creación
@@ -45,7 +45,17 @@ Este documento es una checklist operativa. No es un resumen de arquitectura (eso
 - Si se agregó una página Inertia nueva, confirmar que corriste `vite build` (o que el dev server está corriendo) — `app.blade.php` exige que el componente exista en el manifest de Vite; si no, la ruta responde 500 aunque el backend esté bien.
 - Si se agregó un endpoint nuevo, confirmar que la ruta está registrada en `routes/web.php` dentro del grupo `auth`+`verified` y con el prefijo `dashboard` si es una vista de negocio.
 
-## 6. Autonomía y eficiencia
+## 6. Despliegue (`deploy.js` / `install.php`)
+
+Antes de tocar cualquier pieza del despliegue, lee `docs/DEPLOYMENT.md`. Puntos que no se deben romper:
+
+- La configuración FTP vive en `.env` (`DEPLOY_FTP_*`), **no** en un `deploy.config.json` (ya no existe). `DEPLOY_FTP_REMOTE_DIR` es la raíz de la app; su subcarpeta `public/` es el Document Root.
+- El Document Root es `public/`: lo único accesible por navegador es lo que está ahí. Por eso `install.php` va a `public/` y el ZIP + token van a la raíz (privados). No los muevas de sitio.
+- `install.php` obtiene la raíz con `dirname(__DIR__)` y **vacía la raíz de la app** en cada despliegue (estado limpio). No des por hecho que un archivo escrito en el servidor sobrevive.
+- El filtro de `deploy.js` excluye del paquete `.md`, `docs/`, `tests/`, `node_modules`, config de tooling, etc. No pongas en esas rutas nada que el runtime necesite; si hace falta, ajusta el filtro explícitamente.
+- El token es de un solo uso y se compara con `hash_equals`; `install.php` se auto-elimina al terminar. No introduzcas comparaciones de token inseguras (`==`) ni dejes el instalador tras un despliegue exitoso.
+
+## 7. Autonomía y eficiencia
 
 - **No pedir permiso.** Ejecuta directamente las ediciones, comandos y creaciones de archivos que la tarea requiera. No preguntes "¿Quieres que...?" ni confirmes acciones antes de hacerlas — actúa y reporta el resultado.
 - **No ejecutar tests a menos que se pida explícitamente.** Los tests unitarios y de integración solo corren si el usuario los solicita por nombre. Si necesitas verificar algo, busca evidencia en el código (lint, tipos, lógica) sin invocar el runner de tests.
