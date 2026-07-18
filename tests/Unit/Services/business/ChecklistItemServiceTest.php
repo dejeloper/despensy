@@ -110,6 +110,59 @@ describe('ChecklistItemService', function () {
             ->toThrow(ChecklistNotEditableException::class);
     });
 
+    test('addPurchasedProduct creates the item already marked as bought', function () {
+        $checklist = Checklist::factory()->open()->create();
+        $product = Product::factory()->create();
+        $place = Place::factory()->create();
+        $unit = Unit::factory()->create();
+
+        $item = (new ChecklistItemService)->addPurchasedProduct($checklist, $product, [
+            'quantity_bought' => 3,
+            'unit_id_bought' => $unit->id,
+            'place_id' => $place->id,
+            'unit_price' => 2000,
+        ]);
+
+        expect($item->checklist_id)->toBe($checklist->id)
+            ->and($item->product_id)->toBe($product->id)
+            ->and($item->was_bought)->toBeTrue()
+            ->and($item->quantity_bought)->toBe(3)
+            ->and($item->place_id)->toBe($place->id)
+            ->and((float) $item->total_price)->toBe(6000.0);
+    });
+
+    test('addPurchasedProduct updates the existing item instead of duplicating it', function () {
+        $checklist = Checklist::factory()->open()->create();
+        $product = Product::factory()->create();
+        $place = Place::factory()->create();
+        $unit = Unit::factory()->create();
+        $service = new ChecklistItemService;
+
+        $planned = $service->syncProduct($checklist, $product, ['will_buy' => true, 'quantity_planned' => 1]);
+        $bought = $service->addPurchasedProduct($checklist, $product, [
+            'quantity_bought' => 2,
+            'unit_id_bought' => $unit->id,
+            'place_id' => $place->id,
+            'unit_price' => 1500,
+        ]);
+
+        expect($bought->id)->toBe($planned->id)
+            ->and($bought->was_bought)->toBeTrue()
+            ->and(ChecklistItem::where('checklist_id', $checklist->id)->where('product_id', $product->id)->count())->toBe(1);
+    });
+
+    test('addPurchasedProduct throws when the checklist is closed', function () {
+        $checklist = Checklist::factory()->closed()->create();
+        $product = Product::factory()->create();
+
+        expect(fn () => (new ChecklistItemService)->addPurchasedProduct($checklist, $product, [
+            'quantity_bought' => 1,
+            'unit_id_bought' => Unit::factory()->create()->id,
+            'place_id' => Place::factory()->create()->id,
+            'unit_price' => 1000,
+        ]))->toThrow(ChecklistNotEditableException::class);
+    });
+
     test('markAsNotBought clears the purchase data', function () {
         $checklist = Checklist::factory()->open()->create();
         $item = ChecklistItem::factory()->bought()->create(['checklist_id' => $checklist->id]);
