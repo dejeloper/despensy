@@ -96,18 +96,18 @@ El despliegue está automatizado: ejecutar `node deploy.js` y abrir la URL que i
 
 ## 📚 Documentación
 
-| Documento | Contenido |
-| --- | --- |
-| [`CLAUDE.md`](CLAUDE.md) | Índice completo de documentación para asistentes de IA. |
-| [`AI_RULES.md`](AI_RULES.md) | Reglas de comportamiento para IA. |
-| [`docs/PROJECT.md`](docs/PROJECT.md) | Qué es y qué NO es Despensy. |
-| [`docs/DOMAIN.md`](docs/DOMAIN.md) | Modelo de dominio (Product, Category, Place, Unit, Checklist, etc.). |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitectura, organización del proyecto y patrones de Controller/Service/Resource. |
-| [`docs/BACKEND_CONVENTIONS.md`](docs/BACKEND_CONVENTIONS.md) | Convenciones de PHP/Laravel. |
-| [`docs/FRONTEND_CONVENTIONS.md`](docs/FRONTEND_CONVENTIONS.md) | Convenciones de React/TypeScript. |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Migraciones y esquema de base de datos. |
-| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Mecanismo de despliegue (`deploy.js`, `install.php`). |
-| [`planning.md`](planning.md) | Backlog de funcionalidad. |
+| Documento                                                      | Contenido                                                                          |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [`CLAUDE.md`](CLAUDE.md)                                       | Índice completo de documentación para asistentes de IA.                            |
+| [`AI_RULES.md`](AI_RULES.md)                                   | Reglas de comportamiento para IA.                                                  |
+| [`docs/PROJECT.md`](docs/PROJECT.md)                           | Qué es y qué NO es Despensy.                                                       |
+| [`docs/DOMAIN.md`](docs/DOMAIN.md)                             | Modelo de dominio (Product, Category, Place, Unit, Checklist, etc.).               |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                 | Arquitectura, organización del proyecto y patrones de Controller/Service/Resource. |
+| [`docs/BACKEND_CONVENTIONS.md`](docs/BACKEND_CONVENTIONS.md)   | Convenciones de PHP/Laravel.                                                       |
+| [`docs/FRONTEND_CONVENTIONS.md`](docs/FRONTEND_CONVENTIONS.md) | Convenciones de React/TypeScript.                                                  |
+| [`docs/DATABASE.md`](docs/DATABASE.md)                         | Migraciones y esquema de base de datos.                                            |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)                     | Mecanismo de despliegue (`deploy.js`, `install.php`).                              |
+| [`planning.md`](planning.md)                                   | Backlog de funcionalidad.                                                          |
 
 ---
 
