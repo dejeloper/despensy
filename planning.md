@@ -116,13 +116,13 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Vista de Detalle de Producto (Prioridad Media)
 
-- [ ] **Nueva vista: /products/{id}**
+- [x] **Nueva vista: /products/{id}**
     - Información básica del producto
     - Último precio, fecha y lugar
     - Historial de compras (tabla simple)
-    - Gráfica opcional de evolución de precio
+    - [ ] Gráfica opcional de evolución de precio (pendiente, no crítica)
 
-- [ ] **Sección de historial**
+- [x] **Sección de historial**
     - Listar compras anteriores
     - Fecha, precio, cantidad, lugar
     - Ordenado por fecha descendente
@@ -143,9 +143,8 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - update(item_id) - Actualizar datos del item
 
 - [x] Actualizar ProductController - Ya tiene CRUD completo
-- [ ] Agregar método show(id) para detalle
-- [ ] Agregar método lastPurchase(id)
-- [ ] Agregar método purchaseHistory(id)
+- [x] Agregar método show(id) para detalle
+- [x] lastPurchase/purchaseHistory se resuelven en un único `ProductLastPurchaseService::purchaseHistoryFor()`, reutilizado por `show()` — no se crearon endpoints separados, consistente con que esta app no expone una API REST aparte del renderizado de páginas Inertia
 
 ### Frontend - Componentes (Alta Prioridad)
 
@@ -161,10 +160,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - Campos de precio, cantidad, lugar
     - Optimizado para móvil
 
-- [ ] **Componente PurchaseHistoryTable**
-    - Para detalle de producto
-    - Mostrar historial de compras
-    - Paginación del cliente
+- [x] Historial de compras en `products/show.tsx` como lista de tarjetas (mismo patrón visual que `checklists/show.tsx` y "Comprados" en checkout) — no se creó un componente `PurchaseHistoryTable` ni paginación de cliente porque el historial de un solo producto no alcanza el volumen que justifique paginar (ver `docs/ARCHITECTURE.md`)
 
 ### Tipos TypeScript (Prioridad Media)
 
@@ -172,7 +168,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] Crear tipo `Checklist` con relaciones
 - [x] Crear tipo `ChecklistItem` con relaciones
 - [x] Actualizar tipo `Product` (quitar price y stock)
-- [ ] Crear tipo `PurchaseHistory` o `LastPurchase`
+- [x] No se creó un tipo `PurchaseHistory` — el historial se tipa como `ChecklistItem[]` (ya existente), que refleja exactamente lo que devuelve `ChecklistItemResource`
 
 ### Rutas (Alta Prioridad)
 
@@ -188,8 +184,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - DELETE /dashboard/checklists/{id}/items/{product_id} - Quitar
     - PATCH /dashboard/checklist-items/{id}/mark-bought - Marcar comprado
 
-- [x] Ruta para detalle de producto - Ya existe en resource routes
-- [ ] Agregar método show() al resource de productos
+- [x] Ruta para detalle de producto - `Route::resource('products', ...)` ya no excluye `show`
 
 ### Navegación y UX (Prioridad Media)
 
@@ -201,6 +196,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] Badge en menú "Mi Lista" con contador de items
 - [x] Breadcrumbs actualizados en todas las vistas
 - [x] Mensajes de éxito/error con toasts
+- [x] Sistema de notificaciones toast estandarizado (5 tipos: success, error, warning, info, neutral) sin dependencias externas
 
 ### Validaciones (Prioridad Media)
 
@@ -234,4 +230,4 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ## Actualizado
 
-- 2026-07-17
+- 2026-07-18
