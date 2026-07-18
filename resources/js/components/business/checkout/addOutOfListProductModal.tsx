@@ -21,7 +21,7 @@ type AddProductForm = {
     product_id: string;
     quantity_bought: string;
     unit_id_bought: string;
-    unit_price: string;
+    total_price: string;
 };
 
 export function AddOutOfListProductModal({ open, onOpenChange, products, units, placeId }: AddOutOfListProductModalProps) {
@@ -29,7 +29,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
         product_id: '',
         quantity_bought: '1',
         unit_id_bought: '',
-        unit_price: '',
+        total_price: '',
     });
 
     const productItems: ComboboxItem[] = products.map((p) => ({ value: p.id.toString(), label: p.name }));
@@ -104,18 +104,20 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                             type="number"
                             min={0}
                             step="0.01"
-                            placeholder="Precio"
-                            value={data.unit_price}
-                            onChange={(e) => setData('unit_price', e.target.value)}
+                            placeholder="Precio total"
+                            value={data.total_price}
+                            onChange={(e) => setData('total_price', e.target.value)}
                             required
                         />
-                        {errors.unit_price && <p className="mt-1 text-xs text-destructive">{errors.unit_price}</p>}
+                        {errors.total_price && <p className="mt-1 text-xs text-destructive">{errors.total_price}</p>}
                     </div>
 
                     <DialogFooter>
                         <Button
                             type="submit"
-                            disabled={processing || !placeId || !data.product_id || !data.quantity_bought || !data.unit_id_bought || !data.unit_price}
+                            disabled={
+                                processing || !placeId || !data.product_id || !data.quantity_bought || !data.unit_id_bought || !data.total_price
+                            }
                         >
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Guardar

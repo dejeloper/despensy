@@ -36,7 +36,7 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
     const { data, setData, patch, transform, processing, errors } = useForm({
         quantity_bought: item.quantity_planned?.toString() || '1',
         unit_id_bought: item.unit_planned?.id?.toString() || '',
-        unit_price: '',
+        total_price: '',
     });
 
     const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
@@ -91,14 +91,14 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
                     type="number"
                     min={0}
                     step="0.01"
-                    placeholder="Precio"
-                    value={data.unit_price}
-                    onChange={(e) => setData('unit_price', e.target.value)}
+                    placeholder="Precio total"
+                    value={data.total_price}
+                    onChange={(e) => setData('total_price', e.target.value)}
                     required
                 />
-                {errors.unit_price && <p className="mt-1 text-xs text-destructive">{errors.unit_price}</p>}
+                {errors.total_price && <p className="mt-1 text-xs text-destructive">{errors.total_price}</p>}
             </div>
-            <Button type="submit" size="sm" disabled={processing || !placeId || !data.quantity_bought || !data.unit_id_bought || !data.unit_price}>
+            <Button type="submit" size="sm" disabled={processing || !placeId || !data.quantity_bought || !data.unit_id_bought || !data.total_price}>
                 {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                 Confirmar
             </Button>

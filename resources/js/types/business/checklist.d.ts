@@ -23,6 +23,16 @@ export type Checklist = {
     name: string | null;
     state?: State;
     items?: ChecklistItem[];
+    items_count?: number;
+    user?: { id: number; name: string };
     created_at?: string;
     updated_at?: string;
+};
+
+export type PaginatedChecklist = {
+    data: Checklist[];
+    current_page: number;
+    per_page: number;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
 };

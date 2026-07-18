@@ -36,7 +36,7 @@ type MarkBoughtForm = {
     quantity_bought: string;
     unit_id_bought: string;
     place_id: string;
-    unit_price: string;
+    total_price: string;
 };
 
 function MarkBoughtSection({ product, units, places, onSaved }: { product: Product; units: Unit[]; places: Place[]; onSaved: () => void }) {
@@ -44,7 +44,7 @@ function MarkBoughtSection({ product, units, places, onSaved }: { product: Produ
         quantity_bought: product.active_quantity_bought?.toString() || product.active_quantity_planned?.toString() || '1',
         unit_id_bought: product.active_unit_id_bought?.toString() || product.active_unit_id_planned?.toString() || '',
         place_id: product.active_place_id?.toString() || '',
-        unit_price: product.active_unit_price?.toString() || '',
+        total_price: '',
     });
 
     const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
@@ -118,10 +118,10 @@ function MarkBoughtSection({ product, units, places, onSaved }: { product: Produ
                     type="number"
                     min={0}
                     step="0.01"
-                    placeholder="Precio"
+                    placeholder="Precio total"
                     className="w-28"
-                    value={data.unit_price}
-                    onChange={(e) => setData('unit_price', e.target.value)}
+                    value={data.total_price}
+                    onChange={(e) => setData('total_price', e.target.value)}
                     required
                 />
             </div>
