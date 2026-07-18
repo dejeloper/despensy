@@ -1,24 +1,64 @@
 /* eslint-disable no-undef */
 import archiver from 'archiver';
 import { Client } from 'basic-ftp';
-import { execSync } from 'child_process';
+import { spawn } from 'child_process';
 import fs from 'fs-extra';
 import crypto from 'node:crypto';
 import path from 'path';
 
 const rootDir = process.cwd();
 const prodDir = path.join(rootDir, 'production');
-
 const ftp = loadFtpConfig(path.join(rootDir, '.env'));
+
+const ZIP_LEVEL = Number(process.env.DEPLOY_ZIP_LEVEL) || 6;
+
+class Spinner {
+    constructor(text = '🔧 Trabajando') {
+        this.text = text;
+        this.frames = ['', '.', '..', '...', '....'];
+        this.i = 0;
+        this.timer = null;
+        this.active = false;
+        this.tty = Boolean(process.stdout.isTTY);
+    }
+
+    start() {
+        if (this.active) return;
+        this.active = true;
+        this.render();
+        this.timer = setInterval(() => {
+            this.i = (this.i + 1) % this.frames.length;
+            this.render();
+        }, 1000);
+        if (this.timer.unref) this.timer.unref();
+    }
+
+    render() {
+        if (!this.active || !this.tty) return;
+        process.stdout.write(`\r\x1b[K${this.text}${this.frames[this.i]}`);
+    }
+
+    log(...args) {
+        if (this.tty && this.active) process.stdout.write('\r\x1b[K');
+        console.log(...args);
+        this.render();
+    }
+
+    stop() {
+        if (!this.active) return;
+        this.active = false;
+        clearInterval(this.timer);
+        this.timer = null;
+        if (this.tty) process.stdout.write('\r\x1b[K');
+    }
+}
+
+const spinner = new Spinner('🔧 Trabajando');
 
 const steps = [];
 
 function markStart(label) {
-    steps.push({
-        label,
-        startIso: new Date().toISOString(),
-        startTs: Date.now(),
-    });
+    steps.push({ label, startIso: new Date().toISOString(), startTs: Date.now() });
 }
 
 function markEnd(label) {
@@ -29,7 +69,6 @@ function markEnd(label) {
             return;
         }
     }
-
     steps.push({
         label,
         startIso: new Date().toISOString(),
@@ -39,150 +78,141 @@ function markEnd(label) {
     });
 }
 
+function run(cmd) {
+    return new Promise((resolve, reject) => {
+        const child = spawn(cmd, { cwd: rootDir, shell: true });
+        const forward = (buf) => {
+            buf.toString()
+                .split(/\r?\n/)
+                .forEach((line) => {
+                    if (line.trim() !== '') spinner.log(line);
+                });
+        };
+        child.stdout.on('data', forward);
+        child.stderr.on('data', forward);
+        child.on('error', reject);
+        child.on('close', (code) => {
+            if (code === 0) resolve();
+            else reject(new Error(`Comando falló (código ${code}): ${cmd}`));
+        });
+    });
+}
+
+const EXCLUDE_NAMES = new Set([
+    'node_modules',
+    '.agents',
+    '.claude',
+    '.github',
+    '.vscode',
+    'docs',
+    'tests',
+    '.editorconfig',
+    '.env.example',
+    '.gitattributes',
+    '.gitignore',
+    '.prettierignore',
+    '.prettierrc',
+    'artisan',
+    'deploy.config.json',
+    'deploy.js',
+    'deploy.json',
+    'deploy.token',
+    'deploy.ts',
+    'install.php',
+    'eslint.config.js',
+    'phpunit.xml',
+    'production.zip',
+    'tsconfig.json',
+    '.env',
+    '.git',
+]);
+
+//
+const EXCLUDE_PATHS = new Set(['database/migrations', 'database/seeders', 'database/factories']);
+
+function shouldExclude(src) {
+    const name = path.basename(src);
+    if (name.endsWith('.md')) return true;
+    if (EXCLUDE_NAMES.has(name)) return true;
+
+    const rel = path.relative(rootDir, src).split(path.sep).join('/');
+    for (const p of EXCLUDE_PATHS) {
+        if (rel === p || rel.startsWith(p + '/')) return true;
+    }
+    return false;
+}
+
 async function main() {
-    console.log('🚀 Iniciando build de producción...');
-    console.time('⏱️ Tiempo total');
+    spinner.start();
+    spinner.log('🚀 Iniciando build de producción...');
     markStart('⏱️ Tiempo total');
 
-    // 1. Ejecutar comandos de build
-    console.time('⚙️ Build');
     markStart('⚙️ Build');
-    execSync('php artisan config:cache', { stdio: 'inherit' });
-    execSync('php artisan cache:clear', { stdio: 'inherit' });
-    execSync('php artisan route:cache', { stdio: 'inherit' });
-    execSync('php artisan view:cache', { stdio: 'inherit' });
-    execSync('php artisan optimize:clear', { stdio: 'inherit' });
-    execSync('composer install --optimize-autoloader --no-dev', { stdio: 'inherit' });
-    execSync('pnpm install', { stdio: 'inherit' });
-    execSync('pnpm run build', { stdio: 'inherit' });
-    console.timeEnd('⚙️ Build');
+    await run('php artisan optimize:clear');
+
+    await Promise.all([run('composer install --optimize-autoloader --no-dev'), run('pnpm install')]);
+
+    await run('pnpm run build');
     markEnd('⚙️ Build');
 
-    // 2. Borrar carpeta production si existe
-    console.time('🧹 Preparando carpeta production');
     markStart('🧹 Preparando carpeta production');
-    if (fs.existsSync(prodDir)) {
-        fs.emptyDirSync(prodDir);
-    } else {
-        fs.mkdirSync(prodDir);
-    }
-    console.timeEnd('🧹 Preparando carpeta production');
+    await fs.emptyDir(prodDir);
     markEnd('🧹 Preparando carpeta production');
 
-    // 3. Copiar todo excepto lo que no quieres
-    console.time('📂 Copiando archivos');
     markStart('📂 Copiando archivos');
-    for (const item of fs.readdirSync(rootDir)) {
-        if (item === 'production') continue;
-        const srcPath = path.join(rootDir, item);
-        const destPath = path.join(prodDir, item);
-
-        fs.copySync(srcPath, destPath, {
-            filter: (src) => {
-                const name = path.basename(src);
-                // Toda la documentación queda fuera del paquete de producción,
-                // incluidos los README dentro de vendor.
-                if (name.endsWith('.md')) return false;
-                const excludes = [
-                    'node_modules',
-                    '.agents',
-                    '.claude',
-                    '.github',
-                    '.vscode',
-                    'docs',
-                    'tests',
-                    '.editorconfig',
-                    '.env.example',
-                    '.gitattributes',
-                    '.gitignore',
-                    '.prettierignore',
-                    '.prettierrc',
-                    'artisan',
-                    'deploy.config.json',
-                    'deploy.js',
-                    'deploy.json',
-                    'deploy.token',
-                    'deploy.ts',
-                    'install.php',
-                    'eslint.config.js',
-                    'phpunit.xml',
-                    'production.zip',
-                    'tsconfig.json',
-                    '.env',
-                    '.git',
-                    'database/migrations',
-                    'database/seeders',
-                    'database/factories',
-                    'bootstrap/cache',
-                ];
-                return !excludes.includes(name);
-            },
-        });
-    }
-    console.timeEnd('📂 Copiando archivos');
+    const items = fs.readdirSync(rootDir).filter((item) => item !== 'production');
+    await Promise.all(
+        items.map((item) =>
+            fs.copy(path.join(rootDir, item), path.join(prodDir, item), {
+                filter: (src) => !shouldExclude(src),
+            }),
+        ),
+    );
     markEnd('📂 Copiando archivos');
 
-    // 4. Validar y eliminar carpeta HOT
-    console.time('📦 Ajustando public');
     markStart('📦 Ajustando public');
     const publicPath = path.join(prodDir, 'public');
-
     if (fs.existsSync(publicPath)) {
-        ['HOT', 'hot'].forEach((hotName) => {
+        for (const hotName of ['HOT', 'hot']) {
             const hotPath = path.join(publicPath, hotName);
             if (fs.existsSync(hotPath)) {
-                fs.removeSync(hotPath);
-                console.log(`ℹ️ Eliminado ${hotName} en public`);
+                await fs.remove(hotPath);
+                spinner.log(`ℹ️ Eliminado ${hotName} en public`);
             }
-        });
+        }
     } else {
-        console.warn('⚠️ public no existe en production, se omite este paso.');
+        spinner.log('⚠️ public no existe en production, se omite este paso.');
     }
-
-    console.timeEnd('📦 Ajustando public');
     markEnd('📦 Ajustando public');
 
-    // 5. Renombrar .env.prod a .env
-    console.time('🔑 Configurando .env');
     markStart('🔑 Configurando .env');
     const envProdPath = path.join(prodDir, '.env.prod');
     if (fs.existsSync(envProdPath)) {
-        fs.renameSync(envProdPath, path.join(prodDir, '.env'));
+        await fs.rename(envProdPath, path.join(prodDir, '.env'));
     }
-    console.timeEnd('🔑 Configurando .env');
     markEnd('🔑 Configurando .env');
 
-    // 6. Crear ZIP de la carpeta production
-    console.time('📦 Creando ZIP');
     markStart('📦 Creando ZIP');
     const zipPath = path.join(rootDir, 'production.zip');
-    const output = fs.createWriteStream(zipPath);
-    const archive = archiver('zip', { zlib: { level: 9 } });
-
     await new Promise((resolve, reject) => {
+        const output = fs.createWriteStream(zipPath);
+        const archive = archiver('zip', { zlib: { level: ZIP_LEVEL } });
         output.on('close', resolve);
         archive.on('error', reject);
         archive.pipe(output);
         archive.directory(prodDir, false);
         archive.finalize();
     });
-    console.timeEnd('📦 Creando ZIP');
     markEnd('📦 Creando ZIP');
+    spinner.log(`✅ ZIP creado (${(fs.statSync(zipPath).size / 1024 / 1024).toFixed(2)} MB)`);
 
-    console.log(`✅ ZIP creado (${(fs.statSync(zipPath).size / 1024 / 1024).toFixed(2)} MB)`);
-
-    // 7. Generar token de un solo uso y escribir deploy.token
-    console.time('🔐 Generando token');
     markStart('🔐 Generando token');
     const token = crypto.randomBytes(24).toString('hex');
     const tokenPath = path.join(rootDir, 'deploy.token');
-    fs.writeFileSync(tokenPath, token, 'utf8');
-    console.timeEnd('🔐 Generando token');
+    await fs.writeFile(tokenPath, token, 'utf8');
     markEnd('🔐 Generando token');
 
-    // 8. Subir production.zip, install.php y deploy.token al FTP
     if (ftp.host) {
-        console.time('🌐 Subida FTP');
         markStart('🌐 Subida FTP');
 
         const installerPath = path.join(rootDir, 'install.php');
@@ -203,57 +233,62 @@ async function main() {
                 port: ftp.port,
             });
 
-            // Raíz de la app (privada, fuera del navegador): production.zip + deploy.token
             await client.ensureDir(ftp.remoteDir);
+            const blankHtaccessPath = path.join(rootDir, 'public/.htaccess');
+            try {
+                await client.uploadFrom(blankHtaccessPath, 'public/.htaccess');
+                spinner.log('🧹 public/.htaccess neutralizado (bloqueaba install.php)');
+            } catch (err) {
+                spinner.log(`⚠️ No se pudo neutralizar public/.htaccess: ${err?.message || err}`);
+            }
+
             await client.uploadFrom(zipPath, 'production.zip');
             await client.uploadFrom(tokenPath, 'deploy.token');
 
-            // Carpeta pública (Document Root): solo install.php, accesible por URL
             await client.ensureDir('public');
             await client.uploadFrom(installerPath, 'install.php');
-            console.log('✅ production.zip y deploy.token en la raíz; install.php en public/');
+            spinner.log('✅ production.zip y deploy.token en la raíz; install.php en public/');
 
             const installUrl = `${buildBaseUrl(ftp.host)}/install.php?token=${token}`;
-            console.log('\n👉 Abre esta URL en el navegador para finalizar la instalación:\n');
-            console.log(`   ${installUrl}\n`);
+            spinner.log('\n👉 Abre esta URL en el navegador para finalizar la instalación:\n');
+            spinner.log(`   ${installUrl}\n`);
         } catch (err) {
-            console.error('❌ Error en despliegue:', err);
+            throw new Error(`Error en despliegue FTP: ${err?.message || err}`);
         } finally {
             client.close();
+            await fs.remove(tokenPath);
+            markEnd('🌐 Subida FTP');
         }
-
-        // El token local ya no es necesario tras subirlo.
-        fs.removeSync(tokenPath);
-
-        console.timeEnd('🌐 Subida FTP');
-        markEnd('🌐 Subida FTP');
     } else {
-        console.warn('⚠️ Sin configuración FTP en .env (DEPLOY_FTP_HOST). Se omite la subida.');
-        fs.removeSync(tokenPath);
+        spinner.log('⚠️ Sin configuración FTP en .env (DEPLOY_FTP_HOST). Se omite la subida.');
+        await fs.remove(tokenPath);
     }
 
     markEnd('⏱️ Tiempo total');
-    console.timeEnd('⏱️ Tiempo total');
-
-    const summary = steps.map((s) => ({
-        label: s.label,
-        start: s.startIso,
-        end: s.endIso || null,
-        durationMs: s.durationMs ?? null,
-        durationSec: s.durationMs != null ? (s.durationMs / 1000).toFixed(2) : null,
-    }));
-
-    console.log('\n📋 Resumen de pasos:');
-    summary.forEach((s) => {
-        console.log(` - ${s.label}: ${s.durationSec ?? '-'} s`);
-    });
 }
 
-main();
+main()
+    .catch((err) => {
+        spinner.stop();
+        console.error(`\n❌ Falló el build: ${err?.message || err}`);
+        process.exitCode = 1;
+    })
+    .finally(() => {
+        spinner.stop();
+
+        const summary = steps.map((s) => ({
+            label: s.label,
+            durationSec: s.durationMs != null ? (s.durationMs / 1000).toFixed(2) : null,
+        }));
+
+        console.log('\n📋 Resumen de pasos:');
+        summary.forEach((s) => {
+            console.log(` - ${s.label}: ${s.durationSec ?? '-'} s`);
+        });
+    });
 
 function loadFtpConfig(envPath) {
     const env = parseEnvFile(envPath);
-
     return {
         host: env.DEPLOY_FTP_HOST || '',
         user: env.DEPLOY_FTP_USER || '',
@@ -266,21 +301,15 @@ function loadFtpConfig(envPath) {
 
 function parseEnvFile(envPath) {
     const env = {};
-    if (!fs.existsSync(envPath)) {
-        return env;
-    }
+    if (!fs.existsSync(envPath)) return env;
 
     const content = fs.readFileSync(envPath, 'utf8');
     for (const line of content.split(/\r?\n/)) {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) {
-            continue;
-        }
+        if (!trimmed || trimmed.startsWith('#')) continue;
 
         const separator = trimmed.indexOf('=');
-        if (separator === -1) {
-            continue;
-        }
+        if (separator === -1) continue;
 
         const key = trimmed.slice(0, separator).trim();
         let value = trimmed.slice(separator + 1).trim();
@@ -288,10 +317,8 @@ function parseEnvFile(envPath) {
         if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
             value = value.slice(1, -1);
         }
-
         env[key] = value;
     }
-
     return env;
 }
 
@@ -299,6 +326,5 @@ function buildBaseUrl(host) {
     if (/^https?:\/\//i.test(host)) {
         return host.replace(/\/+$/, '');
     }
-
     return `https://${host.replace(/\/+$/, '')}`;
 }
