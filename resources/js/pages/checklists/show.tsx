@@ -29,7 +29,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={checklist.name || `Lista #${checklist.id}`} />
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">{checklist.name || `Lista #${checklist.id}`}</h1>
                         <div className="mt-1 flex items-center gap-2">
@@ -46,7 +46,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
 
                 {boughtItems.length > 0 && (
                     <Card>
-                        <CardContent className="flex items-center justify-between">
+                        <CardContent className="flex items-center justify-between gap-2">
                             <p className="font-medium">Total comprado</p>
                             <p className="text-lg font-semibold">{formatCurrency(total)}</p>
                         </CardContent>
@@ -59,10 +59,10 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
                         {boughtItems.length === 0 && <p className="text-sm text-muted-foreground">Nada marcado como comprado.</p>}
                         {boughtItems.map((item) => (
                             <Card key={item.id}>
-                                <CardContent className="flex items-center justify-between">
-                                    <div>
-                                        <p className="font-medium">{item.product?.name}</p>
-                                        <p className="text-xs text-muted-foreground">
+                                <CardContent className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate font-medium">{item.product?.name}</p>
+                                        <p className="truncate text-xs text-muted-foreground">
                                             {item.quantity_bought} {item.unit_bought?.name} en {item.place?.name} · {item.purchase_date}
                                         </p>
                                     </div>
@@ -80,7 +80,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
                             {pendingItems.map((item) => (
                                 <Card key={item.id}>
                                     <CardContent>
-                                        <p className="font-medium">{item.product?.name}</p>
+                                        <p className="truncate font-medium">{item.product?.name}</p>
                                         <p className="text-xs text-muted-foreground">
                                             Planeado: {item.quantity_planned ?? '—'} {item.unit_planned?.name || ''}
                                         </p>

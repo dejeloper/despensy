@@ -22,7 +22,7 @@ import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { despensyColumns } from '@/structures/despensy.structure';
 import { Action } from '@/types/ui';
-import { Eye } from 'lucide-react';
+import { CircleCheck, CircleX, Eye } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Despensa', href: '#' }];
 
@@ -85,21 +85,29 @@ export default function DespensyIndex({ products, categories, units, places, che
                             {checklist.name || `Lista #${checklist.id}`} · {checklist.state.name}
                         </Badge>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="ml-auto flex flex-wrap justify-end gap-2">
                         <Button asChild size="sm">
                             <Link href={route('checkout.index')}>Registrar compra</Link>
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => router.post(route('checklists.complete', checklist.id))}>
-                            Cerrar lista
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            title="Cerrar lista"
+                            onClick={() => router.post(route('checklists.complete', checklist.id))}
+                        >
+                            <CircleCheck className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Cerrar lista</span>
                         </Button>
                         <Button
                             variant="destructive"
                             size="sm"
+                            title="Cancelar lista"
                             onClick={() => {
                                 if (confirm('¿Cancelar esta lista?')) router.post(route('checklists.cancel', checklist.id));
                             }}
                         >
-                            Cancelar lista
+                            <CircleX className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Cancelar lista</span>
                         </Button>
                     </div>
                 </div>
