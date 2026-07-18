@@ -1,6 +1,6 @@
 # Convenciones de backend (Laravel)
 
-Reglas concretas para código PHP en Despensy. El *por qué* de las capas está en `docs/ARCHITECTURE.md`; esto es el *cómo se escribe*.
+Reglas concretas para código PHP en Despensy. El _por qué_ de las capas está en `docs/ARCHITECTURE.md`; esto es el _cómo se escribe_.
 
 ## Organización de carpetas
 

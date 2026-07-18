@@ -10,11 +10,11 @@
 
 Decisión oficial (ver justificación completa en `docs/ARCHITECTURE.md`): **FK con `onDelete` explícito, sin `SoftDeletes`**. Regla para elegir el valor al crear una FK nueva:
 
-| Situación | `onDelete` |
-|---|---|
-| Borrar el padre debería ser imposible mientras haya hijos (protege historial/integridad) | `restrict` |
-| El hijo no tiene sentido sin el padre (es parte de él) | `cascade` |
-| La referencia es informativa/opcional, perderla no rompe nada | `set null` (requiere la columna FK `nullable()`) |
+| Situación                                                                                | `onDelete`                                       |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Borrar el padre debería ser imposible mientras haya hijos (protege historial/integridad) | `restrict`                                       |
+| El hijo no tiene sentido sin el padre (es parte de él)                                   | `cascade`                                        |
+| La referencia es informativa/opcional, perderla no rompe nada                            | `set null` (requiere la columna FK `nullable()`) |
 
 Ejemplos ya aplicados: `products.category_id` → `restrict`; `checklist_items.checklist_id` → `cascade`; `checklist_items.place_id` / `unit_id_planned` / `unit_id_bought` → `set null`.
 

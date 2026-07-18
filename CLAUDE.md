@@ -13,6 +13,7 @@ Este archivo es solo un índice. La documentación real vive en `docs/` y en `AI
 | [`docs/BACKEND_CONVENTIONS.md`](./docs/BACKEND_CONVENTIONS.md)   | Antes de escribir PHP.                                                           |
 | [`docs/FRONTEND_CONVENTIONS.md`](./docs/FRONTEND_CONVENTIONS.md) | Antes de escribir React/TypeScript.                                              |
 | [`docs/DATABASE.md`](./docs/DATABASE.md)                         | Antes de crear o modificar una migración.                                        |
+| [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md)                     | Antes de tocar `deploy.js`, `install.php` o el flujo de despliegue.               |
 | [`planning.md`](./planning.md)                                   | Backlog de funcionalidad. No se modifica desde una sesión de documentación.      |
 
 No copies esta tabla en otros documentos; si necesitas contexto, sigue el enlace.
