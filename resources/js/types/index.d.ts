@@ -31,7 +31,7 @@ export interface SharedData {
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
     openChecklistItemsCount: number;
-    flash: { success: string | null; error: string | null };
+    flash: { success: string | null; error: string | null; warning: string | null; info: string | null };
     [key: string]: unknown;
 }
 
