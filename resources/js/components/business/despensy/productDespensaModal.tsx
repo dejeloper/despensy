@@ -47,7 +47,7 @@ function MarkBoughtSection({ product, units, places, onSaved }: { product: Produ
         unit_price: product.active_unit_price?.toString() || '',
     });
 
-    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.short_name, searchText: `${u.name} ${u.short_name}` }));
+    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
     const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -157,7 +157,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [product]);
 
-    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.short_name}` }));
+    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
 
     if (!product) return null;
 

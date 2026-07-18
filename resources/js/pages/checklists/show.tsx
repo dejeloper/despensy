@@ -63,7 +63,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
                                     <div>
                                         <p className="font-medium">{item.product?.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {item.quantity_bought} {item.unit_bought?.short_name} en {item.place?.name} · {item.purchase_date}
+                                            {item.quantity_bought} {item.unit_bought?.name} en {item.place?.name} · {item.purchase_date}
                                         </p>
                                     </div>
                                     <Badge variant="secondary">{formatCurrency(item.unit_price)}</Badge>
@@ -82,7 +82,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
                                     <CardContent>
                                         <p className="font-medium">{item.product?.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Planeado: {item.quantity_planned ?? '—'} {item.unit_planned?.short_name || ''}
+                                            Planeado: {item.quantity_planned ?? '—'} {item.unit_planned?.name || ''}
                                         </p>
                                     </CardContent>
                                 </Card>

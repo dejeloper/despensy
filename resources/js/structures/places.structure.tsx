@@ -33,7 +33,7 @@ export const placeColumns: Column<Place>[] = [
         label: 'Vista previa',
         render: (place) => (
             <div className="flex items-center">
-                <ColorBadge text={place.short_name ?? place.name} bgColor={place.bg_color} textColor={place.text_color} />
+                <ColorBadge text={place.name ?? ''} bgColor={place.bg_color} textColor={place.text_color} />
             </div>
         ),
     },

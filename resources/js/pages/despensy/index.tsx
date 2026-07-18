@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
 import { BreadcrumbItem } from '@/types';
@@ -86,6 +86,9 @@ export default function DespensyIndex({ products, categories, units, places, che
                         </Badge>
                     </div>
                     <div className="flex gap-2">
+                        <Button asChild size="sm">
+                            <Link href={route('checkout.index')}>Registrar compra</Link>
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => router.post(route('checklists.complete', checklist.id))}>
                             Cerrar lista
                         </Button>

@@ -26,6 +26,8 @@ interface ComboboxProps {
   disabled?: boolean
   className?: string
   renderItem?: (item: ComboboxItem) => React.ReactNode
+  onCreateNew?: (query: string) => void
+  createNewLabel?: (query: string) => string
 }
 
 export function Combobox({
@@ -38,6 +40,8 @@ export function Combobox({
   disabled = false,
   className,
   renderItem,
+  onCreateNew,
+  createNewLabel = (query) => `Crear "${query}"`,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState("")
@@ -55,6 +59,12 @@ export function Combobox({
 
   const handleSelect = (itemValue: string) => {
     onValueChange?.(itemValue)
+    setOpen(false)
+    setSearch("")
+  }
+
+  const handleCreateNew = () => {
+    onCreateNew?.(search)
     setOpen(false)
     setSearch("")
   }
@@ -92,9 +102,18 @@ export function Combobox({
         </div>
         <div className="max-h-60 overflow-auto">
           {filteredItems.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              {emptyText}
-            </div>
+            onCreateNew && search ? (
+              <div
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm text-primary outline-none hover:bg-accent"
+                onClick={handleCreateNew}
+              >
+                {createNewLabel(search)}
+              </div>
+            ) : (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                {emptyText}
+              </div>
+            )
           ) : (
             filteredItems.map((item) => (
               <div
