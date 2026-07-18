@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('despensy/checklist/renew', [DespensyController::class, 'renewChecklist'])->name('despensy.checklist.renew');
 
     Route::get('despensy/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('despensy/checkout/products', [CheckoutController::class, 'addProduct'])->name('checkout.add-product');
 
     Route::prefix('dashboard')->group(function () {
         Route::resource('categories', CategoryController::class)->except(['show']);
