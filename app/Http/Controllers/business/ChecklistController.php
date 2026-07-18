@@ -16,13 +16,20 @@ class ChecklistController extends Controller
 
     public function index(Request $request)
     {
-        $checklists = Checklist::with('state')
+        $checklists = Checklist::with(['state', 'user'])
+            ->withCount('items')
             ->forUser($request->user()->id)
-            ->latest()
+            ->latest('updated_at')
             ->get();
 
         return Inertia::render('checklists/index', [
-            'checklists' => $checklists->map(fn ($checklist) => (new ChecklistResource($checklist))->resolve($request))->all(),
+            'checklists' => [
+                'data' => $checklists->map(fn ($checklist) => (new ChecklistResource($checklist))->resolve($request))->all(),
+                'links' => [],
+                'current_page' => 1,
+                'per_page' => $checklists->count(),
+                'total' => $checklists->count(),
+            ],
         ]);
     }
 

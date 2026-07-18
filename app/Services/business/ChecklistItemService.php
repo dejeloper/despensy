@@ -12,6 +12,9 @@ class ChecklistItemService
 {
     /**
      * Mark a checklist item as bought, recording what was actually purchased.
+     * `total_price` is exactly what the user paid — it's never derived by
+     * multiplying a per-unit price. `unit_price` is derived from it instead
+     * (total ÷ cantidad) purely to keep the per-unit history usable.
      *
      * @throws ChecklistNotEditableException if the checklist is closed or cancelled.
      */
@@ -20,15 +23,15 @@ class ChecklistItemService
         $this->guardEditable($item->checklist);
 
         $quantity = $data['quantity_bought'];
-        $unitPrice = $data['unit_price'];
+        $totalPrice = $data['total_price'];
 
         $item->update([
             'was_bought' => true,
             'quantity_bought' => $quantity,
             'unit_id_bought' => $data['unit_id_bought'],
             'place_id' => $data['place_id'],
-            'unit_price' => $unitPrice,
-            'total_price' => $unitPrice * $quantity,
+            'unit_price' => $totalPrice / $quantity,
+            'total_price' => $totalPrice,
             'purchase_date' => $data['purchase_date'] ?? now()->toDateString(),
         ]);
 
@@ -111,7 +114,7 @@ class ChecklistItemService
         $this->guardEditable($checklist);
 
         $quantity = $purchaseData['quantity_bought'];
-        $unitPrice = $purchaseData['unit_price'];
+        $totalPrice = $purchaseData['total_price'];
 
         $attributes = [
             'quantity_planned' => $quantity,
@@ -120,8 +123,8 @@ class ChecklistItemService
             'quantity_bought' => $quantity,
             'unit_id_bought' => $purchaseData['unit_id_bought'],
             'place_id' => $purchaseData['place_id'],
-            'unit_price' => $unitPrice,
-            'total_price' => $unitPrice * $quantity,
+            'unit_price' => $totalPrice / $quantity,
+            'total_price' => $totalPrice,
             'purchase_date' => $purchaseData['purchase_date'] ?? now()->toDateString(),
         ];
 

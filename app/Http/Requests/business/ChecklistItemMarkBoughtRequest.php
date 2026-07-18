@@ -17,7 +17,7 @@ class ChecklistItemMarkBoughtRequest extends FormRequest
             'quantity_bought' => 'required|integer|min:1',
             'unit_id_bought' => 'required|exists:units,id',
             'place_id' => 'required|exists:places,id',
-            'unit_price' => 'required|numeric|min:0',
+            'total_price' => 'required|numeric|min:0',
             'purchase_date' => 'nullable|date',
         ];
     }
@@ -32,9 +32,9 @@ class ChecklistItemMarkBoughtRequest extends FormRequest
             'unit_id_bought.exists' => 'La unidad seleccionada no existe.',
             'place_id.required' => 'El lugar es obligatorio.',
             'place_id.exists' => 'El lugar seleccionado no existe.',
-            'unit_price.required' => 'El precio es obligatorio.',
-            'unit_price.numeric' => 'El precio debe ser un número.',
-            'unit_price.min' => 'El precio debe ser mayor o igual a 0.',
+            'total_price.required' => 'El precio total es obligatorio.',
+            'total_price.numeric' => 'El precio total debe ser un número.',
+            'total_price.min' => 'El precio total debe ser mayor o igual a 0.',
             'purchase_date.date' => 'La fecha no es válida.',
         ];
     }
