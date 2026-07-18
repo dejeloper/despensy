@@ -9,6 +9,7 @@ use App\Http\Controllers\business\PlaceController;
 use App\Http\Controllers\business\ProductController;
 use App\Http\Controllers\business\UnitController;
 use App\Services\business\ChecklistLifecycleService;
+use App\Services\business\DashboardStatsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -18,7 +19,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function (Request $request, ChecklistLifecycleService $lifecycleService) {
+    Route::get('dashboard', function (Request $request, ChecklistLifecycleService $lifecycleService, DashboardStatsService $statsService) {
         $checklist = $lifecycleService->openChecklistFor($request->user());
         $checklist?->load('state');
 
@@ -32,6 +33,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ],
                 'itemsCount' => $checklist->items()->count(),
             ] : null,
+            'topCategories' => $statsService->topCategoriesByPurchases(3)->map(fn ($row) => [
+                'category' => [
+                    'id' => $row['category']->id,
+                    'name' => $row['category']->name,
+                    'icon' => $row['category']->icon,
+                    'bg_color' => $row['category']->bg_color,
+                    'text_color' => $row['category']->text_color,
+                ],
+                'purchases_count' => $row['purchases_count'],
+            ])->values(),
+            'topPlaces' => $statsService->topPlacesByPurchases(3)->map(fn ($row) => [
+                'place' => [
+                    'id' => $row['place']->id,
+                    'name' => $row['place']->name,
+                    'bg_color' => $row['place']->bg_color,
+                    'text_color' => $row['place']->text_color,
+                ],
+                'purchases_count' => $row['purchases_count'],
+            ])->values(),
+            'topProducts' => $statsService->topProductsByPurchases(5)->map(fn ($row) => [
+                'product' => [
+                    'id' => $row['product']->id,
+                    'name' => $row['product']->name,
+                ],
+                'purchases_count' => $row['purchases_count'],
+            ])->values(),
         ]);
     })->name('dashboard');
 
