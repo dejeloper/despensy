@@ -199,8 +199,8 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - Historial (listas anteriores)
 
 - [x] Badge en menú "Mi Lista" con contador de items
-- [ ] Breadcrumbs actualizados en todas las vistas
-- [ ] Mensajes de éxito/error con toasts
+- [x] Breadcrumbs actualizados en todas las vistas
+- [x] Mensajes de éxito/error con toasts
 
 ### Validaciones (Prioridad Media)
 
