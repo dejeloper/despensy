@@ -6,6 +6,7 @@ use App\Exceptions\ChecklistNotEditableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\CheckoutAddProductRequest;
 use App\Http\Resources\ChecklistItemResource;
+use App\Models\business\Category;
 use App\Models\business\Place;
 use App\Models\business\Product;
 use App\Models\business\Unit;
@@ -43,9 +44,10 @@ class CheckoutController extends Controller
             'checklist' => ['id' => $checklist->id, 'name' => $checklist->name],
             'items' => $pendingItems,
             'boughtItems' => $boughtItems,
-            'places' => Place::where('enabled', true)->get(['id', 'name']),
+            'places' => Place::where('enabled', true)->get(['id', 'name', 'bg_color', 'text_color']),
             'units' => Unit::where('enabled', true)->get(['id', 'name', 'short_name']),
             'products' => Product::where('enabled', true)->get(['id', 'name']),
+            'categories' => Category::where('enabled', true)->get(['id', 'name']),
         ]);
     }
 
