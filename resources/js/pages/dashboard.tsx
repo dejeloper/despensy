@@ -1,11 +1,11 @@
+import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ClipboardList, ShoppingBasket } from 'lucide-react';
+import { ClipboardList, ShoppingBasket, Trophy } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,8 +21,26 @@ interface ActiveChecklist {
     itemsCount: number;
 }
 
+interface TopCategory {
+    category: { id: number; name: string; icon: string | null; bg_color: string | null; text_color: string | null };
+    purchases_count: number;
+}
+
+interface TopPlace {
+    place: { id: number; name: string; bg_color: string | null; text_color: string | null };
+    purchases_count: number;
+}
+
+interface TopProduct {
+    product: { id: number; name: string };
+    purchases_count: number;
+}
+
 interface DashboardProps {
     activeChecklist: ActiveChecklist | null;
+    topCategories: TopCategory[];
+    topPlaces: TopPlace[];
+    topProducts: TopProduct[];
 }
 
 function ChecklistSummaryCard({ activeChecklist }: { activeChecklist: ActiveChecklist | null }) {
@@ -58,22 +76,112 @@ function ChecklistSummaryCard({ activeChecklist }: { activeChecklist: ActiveChec
     );
 }
 
-export default function Dashboard({ activeChecklist }: DashboardProps) {
+function TopCategoriesCard({ topCategories }: { topCategories: TopCategory[] }) {
+    return (
+        <Card className="overflow-hidden">
+            <CardContent className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Trophy className="h-4 w-4" />
+                    <span className="text-sm font-medium">Top 3 categorías más compradas</span>
+                </div>
+
+                {topCategories.length > 0 ? (
+                    <ul className="flex flex-col gap-2">
+                        {topCategories.map(({ category, purchases_count }, index) => (
+                            <li key={category.id} className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                                    <ColorBadge
+                                        text={category.name}
+                                        icon={category.icon}
+                                        bgColor={category.bg_color}
+                                        textColor={category.text_color}
+                                    />
+                                </div>
+                                <span className="text-sm font-semibold">{purchases_count} compra(s)</span>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-sm text-muted-foreground">Aún no hay compras registradas.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function TopPlacesCard({ topPlaces }: { topPlaces: TopPlace[] }) {
+    return (
+        <Card className="overflow-hidden">
+            <CardContent className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Trophy className="h-4 w-4" />
+                    <span className="text-sm font-medium">Top 3 lugares con más compras</span>
+                </div>
+
+                {topPlaces.length > 0 ? (
+                    <ul className="flex flex-col gap-2">
+                        {topPlaces.map(({ place, purchases_count }, index) => (
+                            <li key={place.id} className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                                    <Badge style={{ backgroundColor: place.bg_color || undefined, color: place.text_color || undefined }}>
+                                        {place.name}
+                                    </Badge>
+                                </div>
+                                <span className="text-sm font-semibold">{purchases_count} compra(s)</span>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-sm text-muted-foreground">Aún no hay compras registradas.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function TopProductsCard({ topProducts }: { topProducts: TopProduct[] }) {
+    return (
+        <Card className="overflow-hidden">
+            <CardContent className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Trophy className="h-4 w-4" />
+                    <span className="text-sm font-medium">Top 5 productos más comprados</span>
+                </div>
+
+                {topProducts.length > 0 ? (
+                    <ul className="flex flex-col gap-2">
+                        {topProducts.map(({ product, purchases_count }, index) => (
+                            <li key={product.id} className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                                    <span className="text-sm">{product.name}</span>
+                                </div>
+                                <span className="text-sm font-semibold">{purchases_count} compra(s)</span>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-sm text-muted-foreground">Aún no hay compras registradas.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function Dashboard({ activeChecklist, topCategories, topPlaces, topProducts }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-2">
                     <ChecklistSummaryCard activeChecklist={activeChecklist} />
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
+                    <TopCategoriesCard topCategories={topCategories} />
                 </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                <div className="grid auto-rows-min gap-4 md:grid-cols-2">
+                    <TopPlacesCard topPlaces={topPlaces} />
+                    <TopProductsCard topProducts={topProducts} />
                 </div>
             </div>
         </AppLayout>
