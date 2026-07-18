@@ -55,6 +55,10 @@ class HandleInertiaRequests extends Middleware
             'openChecklistItemsCount' => fn (): int => $request->user()
                 ? app(ChecklistLifecycleService::class)->openChecklistItemsCountFor($request->user())
                 : 0,
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
         ];
     }
 }

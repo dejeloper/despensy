@@ -3,6 +3,7 @@
 use App\Http\Controllers\business\CategoryController;
 use App\Http\Controllers\business\ChecklistController;
 use App\Http\Controllers\business\ChecklistItemController;
+use App\Http\Controllers\business\CheckoutController;
 use App\Http\Controllers\business\DespensyController;
 use App\Http\Controllers\business\PlaceController;
 use App\Http\Controllers\business\ProductController;
@@ -37,6 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('despensy', [DespensyController::class, 'index'])->name('despensy.index');
     Route::put('despensy/products/{product}', [DespensyController::class, 'updateProductState'])->name('despensy.products.update');
     Route::post('despensy/checklist/renew', [DespensyController::class, 'renewChecklist'])->name('despensy.checklist.renew');
+
+    Route::get('despensy/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 
     Route::prefix('dashboard')->group(function () {
         Route::resource('categories', CategoryController::class)->except(['show']);
