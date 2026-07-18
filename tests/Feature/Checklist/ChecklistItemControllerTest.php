@@ -22,14 +22,15 @@ test('markBought fills purchase data', function () {
             'quantity_bought' => 3,
             'unit_id_bought' => $unit->id,
             'place_id' => $place->id,
-            'unit_price' => 2500,
+            'total_price' => 7500,
         ])
         ->assertRedirect();
 
     $item->refresh();
 
     expect($item->was_bought)->toBeTrue()
-        ->and((float) $item->total_price)->toBe(7500.0);
+        ->and((float) $item->total_price)->toBe(7500.0)
+        ->and((float) $item->unit_price)->toBe(2500.0);
 });
 
 test('markBought fails validation without required purchase fields', function () {
@@ -39,7 +40,7 @@ test('markBought fails validation without required purchase fields', function ()
 
     $this->actingAs($user)
         ->patch("/dashboard/checklist-items/{$item->id}/mark-bought", [])
-        ->assertSessionHasErrors(['quantity_bought', 'unit_id_bought', 'place_id', 'unit_price']);
+        ->assertSessionHasErrors(['quantity_bought', 'unit_id_bought', 'place_id', 'total_price']);
 });
 
 test('markNotBought clears purchase data', function () {
@@ -62,7 +63,7 @@ test('markBought flashes an error instead of a raw 404 when the item no longer e
             'quantity_bought' => 1,
             'unit_id_bought' => Unit::factory()->create()->id,
             'place_id' => Place::factory()->create()->id,
-            'unit_price' => 1000,
+            'total_price' => 1000,
         ])
         ->assertRedirect()
         ->assertSessionHas('error');
@@ -88,7 +89,7 @@ test('a user cannot mark another users item as bought', function () {
             'quantity_bought' => 1,
             'unit_id_bought' => Unit::factory()->create()->id,
             'place_id' => Place::factory()->create()->id,
-            'unit_price' => 1000,
+            'total_price' => 1000,
         ])
         ->assertForbidden();
 });

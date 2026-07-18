@@ -9,7 +9,7 @@ use App\Models\business\Unit;
 use App\Services\business\ChecklistItemService;
 
 describe('ChecklistItemService', function () {
-    test('markAsBought fills purchase data and computes total_price', function () {
+    test('markAsBought fills purchase data, keeping total_price exactly as entered and deriving unit_price', function () {
         $checklist = Checklist::factory()->open()->create();
         $item = ChecklistItem::factory()->create(['checklist_id' => $checklist->id]);
         $place = Place::factory()->create();
@@ -19,7 +19,7 @@ describe('ChecklistItemService', function () {
             'quantity_bought' => 2,
             'unit_id_bought' => $unit->id,
             'place_id' => $place->id,
-            'unit_price' => 4500,
+            'total_price' => 9000,
         ]);
 
         $item->refresh();
@@ -27,8 +27,8 @@ describe('ChecklistItemService', function () {
         expect($item->was_bought)->toBeTrue()
             ->and($item->quantity_bought)->toBe(2)
             ->and($item->place_id)->toBe($place->id)
-            ->and((float) $item->unit_price)->toBe(4500.0)
             ->and((float) $item->total_price)->toBe(9000.0)
+            ->and((float) $item->unit_price)->toBe(4500.0)
             ->and($item->purchase_date)->not->toBeNull();
     });
 
@@ -40,7 +40,7 @@ describe('ChecklistItemService', function () {
             'quantity_bought' => 1,
             'unit_id_bought' => Unit::factory()->create()->id,
             'place_id' => Place::factory()->create()->id,
-            'unit_price' => 1000,
+            'total_price' => 1000,
         ]))->toThrow(ChecklistNotEditableException::class);
     });
 
@@ -110,7 +110,7 @@ describe('ChecklistItemService', function () {
             ->toThrow(ChecklistNotEditableException::class);
     });
 
-    test('addPurchasedProduct creates the item already marked as bought', function () {
+    test('addPurchasedProduct creates the item already marked as bought, keeping total_price exactly as entered', function () {
         $checklist = Checklist::factory()->open()->create();
         $product = Product::factory()->create();
         $place = Place::factory()->create();
@@ -120,7 +120,7 @@ describe('ChecklistItemService', function () {
             'quantity_bought' => 3,
             'unit_id_bought' => $unit->id,
             'place_id' => $place->id,
-            'unit_price' => 2000,
+            'total_price' => 6000,
         ]);
 
         expect($item->checklist_id)->toBe($checklist->id)
@@ -128,7 +128,8 @@ describe('ChecklistItemService', function () {
             ->and($item->was_bought)->toBeTrue()
             ->and($item->quantity_bought)->toBe(3)
             ->and($item->place_id)->toBe($place->id)
-            ->and((float) $item->total_price)->toBe(6000.0);
+            ->and((float) $item->total_price)->toBe(6000.0)
+            ->and((float) $item->unit_price)->toBe(2000.0);
     });
 
     test('addPurchasedProduct updates the existing item instead of duplicating it', function () {
@@ -143,7 +144,7 @@ describe('ChecklistItemService', function () {
             'quantity_bought' => 2,
             'unit_id_bought' => $unit->id,
             'place_id' => $place->id,
-            'unit_price' => 1500,
+            'total_price' => 3000,
         ]);
 
         expect($bought->id)->toBe($planned->id)
@@ -159,7 +160,7 @@ describe('ChecklistItemService', function () {
             'quantity_bought' => 1,
             'unit_id_bought' => Unit::factory()->create()->id,
             'place_id' => Place::factory()->create()->id,
-            'unit_price' => 1000,
+            'total_price' => 1000,
         ]))->toThrow(ChecklistNotEditableException::class);
     });
 

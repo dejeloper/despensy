@@ -94,7 +94,7 @@ test('despensy shows a product as bought once its checklist item was marked as b
         'quantity_bought' => 1,
         'unit_id_bought' => $unit->id,
         'place_id' => $place->id,
-        'unit_price' => 1500,
+        'total_price' => 1500,
     ]);
 
     $response = $this->actingAs($user)->get('/despensy')->assertOk();

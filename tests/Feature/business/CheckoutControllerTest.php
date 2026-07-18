@@ -57,7 +57,7 @@ test('addProduct creates an out-of-list item already marked as bought', function
         'quantity_bought' => 2,
         'unit_id_bought' => $unit->id,
         'place_id' => $place->id,
-        'unit_price' => 1500,
+        'total_price' => 3000,
     ])->assertRedirect();
 
     $item = ChecklistItem::where('product_id', $product->id)->first();
@@ -65,13 +65,14 @@ test('addProduct creates an out-of-list item already marked as bought', function
     expect($item)->not->toBeNull()
         ->and($item->was_bought)->toBeTrue()
         ->and($item->quantity_bought)->toBe(2)
-        ->and((float) $item->total_price)->toBe(3000.0);
+        ->and((float) $item->total_price)->toBe(3000.0)
+        ->and((float) $item->unit_price)->toBe(1500.0);
 });
 
-test('addProduct requires product_id, quantity_bought, unit_id_bought, place_id and unit_price', function () {
+test('addProduct requires product_id, quantity_bought, unit_id_bought, place_id and total_price', function () {
     $user = User::factory()->create();
     Checklist::factory()->open()->create(['user_id' => $user->id]);
 
     $this->actingAs($user)->post('/despensy/checkout/products', [])
-        ->assertSessionHasErrors(['product_id', 'quantity_bought', 'unit_id_bought', 'place_id', 'unit_price']);
+        ->assertSessionHasErrors(['product_id', 'quantity_bought', 'unit_id_bought', 'place_id', 'total_price']);
 });
