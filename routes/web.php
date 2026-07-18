@@ -76,7 +76,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('units', UnitController::class)->except(['show']);
 
-        Route::resource('products', ProductController::class)->except(['show']);
+        Route::resource('products', ProductController::class);
 
         Route::get('checklists', [ChecklistController::class, 'index'])->name('checklists.index');
         Route::post('checklists', [ChecklistController::class, 'store'])->name('checklists.store');

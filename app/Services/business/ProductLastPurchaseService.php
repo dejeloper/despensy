@@ -64,4 +64,19 @@ class ProductLastPurchaseService
             ->orderByRaw('COALESCE(ci.created_at, products.created_at) DESC')
             ->get();
     }
+
+    /**
+     * Full purchase history for a single product — every ChecklistItem with
+     * was_bought = true, most recent first. The first row is that product's
+     * "last purchase" (see docs/DOMAIN.md); the frontend derives the summary
+     * from it instead of duplicating this query.
+     */
+    public function purchaseHistoryFor(Product $product): Collection
+    {
+        return $product->checklistItems()
+            ->bought()
+            ->with(['place', 'unitBought'])
+            ->orderByRaw('COALESCE(purchase_date, created_at) DESC')
+            ->get();
+    }
 }

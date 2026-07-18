@@ -30,6 +30,14 @@ class Product extends Model
     }
 
     /**
+     * Get every checklist item (planned or bought) referencing this product.
+     */
+    public function checklistItems()
+    {
+        return $this->hasMany(ChecklistItem::class);
+    }
+
+    /**
      * Scope a query to only include enabled products.
      */
     public function scopeEnabled($query)

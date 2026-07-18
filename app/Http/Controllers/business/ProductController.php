@@ -4,6 +4,7 @@ namespace App\Http\Controllers\business;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\ProductRequest;
+use App\Http\Resources\ChecklistItemResource;
 use App\Http\Resources\ProductResource;
 use App\Models\business\Category;
 use App\Models\business\Product;
@@ -44,6 +45,19 @@ class ProductController extends Controller
 
         return Inertia::render('products/create', [
             'categories' => $categories,
+        ]);
+    }
+
+    public function show(Request $request, Product $product)
+    {
+        $product->load('category');
+
+        $history = $this->lastPurchaseService->purchaseHistoryFor($product)
+            ->map(fn ($item) => (new ChecklistItemResource($item))->resolve($request));
+
+        return Inertia::render('products/show', [
+            'product' => (new ProductResource($product))->resolve($request),
+            'history' => $history,
         ]);
     }
 
