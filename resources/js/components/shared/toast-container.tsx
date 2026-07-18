@@ -1,6 +1,6 @@
 import { Toast, ToastType, useToast } from '@/contexts/toast-context';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Info, AlertTriangle, XCircle, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, X, XCircle } from 'lucide-react';
 
 const typeConfig: Record<ToastType, { bg: string; icon: typeof CheckCircle2; iconColor: string }> = {
     success: {
@@ -44,7 +44,7 @@ function ToastItem({ toast }: { toast: Toast }) {
         >
             <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', config.iconColor)} />
             <p className="flex-1 text-sm font-medium">{toast.message}</p>
-            <button onClick={() => dismiss(toast.id)} className="shrink-0 rounded-md p-0.5 opacity-70 hover:opacity-100 transition-opacity">
+            <button onClick={() => dismiss(toast.id)} className="shrink-0 rounded-md p-0.5 opacity-70 transition-opacity hover:opacity-100">
                 <X className="h-4 w-4" />
             </button>
         </div>

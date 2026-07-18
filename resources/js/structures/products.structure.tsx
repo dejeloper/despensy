@@ -1,7 +1,7 @@
 import { Action, Column } from '@/types/ui';
 import { router } from '@inertiajs/react';
 
-import { Edit, Trash } from 'lucide-react';
+import { Edit, Eye, Trash } from 'lucide-react';
 import { Product } from '../types/business/product';
 
 import { ColorBadge } from '@/components/shared/colorBadge.component';
@@ -70,6 +70,12 @@ export const productColumns: Column<Product>[] = [
 ];
 
 export const productActions: Action<Product>[] = [
+    {
+        title: 'Ver Detalle',
+        icon: <Eye />,
+        variant: 'ghost',
+        onClick: (p) => router.visit(route('products.show', p.id)),
+    },
     {
         title: 'Editar Producto',
         icon: <Edit />,
