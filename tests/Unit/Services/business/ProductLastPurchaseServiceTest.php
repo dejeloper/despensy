@@ -129,7 +129,7 @@ describe('ProductLastPurchaseService', function () {
             'quantity_bought' => 2,
             'unit_id_bought' => $unit->id,
             'place_id' => $place->id,
-            'unit_price' => 3200,
+            'total_price' => 6400,
         ]);
 
         $result = (new ProductLastPurchaseService)->allWithLastPurchase($checklist->id);
@@ -140,5 +140,37 @@ describe('ProductLastPurchaseService', function () {
             ->and($entry->active_unit_id_bought)->toBe($unit->id)
             ->and($entry->active_place_id)->toBe($place->id)
             ->and((float) $entry->active_unit_price)->toBe(3200.0);
+    });
+
+    test('purchaseHistoryFor returns only bought items for that product, most recent first', function () {
+        $product = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
+        $otherProduct = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
+        $place = Place::factory()->create();
+        $unit = Unit::factory()->create();
+
+        $checklistId = createChecklist();
+        createChecklistItem($checklistId, $product, $place, $unit, 3000, '2026-01-01 10:00:00');
+        createChecklistItem($checklistId, $product, $place, $unit, 3500, '2026-01-15 10:00:00');
+        createChecklistItem($checklistId, $otherProduct, $place, $unit, 1000, '2026-01-20 10:00:00');
+        DB::table('checklist_items')->insert([
+            'checklist_id' => $checklistId,
+            'product_id' => $product->id,
+            'was_bought' => false,
+            'quantity_planned' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $history = (new ProductLastPurchaseService)->purchaseHistoryFor($product);
+
+        expect($history)->toHaveCount(2)
+            ->and((float) $history->first()->unit_price)->toBe(3500.0)
+            ->and((float) $history->last()->unit_price)->toBe(3000.0);
+    });
+
+    test('purchaseHistoryFor returns an empty collection for a product never purchased', function () {
+        $product = Product::factory()->withRelationships(Category::factory()->create()->id)->create();
+
+        expect((new ProductLastPurchaseService)->purchaseHistoryFor($product))->toHaveCount(0);
     });
 });

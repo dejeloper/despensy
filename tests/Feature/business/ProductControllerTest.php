@@ -85,3 +85,35 @@ test('destroy fails gracefully when the product has purchase history', function 
 
     expect(Product::find($product->id))->not->toBeNull();
 });
+
+test('show displays the product with its purchase history, most recent first', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $checklist = Checklist::factory()->open()->create();
+
+    ChecklistItem::factory()->bought()->create([
+        'checklist_id' => $checklist->id,
+        'product_id' => $product->id,
+        'purchase_date' => '2026-01-01',
+    ]);
+    ChecklistItem::factory()->bought()->create([
+        'checklist_id' => $checklist->id,
+        'product_id' => $product->id,
+        'purchase_date' => '2026-01-15',
+    ]);
+
+    $response = $this->actingAs($user)->get("/dashboard/products/{$product->id}")->assertOk();
+
+    expect($response->inertiaProps('product')['id'])->toBe($product->id)
+        ->and($response->inertiaProps('history'))->toHaveCount(2)
+        ->and($response->inertiaProps('history')[0]['purchase_date'])->toBe('2026-01-15');
+});
+
+test('show displays an empty history for a product never purchased', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+
+    $response = $this->actingAs($user)->get("/dashboard/products/{$product->id}")->assertOk();
+
+    expect($response->inertiaProps('history'))->toHaveCount(0);
+});
