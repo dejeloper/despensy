@@ -14,6 +14,7 @@ class UnitSeeder extends Seeder
     {
         $units = [
             ['Arroba', 'Arb'],
+            ['Bolsa', 'Bol'],
             ['Bulto', 'Blt'],
             ['Caja', 'Cja'],
             ['Centímetro', 'cm'],
@@ -34,6 +35,7 @@ class UnitSeeder extends Seeder
             ['Par', 'Par'],
             ['Porción', 'Porc'],
             ['Promoción', 'Promo'],
+            ['Tarro', 'Tar'],
             ['Unidad', 'Und'],
         ];
 
