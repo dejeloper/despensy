@@ -9,7 +9,6 @@ export function GlobalLoading() {
     const timeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
-        // Only show the global loading for real visits, not for prefetches
         type InertiaVisitDetail = {
             prefetch?: boolean;
             preload?: boolean;
@@ -20,7 +19,6 @@ export function GlobalLoading() {
         type InertiaEvent = { detail?: { prefetch?: boolean; visit?: InertiaVisitDetail } } | undefined;
 
         const isPrefetchEvent = (e?: InertiaEvent) => {
-            // Defensive checks for different Inertia versions / event payload shapes
             const detail = e?.detail;
             const visit = detail?.visit;
 
@@ -30,20 +28,16 @@ export function GlobalLoading() {
         const handleStart = (e?: InertiaEvent) => {
             if (isPrefetchEvent(e)) return;
 
-            // Do not show for visits that requested to skip global loading
-            if ((window as any).__skipGlobalLoading) return;
+            if (window.__skipGlobalLoading) return;
 
-            // If someone explicitly requested the global loading to force-show, honor it
-            const force = Boolean((window as any).__forceGlobalLoading);
+            const force = Boolean(window.__forceGlobalLoading);
 
-            // show the modal immediately for real visits
             window.requestAnimationFrame(() => setIsLoading(true));
 
-            // if forced, clear the flag after showing (finish handler will also clear on finish)
             if (force) {
                 try {
-                    (window as any).__forceGlobalLoading = false;
-                } catch (e) {
+                    window.__forceGlobalLoading = false;
+                } catch {
                     /* ignore */
                 }
             }
@@ -52,14 +46,12 @@ export function GlobalLoading() {
         const handleFinish = (e?: InertiaEvent) => {
             if (isPrefetchEvent(e)) return;
 
-            // Ensure any force flag is cleared
             try {
-                (window as any).__forceGlobalLoading = false;
-            } catch (err) {
+                window.__forceGlobalLoading = false;
+            } catch {
                 /* ignore */
             }
 
-            // hide the modal in next rAF to batch with other DOM work
             window.requestAnimationFrame(() => setIsLoading(false));
         };
 
@@ -67,22 +59,17 @@ export function GlobalLoading() {
         router.on('finish', handleFinish);
 
         return () => {
-            // router.off is not available in this project setup,
-            // so we avoid calling it to prevent runtime errors.
             if (timeoutRef.current) {
                 window.clearTimeout(timeoutRef.current);
             }
         };
     }, []);
 
-    // Auto-close after 30 seconds maximum to avoid stuck modal
     useEffect(() => {
         if (isLoading) {
-            // clear any previous timeout
             if (timeoutRef.current) {
                 window.clearTimeout(timeoutRef.current);
             }
-            // set max 30s timeout
             timeoutRef.current = window.setTimeout(() => {
                 setIsLoading(false);
                 timeoutRef.current = null;
@@ -96,12 +83,7 @@ export function GlobalLoading() {
     }, [isLoading]);
 
     return (
-        <Dialog
-            open={isLoading}
-            onOpenChange={() => {
-                /* prevent user from closing */
-            }}
-        >
+        <Dialog open={isLoading} onOpenChange={() => {}}>
             <DialogContent hideClose className="rounded-md border-none bg-background/90 p-4 sm:max-w-[220px]">
                 <DialogTitle className="sr-only">Cargando</DialogTitle>
                 <DialogDescription className="sr-only">Operación en progreso</DialogDescription>
