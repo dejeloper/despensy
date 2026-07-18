@@ -3,11 +3,13 @@ import archiver from 'archiver';
 import { Client } from 'basic-ftp';
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
+import crypto from 'node:crypto';
 import path from 'path';
-import config from './deploy.config.json' with { type: 'json' };
 
 const rootDir = process.cwd();
 const prodDir = path.join(rootDir, 'production');
+
+const ftp = loadFtpConfig(path.join(rootDir, '.env'));
 
 const steps = [];
 
@@ -78,10 +80,16 @@ async function main() {
         fs.copySync(srcPath, destPath, {
             filter: (src) => {
                 const name = path.basename(src);
+                // Toda la documentación queda fuera del paquete de producción,
+                // incluidos los README dentro de vendor.
+                if (name.endsWith('.md')) return false;
                 const excludes = [
                     'node_modules',
+                    '.agents',
+                    '.claude',
                     '.github',
                     '.vscode',
+                    'docs',
                     'tests',
                     '.editorconfig',
                     '.env.example',
@@ -91,13 +99,21 @@ async function main() {
                     '.prettierrc',
                     'artisan',
                     'deploy.config.json',
+                    'deploy.js',
                     'deploy.json',
+                    'deploy.token',
                     'deploy.ts',
+                    'install.php',
                     'eslint.config.js',
                     'phpunit.xml',
+                    'production.zip',
                     'tsconfig.json',
                     '.env',
                     '.git',
+                    'database/migrations',
+                    'database/seeders',
+                    'database/factories',
+                    'bootstrap/cache',
                 ];
                 return !excludes.includes(name);
             },
@@ -125,8 +141,6 @@ async function main() {
 
     console.timeEnd('📦 Ajustando public');
     markEnd('📦 Ajustando public');
-
-    // 5.
 
     // 5. Renombrar .env.prod a .env
     console.time('🔑 Configurando .env');
@@ -157,39 +171,65 @@ async function main() {
 
     console.log(`✅ ZIP creado (${(fs.statSync(zipPath).size / 1024 / 1024).toFixed(2)} MB)`);
 
-    // 7. Subir ZIP al FTP
-    if (config.ftp?.host) {
+    // 7. Generar token de un solo uso y escribir deploy.token
+    console.time('🔐 Generando token');
+    markStart('🔐 Generando token');
+    const token = crypto.randomBytes(24).toString('hex');
+    const tokenPath = path.join(rootDir, 'deploy.token');
+    fs.writeFileSync(tokenPath, token, 'utf8');
+    console.timeEnd('🔐 Generando token');
+    markEnd('🔐 Generando token');
+
+    // 8. Subir production.zip, install.php y deploy.token al FTP
+    if (ftp.host) {
         console.time('🌐 Subida FTP');
         markStart('🌐 Subida FTP');
-        const files = listDirsRecursive(prodDir);
-        console.log('📦 Archivos listos para subir:');
-        files.forEach((f) => console.log(' - ' + f));
+
+        const installerPath = path.join(rootDir, 'install.php');
+        if (!fs.existsSync(installerPath)) {
+            throw new Error('No se encontró install.php en la raíz del proyecto.');
+        }
 
         const client = new Client();
-        client.ftp.verbose = true;
+        client.ftp.verbose = false;
 
         try {
             await client.access({
-                host: config.ftp.host,
-                user: config.ftp.user,
-                password: config.ftp.password,
-                secure: config.ftp.secure || false,
+                host: ftp.host,
+                user: ftp.user,
+                password: ftp.password,
+                secure: ftp.secure,
                 secureOptions: { rejectUnauthorized: false },
-                port: config.ftp.port || 21,
+                port: ftp.port,
             });
 
-            await client.ensureDir(config.ftp.remoteDir);
-            await client.cd(config.ftp.remoteDir);
+            // Raíz de la app (privada, fuera del navegador): production.zip + deploy.token
+            await client.ensureDir(ftp.remoteDir);
             await client.uploadFrom(zipPath, 'production.zip');
-            console.log('✅ ZIP subido correctamente');
-            console.log('⚡ Ahora entra a cPanel → Administrador de Archivos y extrae production.zip manualmente');
+            await client.uploadFrom(tokenPath, 'deploy.token');
+
+            // Carpeta pública (Document Root): solo install.php, accesible por URL
+            await client.ensureDir('public');
+            await client.uploadFrom(installerPath, 'install.php');
+            console.log('✅ production.zip y deploy.token en la raíz; install.php en public/');
+
+            const installUrl = `${buildBaseUrl(ftp.host)}/install.php?token=${token}`;
+            console.log('\n👉 Abre esta URL en el navegador para finalizar la instalación:\n');
+            console.log(`   ${installUrl}\n`);
         } catch (err) {
             console.error('❌ Error en despliegue:', err);
         } finally {
             client.close();
         }
+
+        // El token local ya no es necesario tras subirlo.
+        fs.removeSync(tokenPath);
+
         console.timeEnd('🌐 Subida FTP');
         markEnd('🌐 Subida FTP');
+    } else {
+        console.warn('⚠️ Sin configuración FTP en .env (DEPLOY_FTP_HOST). Se omite la subida.');
+        fs.removeSync(tokenPath);
     }
 
     markEnd('⏱️ Tiempo total');
@@ -211,29 +251,54 @@ async function main() {
 
 main();
 
-function listDirsRecursive(dir, baseDir = dir) {
-    let results = [];
-    const list = fs.readdirSync(dir);
+function loadFtpConfig(envPath) {
+    const env = parseEnvFile(envPath);
 
-    list.forEach((name) => {
-        const fullPath = path.join(dir, name);
-        const stat = fs.statSync(fullPath);
+    return {
+        host: env.DEPLOY_FTP_HOST || '',
+        user: env.DEPLOY_FTP_USER || '',
+        password: env.DEPLOY_FTP_PASSWORD || '',
+        secure: String(env.DEPLOY_FTP_SECURE || '').toLowerCase() === 'true',
+        port: Number(env.DEPLOY_FTP_PORT) || 21,
+        remoteDir: env.DEPLOY_FTP_REMOTE_DIR || '/',
+    };
+}
 
-        if (stat && stat.isDirectory()) {
-            const relative = path.relative(baseDir, fullPath);
+function parseEnvFile(envPath) {
+    const env = {};
+    if (!fs.existsSync(envPath)) {
+        return env;
+    }
 
-            if (name === 'vendor') {
-                const vendorList = fs
-                    .readdirSync(fullPath)
-                    .filter((sub) => fs.statSync(path.join(fullPath, sub)).isDirectory())
-                    .map((sub) => path.join(relative, sub));
-                results.push(...vendorList);
-            } else {
-                results.push(relative);
-                results = results.concat(listDirsRecursive(fullPath, baseDir));
-            }
+    const content = fs.readFileSync(envPath, 'utf8');
+    for (const line of content.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) {
+            continue;
         }
-    });
 
-    return results;
+        const separator = trimmed.indexOf('=');
+        if (separator === -1) {
+            continue;
+        }
+
+        const key = trimmed.slice(0, separator).trim();
+        let value = trimmed.slice(separator + 1).trim();
+
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+        }
+
+        env[key] = value;
+    }
+
+    return env;
+}
+
+function buildBaseUrl(host) {
+    if (/^https?:\/\//i.test(host)) {
+        return host.replace(/\/+$/, '');
+    }
+
+    return `https://${host.replace(/\/+$/, '')}`;
 }

@@ -27,3 +27,5 @@ yarn-error.log
 /.vscode
 /.zed
 production.zip
+install.php
+deploy.token
