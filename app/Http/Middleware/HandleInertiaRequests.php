@@ -53,7 +53,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'openChecklistItemsCount' => fn (): int => $request->user()
-                ? app(ChecklistLifecycleService::class)->openChecklistItemsCountFor($request->user())
+                ? app(ChecklistLifecycleService::class)->openChecklistItemsCountFor()
                 : 0,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\business\ChecklistItemMarkBoughtRequest;
 use App\Models\business\ChecklistItem;
 use App\Services\business\ChecklistItemService;
-use Illuminate\Http\Request;
 
 class ChecklistItemController extends Controller
 {
@@ -21,8 +20,6 @@ class ChecklistItemController extends Controller
             return back()->with('error', 'Este producto ya no está en la lista. Recarga la página.');
         }
 
-        abort_unless($checklistItem->checklist->user_id === $request->user()->id, 403);
-
         try {
             $this->itemService->markAsBought($checklistItem, $request->validated());
         } catch (ChecklistNotEditableException $e) {
@@ -32,15 +29,13 @@ class ChecklistItemController extends Controller
         return back()->with('success', 'Producto marcado como comprado.');
     }
 
-    public function markNotBought(Request $request, int $item)
+    public function markNotBought(int $item)
     {
         $checklistItem = ChecklistItem::find($item);
 
         if (! $checklistItem) {
             return back()->with('error', 'Este producto ya no está en la lista. Recarga la página.');
         }
-
-        abort_unless($checklistItem->checklist->user_id === $request->user()->id, 403);
 
         try {
             $this->itemService->markAsNotBought($checklistItem);

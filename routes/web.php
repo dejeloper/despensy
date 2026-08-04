@@ -10,7 +10,6 @@ use App\Http\Controllers\business\ProductController;
 use App\Http\Controllers\business\UnitController;
 use App\Services\business\ChecklistLifecycleService;
 use App\Services\business\DashboardStatsService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,8 +18,8 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function (Request $request, ChecklistLifecycleService $lifecycleService, DashboardStatsService $statsService) {
-        $checklist = $lifecycleService->openChecklistFor($request->user());
+    Route::get('dashboard', function (ChecklistLifecycleService $lifecycleService, DashboardStatsService $statsService) {
+        $checklist = $lifecycleService->openChecklistFor();
         $checklist?->load('state');
 
         return Inertia::render('dashboard', [

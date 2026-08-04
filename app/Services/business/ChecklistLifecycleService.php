@@ -14,36 +14,36 @@ use App\Models\User;
 class ChecklistLifecycleService
 {
     /**
-     * Get the user's currently open checklist (state "Abierta" or "En
-     * Progreso"), if any. A user has at most one at a time.
+     * Get the system's currently open checklist (state "Abierta" or "En
+     * Progreso"), if any. The system has at most one at a time, shared by
+     * every authenticated user regardless of who created it.
      */
-    public function openChecklistFor(User $user): ?Checklist
+    public function openChecklistFor(): ?Checklist
     {
-        return Checklist::forUser($user->id)
-            ->whereHas('state', function ($query) {
-                $query->whereIn('name', [State::CHECKLIST_OPEN, State::CHECKLIST_IN_PROGRESS]);
-            })
+        return Checklist::whereHas('state', function ($query) {
+            $query->whereIn('name', [State::CHECKLIST_OPEN, State::CHECKLIST_IN_PROGRESS]);
+        })
             ->latest()
             ->first();
     }
 
     /**
-     * Count the items in the user's open checklist (0 if none is open).
+     * Count the items in the system's open checklist (0 if none is open).
      * Used to show a badge in the navigation.
      */
-    public function openChecklistItemsCountFor(User $user): int
+    public function openChecklistItemsCountFor(): int
     {
-        return $this->openChecklistFor($user)?->items()->count() ?? 0;
+        return $this->openChecklistFor()?->items()->count() ?? 0;
     }
 
     /**
-     * Get the user's open checklist, creating one if none exists yet. Used
+     * Get the system's open checklist, creating one if none exists yet. Used
      * by entry points (like Despensa) that need a checklist to write to
-     * without requiring the user to have visited /checklists/active first.
+     * without requiring anyone to have visited /checklists/active first.
      */
     public function activeChecklistFor(User $user): Checklist
     {
-        return $this->openChecklistFor($user) ?? $this->openNewFor($user);
+        return $this->openChecklistFor() ?? $this->openNewFor($user);
     }
 
     /**
@@ -56,12 +56,13 @@ class ChecklistLifecycleService
     }
 
     /**
-     * Open a new checklist for the user. If one is already open, it gets
-     * closed first — a user can only have one open checklist at a time.
+     * Open a new checklist, attributed to the given user as its creator. If
+     * one is already open, it gets closed first — the system can only have
+     * one open checklist at a time, shared by everyone.
      */
     public function openNewFor(User $user, ?string $name = null): Checklist
     {
-        $currentlyOpen = $this->openChecklistFor($user);
+        $currentlyOpen = $this->openChecklistFor();
 
         if ($currentlyOpen) {
             $this->complete($currentlyOpen);

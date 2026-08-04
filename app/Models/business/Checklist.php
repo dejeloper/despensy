@@ -17,7 +17,8 @@ class Checklist extends Model
     ];
 
     /**
-     * Get the user that owns the checklist.
+     * Get the user who created the checklist. Informational only — the
+     * checklist itself is shared and editable by every authenticated user.
      */
     public function user()
     {
@@ -38,14 +39,6 @@ class Checklist extends Model
     public function items()
     {
         return $this->hasMany(ChecklistItem::class);
-    }
-
-    /**
-     * Scope a query to checklists belonging to a given user.
-     */
-    public function scopeForUser($query, $userId)
-    {
-        return $query->where('user_id', $userId);
     }
 
     /**

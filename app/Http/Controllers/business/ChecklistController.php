@@ -18,7 +18,6 @@ class ChecklistController extends Controller
     {
         $checklists = Checklist::with(['state', 'user'])
             ->withCount('items')
-            ->forUser($request->user()->id)
             ->latest('updated_at')
             ->get();
 
@@ -35,8 +34,6 @@ class ChecklistController extends Controller
 
     public function show(Request $request, Checklist $checklist)
     {
-        abort_unless($checklist->user_id === $request->user()->id, 403);
-
         $checklist->load(['state', 'items.product', 'items.unitPlanned', 'items.unitBought', 'items.place']);
 
         return Inertia::render('checklists/show', [
@@ -53,10 +50,8 @@ class ChecklistController extends Controller
             ->with('success', 'Lista de compra creada exitosamente.');
     }
 
-    public function complete(Request $request, Checklist $checklist)
+    public function complete(Checklist $checklist)
     {
-        abort_unless($checklist->user_id === $request->user()->id, 403);
-
         $this->lifecycleService->complete($checklist);
 
         return redirect()
@@ -64,10 +59,8 @@ class ChecklistController extends Controller
             ->with('success', 'Lista completada exitosamente.');
     }
 
-    public function cancel(Request $request, Checklist $checklist)
+    public function cancel(Checklist $checklist)
     {
-        abort_unless($checklist->user_id === $request->user()->id, 403);
-
         $this->lifecycleService->cancel($checklist);
 
         return redirect()
