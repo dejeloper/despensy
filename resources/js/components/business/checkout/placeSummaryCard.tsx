@@ -23,12 +23,13 @@ export function PlaceSummaryCard({ boughtItems }: PlaceSummaryCardProps) {
         for (const item of boughtItems) {
             if (!item.place || item.total_price == null) continue;
 
+            const price = Number(item.total_price);
             const existing = byPlaceId.get(item.place.id!);
             if (existing) {
                 existing.productsCount += 1;
-                existing.total += item.total_price;
+                existing.total += price;
             } else {
-                byPlaceId.set(item.place.id!, { place: item.place, productsCount: 1, total: item.total_price });
+                byPlaceId.set(item.place.id!, { place: item.place, productsCount: 1, total: price });
             }
         }
 

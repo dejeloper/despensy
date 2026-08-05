@@ -23,7 +23,7 @@ export default function ChecklistShow({ checklist }: ChecklistShowProps) {
 
     const boughtItems = checklist.items?.filter((item) => item.was_bought) ?? [];
     const pendingItems = checklist.items?.filter((item) => !item.was_bought) ?? [];
-    const total = boughtItems.reduce((sum, item) => sum + (item.total_price ?? 0), 0);
+    const total = boughtItems.reduce((sum, item) => sum + Number(item.total_price ?? 0), 0);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

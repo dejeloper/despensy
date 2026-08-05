@@ -252,15 +252,15 @@ function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Un
 
     return (
         <div className="flex flex-col gap-1 border-b p-4 last:border-b-0 sm:p-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-2">
-            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                <p className="min-w-0 truncate text-base font-semibold">{item.product?.name}</p>
+            <div className="min-w-0 lg:flex-1">
+                <p className="truncate text-base font-semibold">{item.product?.name}</p>
                 {item.product?.category && (
                     <ColorBadge
                         text={item.product.category.name}
                         icon={item.product.category.icon}
                         bgColor={item.product.category.bg_color}
                         textColor={item.product.category.text_color}
-                        className="min-w-0 shrink-0 px-2 py-0.5 text-sm font-medium"
+                        className="mt-1 min-w-0 px-2 py-0.5 text-xs font-medium"
                     />
                 )}
             </div>
@@ -302,7 +302,7 @@ function BoughtItemsList({
     }, [boughtItems, placeFilter, categoryFilter]);
 
     const totalConfirmed = useMemo(() => {
-        return filteredBoughtItems.reduce((sum, item) => sum + (item.total_price ?? 0), 0);
+        return filteredBoughtItems.reduce((sum, item) => sum + Number(item.total_price ?? 0), 0);
     }, [filteredBoughtItems]);
 
     if (boughtItems.length === 0) {
