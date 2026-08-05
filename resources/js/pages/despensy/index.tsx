@@ -117,7 +117,7 @@ export default function DespensyIndex({ products, categories, units, places, che
                     <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar productos..." />
 
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-48">
+                        <SelectTrigger className="w-auto whitespace-nowrap">
                             <SelectValue placeholder="Categoría" />
                         </SelectTrigger>
                         <SelectContent>

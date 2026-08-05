@@ -10,6 +10,7 @@ import { Product } from '@/types/business/product';
 import { Unit } from '@/types/business/unit';
 
 import { AddOutOfListProductModal } from '@/components/business/checkout/addOutOfListProductModal';
+import { PlaceSummaryCard } from '@/components/business/checkout/placeSummaryCard';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
@@ -264,7 +265,28 @@ function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Un
     );
 }
 
-function BoughtItemsList({ boughtItems, units, places }: { boughtItems: ChecklistItem[]; units: Unit[]; places: Place[] }) {
+function BoughtItemsList({
+    boughtItems,
+    units,
+    places,
+    categories,
+}: {
+    boughtItems: ChecklistItem[];
+    units: Unit[];
+    places: Place[];
+    categories: Category[];
+}) {
+    const [placeFilter, setPlaceFilter] = useState<string>('all');
+    const [categoryFilter, setCategoryFilter] = useState<string>('all');
+
+    const filteredBoughtItems = useMemo(() => {
+        return boughtItems.filter((item) => {
+            if (placeFilter !== 'all' && item.place?.id?.toString() !== placeFilter) return false;
+            if (categoryFilter !== 'all' && item.product?.category?.id?.toString() !== categoryFilter) return false;
+            return true;
+        });
+    }, [boughtItems, placeFilter, categoryFilter]);
+
     if (boughtItems.length === 0) {
         return null;
     }
@@ -272,10 +294,46 @@ function BoughtItemsList({ boughtItems, units, places }: { boughtItems: Checklis
     return (
         <Card>
             <CardContent className="flex flex-col gap-2 p-0">
-                <p className="p-3 pb-0 font-medium">Comprados ({boughtItems.length})</p>
-                {boughtItems.map((item) => (
-                    <BoughtItemRow key={item.id} item={item} units={units} places={places} />
-                ))}
+                <div className="flex flex-col items-start gap-2 p-3 pb-0">
+                    <p className="font-medium">Productos Confirmados ({filteredBoughtItems.length})</p>
+                    <div className="flex flex-wrap gap-2">
+                        <Select value={placeFilter} onValueChange={setPlaceFilter}>
+                            <SelectTrigger className="w-auto whitespace-nowrap">
+                                <SelectValue placeholder="Lugar" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos los lugares</SelectItem>
+                                {places.map((place) => (
+                                    <SelectItem key={place.id} value={place.id!.toString()}>
+                                        {place.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                            <SelectTrigger className="w-auto whitespace-nowrap">
+                                <SelectValue placeholder="Categoría" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas las categorías</SelectItem>
+                                {categories.map((category) => (
+                                    <SelectItem key={category.id} value={category.id!.toString()}>
+                                        {category.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <PlaceSummaryCard boughtItems={filteredBoughtItems} />
+
+                {filteredBoughtItems.length === 0 ? (
+                    <p className="p-4 text-sm text-muted-foreground">Ningún producto confirmado coincide con el filtro.</p>
+                ) : (
+                    filteredBoughtItems.map((item) => <BoughtItemRow key={item.id} item={item} units={units} places={places} />)
+                )}
             </CardContent>
         </Card>
     );
@@ -331,7 +389,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                         <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar productos..." />
 
                         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-auto whitespace-nowrap">
                                 <SelectValue placeholder="Categoría" />
                             </SelectTrigger>
                             <SelectContent>
@@ -358,7 +416,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                     </CardContent>
                 </Card>
 
-                <BoughtItemsList boughtItems={boughtItems} units={units} places={places} />
+                <BoughtItemsList boughtItems={boughtItems} units={units} places={places} categories={categories} />
             </div>
 
             <Dialog open={changePlaceOpen} onOpenChange={setChangePlaceOpen}>
