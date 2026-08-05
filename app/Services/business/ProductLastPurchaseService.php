@@ -59,6 +59,7 @@ class ProductLastPurchaseService
                     'active_ci.unit_id_bought as active_unit_id_bought',
                     'active_ci.place_id as active_place_id',
                     'active_ci.unit_price as active_unit_price',
+                    'active_ci.total_price as active_total_price',
                 ]);
             })
             ->orderByRaw('COALESCE(ci.created_at, products.created_at) DESC')

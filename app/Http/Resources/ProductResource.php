@@ -42,6 +42,7 @@ class ProductResource extends JsonResource
             'active_unit_id_bought' => $this->active_unit_id_bought,
             'active_place_id' => $this->active_place_id,
             'active_unit_price' => $this->active_unit_price,
+            'active_total_price' => $this->active_total_price,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
