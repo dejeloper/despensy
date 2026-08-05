@@ -69,6 +69,20 @@ test('addProduct creates an out-of-list item already marked as bought', function
         ->and((float) $item->unit_price)->toBe(1500.0);
 });
 
+test('index only lists enabled categories', function () {
+    $user = User::factory()->create();
+    Checklist::factory()->open()->create(['user_id' => $user->id]);
+    $enabled = Category::factory()->create(['enabled' => true]);
+    $disabled = Category::factory()->create(['enabled' => false]);
+
+    $response = $this->actingAs($user)->get('/despensy/checkout')->assertOk();
+
+    $categories = collect($response->inertiaProps('categories'))->pluck('id');
+
+    expect($categories)->toContain($enabled->id)
+        ->and($categories)->not->toContain($disabled->id);
+});
+
 test('addProduct requires product_id, quantity_bought, unit_id_bought, place_id and total_price', function () {
     $user = User::factory()->create();
     Checklist::factory()->open()->create(['user_id' => $user->id]);
