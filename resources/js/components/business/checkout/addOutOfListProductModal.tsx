@@ -112,7 +112,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                         <Input
                             type="number"
                             min={0}
-                            step="0.01"
+                            step="1"
                             placeholder="Precio total"
                             value={data.total_price}
                             onChange={(e) => setData('total_price', e.target.value)}

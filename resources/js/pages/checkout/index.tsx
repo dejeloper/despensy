@@ -100,7 +100,7 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
                     <Input
                         type="number"
                         min={0}
-                        step="0.01"
+                        step="1"
                         placeholder="Precio total"
                         value={data.total_price}
                         onChange={(e) => setData('total_price', e.target.value)}
@@ -221,7 +221,7 @@ function EditBoughtItemModal({
                         <Input
                             type="number"
                             min={0}
-                            step="0.01"
+                            step="1"
                             placeholder="Precio total"
                             value={data.total_price}
                             onChange={(e) => setData('total_price', e.target.value)}
