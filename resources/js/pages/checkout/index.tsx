@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { normalizeText, sortBy } from '@/lib/utils';
-import { LoaderCircle, Pencil } from 'lucide-react';
+import { Check, LoaderCircle, Pencil } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Despensa', href: route('despensy.index') },
@@ -57,21 +57,24 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
     };
 
     return (
-        <form onSubmit={submit} className="flex flex-col gap-3 border-b p-4 last:border-b-0 sm:flex-row sm:flex-wrap sm:items-start sm:gap-2 sm:p-3">
-            <div className="flex w-full items-center justify-between gap-2 sm:min-w-[140px] sm:flex-1">
-                <p className="min-w-0 truncate text-base font-semibold">{item.product?.name}</p>
+        <form
+            onSubmit={submit}
+            className="flex flex-col gap-3 border-b p-4 last:border-b-0 sm:p-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4"
+        >
+            <div className="min-w-0 lg:w-1/2">
+                <p className="truncate text-base font-semibold">{item.product?.name}</p>
                 {item.product?.category && (
                     <ColorBadge
                         text={item.product.category.name}
                         icon={item.product.category.icon}
                         bgColor={item.product.category.bg_color}
                         textColor={item.product.category.text_color}
-                        className="min-w-0 shrink-0 px-2 py-0.5 text-sm font-medium"
+                        className="mt-1 min-w-0 px-2 py-0.5 text-xs font-medium"
                     />
                 )}
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:contents">
-                <div className="sm:w-24">
+            <div className="flex flex-wrap items-end gap-2 lg:w-1/2 lg:flex-nowrap lg:justify-end">
+                <div className="w-24">
                     <Input
                         type="number"
                         min={1}
@@ -82,7 +85,7 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
                     />
                     {errors.quantity_bought && <p className="mt-1 text-xs text-destructive">{errors.quantity_bought}</p>}
                 </div>
-                <div className="sm:w-32">
+                <div className="w-32">
                     <Combobox
                         items={unitItems}
                         value={data.unit_id_bought}
@@ -94,28 +97,28 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
                     />
                     {errors.unit_id_bought && <p className="mt-1 text-xs text-destructive">{errors.unit_id_bought}</p>}
                 </div>
+                <div className="w-28">
+                    <Input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        placeholder="Precio total"
+                        value={data.total_price}
+                        onChange={(e) => setData('total_price', e.target.value)}
+                        required
+                    />
+                    {errors.total_price && <p className="mt-1 text-xs text-destructive">{errors.total_price}</p>}
+                </div>
+                <Button
+                    type="submit"
+                    size="icon"
+                    className="shrink-0"
+                    title="Confirmar compra"
+                    disabled={processing || !placeId || !data.quantity_bought || !data.unit_id_bought || !data.total_price}
+                >
+                    {processing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                </Button>
             </div>
-            <div className="w-full sm:w-28">
-                <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Precio total"
-                    value={data.total_price}
-                    onChange={(e) => setData('total_price', e.target.value)}
-                    required
-                />
-                {errors.total_price && <p className="mt-1 text-xs text-destructive">{errors.total_price}</p>}
-            </div>
-            <Button
-                type="submit"
-                size="sm"
-                className="w-full sm:w-auto"
-                disabled={processing || !placeId || !data.quantity_bought || !data.unit_id_bought || !data.total_price}
-            >
-                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                Confirmar
-            </Button>
         </form>
     );
 }
@@ -134,6 +137,7 @@ function EditBoughtItemModal({
     onOpenChange: (open: boolean) => void;
 }) {
     const contentRef = useRef<HTMLDivElement>(null);
+    const [unconfirming, setUnconfirming] = useState(false);
 
     const { data, setData, patch, processing, errors, reset } = useForm({
         quantity_bought: item.quantity_bought?.toString() || '',
@@ -152,7 +156,12 @@ function EditBoughtItemModal({
 
     const unconfirm = () => {
         if (!confirm(`¿Quitar la confirmación de compra de "${item.product?.name}"? Volverá a la lista de pendientes.`)) return;
-        router.patch(route('checklist-items.mark-not-bought', item.id), undefined, { preserveScroll: true, onSuccess: () => onOpenChange(false) });
+        setUnconfirming(true);
+        router.patch(route('checklist-items.mark-not-bought', item.id), undefined, {
+            preserveScroll: true,
+            onSuccess: () => onOpenChange(false),
+            onFinish: () => setUnconfirming(false),
+        });
     };
 
     return (
@@ -223,10 +232,11 @@ function EditBoughtItemModal({
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={unconfirm} disabled={processing}>
-                            Quitar confirmación
+                        <Button type="button" variant="outline" onClick={unconfirm} disabled={processing || unconfirming}>
+                            {unconfirming && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                            Quitar
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" disabled={processing || unconfirming}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Guardar
                         </Button>
@@ -241,7 +251,7 @@ function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Un
     const [editOpen, setEditOpen] = useState(false);
 
     return (
-        <div className="flex flex-col gap-1 border-b p-4 last:border-b-0 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2 sm:p-3">
+        <div className="flex flex-col gap-1 border-b p-4 last:border-b-0 sm:p-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-2">
             <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
                 <p className="min-w-0 truncate text-base font-semibold">{item.product?.name}</p>
                 {item.product?.category && (
@@ -254,7 +264,7 @@ function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Un
                     />
                 )}
             </div>
-            <div className="flex items-center justify-between gap-2 sm:justify-end">
+            <div className="flex items-center justify-between gap-2 lg:justify-end">
                 <p className="text-sm text-muted-foreground">
                     {item.quantity_bought} {item.unit_bought?.short_name}
                 </p>
