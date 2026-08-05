@@ -32,17 +32,7 @@ type DespensaForm = {
     unit_id_at_home: string;
 };
 
-function MarkBoughtSection({
-    product,
-    units,
-    places,
-    onSaved,
-}: {
-    product: Product;
-    units: Unit[];
-    places: Place[];
-    onSaved: () => void;
-}) {
+function MarkBoughtSection({ product, units, places, onSaved }: { product: Product; units: Unit[]; places: Place[]; onSaved: () => void }) {
     const wasBought = !!product.active_was_bought;
     const [unconfirming, setUnconfirming] = useState(false);
 
@@ -69,12 +59,7 @@ function MarkBoughtSection({
                         {product.active_quantity_bought} {unitName}
                     </span>
                     {place && (
-                        <ColorBadge
-                            text={place.name}
-                            bgColor={place.bg_color}
-                            textColor={place.text_color}
-                            className="min-w-0 px-2 py-0.5 text-xs"
-                        />
+                        <ColorBadge text={place.name} bgColor={place.bg_color} textColor={place.text_color} className="min-w-0 px-2 py-0.5 text-xs" />
                     )}
                     <Money value={product.active_total_price} />
                 </div>
@@ -197,7 +182,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
                                     items={unitItems}
                                     value={data.unit_id_at_home}
                                     onValueChange={(value) => setData('unit_id_at_home', value)}
-                                    placeholder="Unidad"
+                                    placeholder="Selecciona unidad"
                                     searchPlaceholder="Buscar unidad..."
                                     emptyText="No se encontraron unidades"
                                     className="flex-1"
@@ -227,7 +212,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
                                     items={unitItems}
                                     value={data.unit_id_planned}
                                     onValueChange={(value) => setData('unit_id_planned', value)}
-                                    placeholder="Unidad"
+                                    placeholder="Selecciona unidad"
                                     searchPlaceholder="Buscar unidad..."
                                     emptyText="No se encontraron unidades"
                                     className="flex-1"
