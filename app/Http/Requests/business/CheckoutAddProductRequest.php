@@ -18,7 +18,7 @@ class CheckoutAddProductRequest extends FormRequest
             'quantity_bought' => 'required|integer|min:1',
             'unit_id_bought' => 'required|exists:units,id',
             'place_id' => 'required|exists:places,id',
-            'total_price' => 'required|numeric|min:0',
+            'total_price' => 'required|integer|min:0',
             'purchase_date' => 'nullable|date',
         ];
     }
@@ -36,7 +36,7 @@ class CheckoutAddProductRequest extends FormRequest
             'place_id.required' => 'El lugar es obligatorio.',
             'place_id.exists' => 'El lugar seleccionado no existe.',
             'total_price.required' => 'El precio total es obligatorio.',
-            'total_price.numeric' => 'El precio total debe ser un número.',
+            'total_price.integer' => 'El precio total debe ser un número entero.',
             'total_price.min' => 'El precio total debe ser mayor o igual a 0.',
             'purchase_date.date' => 'La fecha no es válida.',
         ];
