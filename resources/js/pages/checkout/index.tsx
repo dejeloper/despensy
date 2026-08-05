@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, router, useForm } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { BreadcrumbItem } from '@/types';
 import { Category } from '@/types/business/category';
@@ -133,6 +133,8 @@ function EditBoughtItemModal({
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
+    const contentRef = useRef<HTMLDivElement>(null);
+
     const { data, setData, patch, processing, errors, reset } = useForm({
         quantity_bought: item.quantity_bought?.toString() || '',
         unit_id_bought: item.unit_bought?.id?.toString() || '',
@@ -161,7 +163,7 @@ function EditBoughtItemModal({
                 onOpenChange(value);
             }}
         >
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md" ref={contentRef}>
                 <DialogHeader>
                     <DialogTitle>Editar compra</DialogTitle>
                     <DialogDescription>{item.product?.name}</DialogDescription>
@@ -188,6 +190,7 @@ function EditBoughtItemModal({
                                 placeholder="Unidad"
                                 searchPlaceholder="Buscar unidad..."
                                 emptyText="No se encontraron unidades"
+                                portalContainer={contentRef.current}
                             />
                             {errors.unit_id_bought && <p className="mt-1 text-xs text-destructive">{errors.unit_id_bought}</p>}
                         </div>
@@ -201,6 +204,7 @@ function EditBoughtItemModal({
                             placeholder="Lugar"
                             searchPlaceholder="Buscar lugar..."
                             emptyText="No se encontraron lugares"
+                            portalContainer={contentRef.current}
                         />
                         {errors.place_id && <p className="mt-1 text-xs text-destructive">{errors.place_id}</p>}
                     </div>
@@ -287,6 +291,10 @@ function BoughtItemsList({
         });
     }, [boughtItems, placeFilter, categoryFilter]);
 
+    const totalConfirmed = useMemo(() => {
+        return filteredBoughtItems.reduce((sum, item) => sum + (item.total_price ?? 0), 0);
+    }, [filteredBoughtItems]);
+
     if (boughtItems.length === 0) {
         return null;
     }
@@ -295,7 +303,9 @@ function BoughtItemsList({
         <Card>
             <CardContent className="flex flex-col gap-2 p-0">
                 <div className="flex flex-col items-start gap-2 p-3 pb-0">
-                    <p className="font-medium">Productos Confirmados ({filteredBoughtItems.length})</p>
+                    <p className="font-medium">
+                        Productos Confirmados ({filteredBoughtItems.length}) · Total: <Money value={totalConfirmed} />
+                    </p>
                     <div className="flex flex-wrap gap-2">
                         <Select value={placeFilter} onValueChange={setPlaceFilter}>
                             <SelectTrigger className="w-auto whitespace-nowrap">
@@ -349,6 +359,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
 
     const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
     const selectedPlace = places.find((p) => p.id!.toString() === placeId);
+    const changePlaceContentRef = useRef<HTMLDivElement>(null);
 
     const filteredItems = useMemo(() => {
         return sortBy(items, (item) => item.product?.name).filter((item) => {
@@ -420,7 +431,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
             </div>
 
             <Dialog open={changePlaceOpen} onOpenChange={setChangePlaceOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md" ref={changePlaceContentRef}>
                     <DialogHeader>
                         <DialogTitle>{selectedPlace ? 'Cambiar lugar de compra' : '¿Dónde compraste?'}</DialogTitle>
                         <DialogDescription>Los productos que confirmes se registrarán en este lugar.</DialogDescription>
@@ -435,6 +446,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                         placeholder="Selecciona un lugar"
                         searchPlaceholder="Buscar lugar..."
                         emptyText="No se encontraron lugares"
+                        portalContainer={changePlaceContentRef.current}
                     />
                 </DialogContent>
             </Dialog>
