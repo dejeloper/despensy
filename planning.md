@@ -232,7 +232,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 - [x] **Quitar el ofrecimiento de traducción de Chrome** — Causa raíz: `APP_LOCALE=en` hacía que `<html lang="en">` no coincidiera con el contenido real (español), lo que dispara el aviso de traducción en cualquier navegador (Chrome, Safari, etc). Corregido `APP_LOCALE`/`APP_FALLBACK_LOCALE` a `es` en `.env`, `.env.example`, `.env.prod` y el default de `config/app.php`; agregado `translate="no"` + `<meta name="google" content="notranslate">` en `app.blade.php` como refuerzo para Chrome/Edge.
 
-- [ ] **Orden alfabético por defecto (CRUD productos, despensy/checkout, despensy/)** — Reemplazar el orden actual (por id/created_at) como orden inicial en las 3 vistas, usando `localeCompare('es')` para que las tildes se ordenen como en el diccionario español (ej. "café" antes de "cazo", no después por el acento).
+- [x] **Orden alfabético por defecto en toda vista que liste productos** — Se agregó el helper `sortByName()` (`resources/js/lib/utils.ts`, usa `localeCompare('es')`) y se aplicó en `products/index.tsx`, `despensy/index.tsx`, el listado de pendientes de `checkout/index.tsx` y el combobox de productos en `AddOutOfListProductModal` ("Producto fuera de la lista"). El listado de "Comprados" en checkout se dejó ordenado por fecha (más reciente primero) por ser un historial, no un catálogo.
 
 - [ ] **Editar/desconfirmar un producto ya confirmado en una lista** — Permitir editar cantidad, unidad, lugar y precio de un `checklist_item` ya marcado como comprado, y permitir desconfirmarlo (volver a pendiente). Solo mientras el checklist esté **abierto o en progreso** — no aplica a listas cerradas o canceladas.
 

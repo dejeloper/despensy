@@ -6,6 +6,7 @@ import { Combobox, ComboboxItem } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
+import { sortByName } from '@/lib/utils';
 import { Product } from '@/types/business/product';
 import { Unit } from '@/types/business/unit';
 
@@ -32,7 +33,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
         total_price: '',
     });
 
-    const productItems: ComboboxItem[] = products.map((p) => ({ value: p.id.toString(), label: p.name }));
+    const productItems: ComboboxItem[] = sortByName(products).map((p) => ({ value: p.id.toString(), label: p.name }));
     const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {

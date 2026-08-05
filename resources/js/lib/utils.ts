@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import {type ClassValue, clsx} from 'clsx';
+import {twMerge} from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -16,4 +16,13 @@ export function formatCurrency(value: number | string | null | undefined, symbol
     if (Number.isNaN(numeric)) return '';
 
     return `${symbol}${Math.trunc(numeric).toLocaleString('es-CO')}`;
+}
+
+/**
+ * Sort a list by its `name` field using Spanish collation, so accents sort
+ * where they belong in the alphabet instead of after "z" (localeCompare
+ * default/ASCII order).
+ */
+export function sortByName<T extends {name: string}>(items: T[]): T[] {
+    return [...items].sort((a, b) => a.name.localeCompare(b.name, 'es'));
 }

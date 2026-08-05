@@ -19,6 +19,7 @@ import { Combobox, ComboboxItem } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { sortByName } from '@/lib/utils';
 import { LoaderCircle } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -169,11 +170,13 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
     const selectedPlace = places.find((p) => p.id!.toString() === placeId);
 
     const filteredItems = useMemo(() => {
-        return items.filter((item) => {
-            if (categoryFilter !== 'all' && item.product?.category?.id?.toString() !== categoryFilter) return false;
-            if (searchTerm && !item.product?.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-            return true;
-        });
+        return [...items]
+            .sort((a, b) => (a.product?.name ?? '').localeCompare(b.product?.name ?? '', 'es'))
+            .filter((item) => {
+                if (categoryFilter !== 'all' && item.product?.category?.id?.toString() !== categoryFilter) return false;
+                if (searchTerm && !item.product?.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+                return true;
+            });
     }, [items, searchTerm, categoryFilter]);
 
     return (
