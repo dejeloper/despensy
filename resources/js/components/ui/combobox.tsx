@@ -151,10 +151,12 @@ export function Combobox({
             className="h-9"
           />
         </div>
-        <div className="max-h-60 overflow-auto overscroll-contain">
+        <div role="listbox" className="max-h-60 overflow-auto overscroll-contain">
           {filteredItems.length === 0 ? (
             onCreateNew && search ? (
               <div
+                role="option"
+                aria-selected={false}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm text-primary outline-none hover:bg-accent"
                 onClick={handleCreateNew}
               >
@@ -169,6 +171,8 @@ export function Combobox({
             filteredItems.map((item, index) => (
               <div
                 key={item.value}
+                role="option"
+                aria-selected={item.value === value}
                 ref={(el) => {
                   itemRefs.current[index] = el
                 }}

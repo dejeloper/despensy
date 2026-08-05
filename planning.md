@@ -206,6 +206,8 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] Tests de integración para flujo de checklist
 - [x] Tests de regla "solo una lista abierta"
 - [x] **Agregar tests que falten para lo último agregado** — No hay test que verifique que `/dashboard` devuelve `topCategories`/`topPlaces`/`topProducts`, ni que `/despensy/checkout` devuelve `categories`
+    - Backend (Pest): `tests/Feature/business/DashboardControllerTest.php` (nuevo) y un test agregado a `CheckoutControllerTest.php` para `categories`.
+    - **E2E (nuevo, `@playwright/test`)**: primera vez que se agrega esta capa al proyecto — no había ningún test de React/frontend antes. `playwright.config.ts` en la raíz (no auto-levanta el server, porque `composer run dev` orquesta 3 procesos que el `webServer` de Playwright no puede manejar con un solo comando — hay que levantar el server manualmente antes de correr `pnpm test:e2e`). Specs en `e2e/`, 4 flujos críticos: login (`auth.spec.ts`), agregar producto a la lista activa (`despensy-add-to-list.spec.ts`), confirmar compra de un item pendiente en checkout (`checkout-confirm-purchase.spec.ts`), y cerrar/cancelar la lista (`checklist-lifecycle.spec.ts`). Credenciales vía `E2E_EMAIL`/`E2E_PASSWORD` (default: el "Admin User" de `UserSeeder`, nunca las credenciales reales) en `e2e/support/auth.ts`. De paso se le agregó `role="listbox"`/`role="option"` a los items de `Combobox` (`resources/js/components/ui/combobox.tsx`) — no tenía ningún rol ARIA, así que los locators semánticos de Playwright (`getByRole`) no podían encontrar sus opciones; mejora real de accesibilidad, no solo para testing.
 
 ### Mejoras Futuras (Backlog)
 
