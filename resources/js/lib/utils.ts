@@ -19,6 +19,18 @@ export function formatCurrency(value: number | string | null | undefined, symbol
 }
 
 /**
+ * Lowercase + strip diacritics (á → a, ñ → n, ...) so search matches
+ * regardless of accents on either side (buscar "cafe" encuentra "café" y
+ * viceversa).
+ */
+export function normalizeText(value: string): string {
+    return value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '');
+}
+
+/**
  * Column to sort by: either a key of T, or an accessor for nested/derived
  * values (e.g. `(item) => item.product?.name`).
  */

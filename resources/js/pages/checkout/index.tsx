@@ -20,7 +20,7 @@ import { Combobox, ComboboxItem } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { sortBy } from '@/lib/utils';
+import { normalizeText, sortBy } from '@/lib/utils';
 import { LoaderCircle, Pencil } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -364,7 +364,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
     const filteredItems = useMemo(() => {
         return sortBy(items, (item) => item.product?.name).filter((item) => {
             if (categoryFilter !== 'all' && item.product?.category?.id?.toString() !== categoryFilter) return false;
-            if (searchTerm && !item.product?.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+            if (searchTerm && !normalizeText(item.product?.name ?? '').includes(normalizeText(searchTerm))) return false;
             return true;
         });
     }, [items, searchTerm, categoryFilter]);

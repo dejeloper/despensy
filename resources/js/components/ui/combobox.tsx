@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, normalizeText } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -56,9 +56,11 @@ export function Combobox({
   const filteredItems = React.useMemo(() => {
     if (!search) return items
 
+    const term = normalizeText(search)
+
     return items.filter((item) => {
       const searchIn = item.searchText || item.label
-      return searchIn.toLowerCase().includes(search.toLowerCase())
+      return normalizeText(searchIn).includes(term)
     })
   }, [items, search])
 

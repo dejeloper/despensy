@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { sortBy, type SortKey } from '@/lib/utils';
+import { normalizeText, sortBy, type SortKey } from '@/lib/utils';
 
 interface UseClientPaginationOptions<T> {
     data: T[];
@@ -20,7 +20,7 @@ export function useClientPagination<T>({ data, itemsPerPage = 10, searchTerm, so
     const filteredData = useMemo(() => {
         if (!searchTerm.trim()) return sortedData;
 
-        const term = searchTerm.toLowerCase();
+        const term = normalizeText(searchTerm);
 
         return sortedData.filter((item) => {
             // Buscar en todos los valores del objeto
@@ -28,7 +28,7 @@ export function useClientPagination<T>({ data, itemsPerPage = 10, searchTerm, so
                 if (value === null || value === undefined) return false;
 
                 // Convertir a string y buscar
-                return String(value).toLowerCase().includes(term);
+                return normalizeText(String(value)).includes(term);
             });
         });
     }, [sortedData, searchTerm]);
