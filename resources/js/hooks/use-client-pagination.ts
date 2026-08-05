@@ -1,21 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { sortBy, type SortKey } from '@/lib/utils';
+
 interface UseClientPaginationOptions<T> {
     data: T[];
     itemsPerPage?: number;
     searchTerm: string;
+    /** Column (or accessor) to sort `data` by before filtering/paginating. Omit to keep the given order. */
+    sortKey?: SortKey<T>;
+    sortDirection?: 'asc' | 'desc';
 }
 
-export function useClientPagination<T>({ data, itemsPerPage = 10, searchTerm }: UseClientPaginationOptions<T>) {
+export function useClientPagination<T>({ data, itemsPerPage = 10, searchTerm, sortKey, sortDirection = 'asc' }: UseClientPaginationOptions<T>) {
     const [currentPage, setCurrentPage] = useState(1);
+
+    const sortedData = useMemo(() => (sortKey ? sortBy(data, sortKey, sortDirection) : data), [data, sortKey, sortDirection]);
 
     // Búsqueda en todos los campos del objeto
     const filteredData = useMemo(() => {
-        if (!searchTerm.trim()) return data;
+        if (!searchTerm.trim()) return sortedData;
 
         const term = searchTerm.toLowerCase();
 
-        return data.filter((item) => {
+        return sortedData.filter((item) => {
             // Buscar en todos los valores del objeto
             return Object.values(item as Record<string, unknown>).some((value) => {
                 if (value === null || value === undefined) return false;
@@ -24,7 +31,7 @@ export function useClientPagination<T>({ data, itemsPerPage = 10, searchTerm }: 
                 return String(value).toLowerCase().includes(term);
             });
         });
-    }, [data, searchTerm]);
+    }, [sortedData, searchTerm]);
 
     // Paginación en el cliente
     const paginatedData = useMemo(() => {

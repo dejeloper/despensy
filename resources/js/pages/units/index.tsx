@@ -29,6 +29,7 @@ export default function UnitIndex({ units }: { units: PaginatedUnits }) {
         data: units.data,
         itemsPerPage: 10,
         searchTerm,
+        sortKey: 'name',
     });
 
     return (

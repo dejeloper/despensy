@@ -33,6 +33,7 @@ export default function ChecklistIndex({ checklists }: { checklists: PaginatedCh
         data: checklists.data,
         itemsPerPage: 10,
         searchTerm,
+        sortKey: 'name',
     });
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {

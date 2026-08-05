@@ -19,10 +19,33 @@ export function formatCurrency(value: number | string | null | undefined, symbol
 }
 
 /**
- * Sort a list by its `name` field using Spanish collation, so accents sort
- * where they belong in the alphabet instead of after "z" (localeCompare
- * default/ASCII order).
+ * Column to sort by: either a key of T, or an accessor for nested/derived
+ * values (e.g. `(item) => item.product?.name`).
  */
-export function sortByName<T extends {name: string}>(items: T[]): T[] {
-    return [...items].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+export type SortKey<T> = keyof T | ((item: T) => string | number | null | undefined);
+
+/**
+ * Generic sort usable by any listing in the app. Strings are compared with
+ * Spanish collation (`localeCompare('es')`) so accents sort where they
+ * belong in the alphabet instead of after "z"; numbers sort numerically.
+ * Null/undefined values are pushed to the end regardless of direction.
+ */
+export function sortBy<T>(items: T[], key: SortKey<T>, direction: 'asc' | 'desc' = 'asc'): T[] {
+    const selector = typeof key === 'function' ? key : (item: T) => item[key] as unknown as string | number | null | undefined;
+    const factor = direction === 'asc' ? 1 : -1;
+
+    return [...items].sort((a, b) => {
+        const aVal = selector(a);
+        const bVal = selector(b);
+
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+            return factor * aVal.localeCompare(bVal, 'es');
+        }
+
+        return factor * ((aVal as number) - (bVal as number));
+    });
 }

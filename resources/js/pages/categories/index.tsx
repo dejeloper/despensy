@@ -33,6 +33,7 @@ export default function CategoryIndex({ categories }: CategoryIndexProps) {
         data: categories.data,
         itemsPerPage: 10,
         searchTerm,
+        sortKey: 'name',
     });
 
     return (

@@ -12,10 +12,9 @@ import { Pagination } from '@/components/shared/pagination.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
-import { sortByName } from '@/lib/utils';
 import { productActions, productColumns } from '@/structures/products.structure';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Inicio', href: '/' },
@@ -26,12 +25,11 @@ export default function ProductIndex({ products }: { products: PaginatedProduct 
     const isLoading = useInertiaLoading();
     const [searchTerm, setSearchTerm] = useState('');
 
-    const sortedProducts = useMemo(() => sortByName(products.data), [products.data]);
-
     const { paginatedData, paginationLinks, handlePageChange } = useClientPagination({
-        data: sortedProducts,
+        data: products.data,
         itemsPerPage: 10,
         searchTerm,
+        sortKey: 'name',
     });
 
     return (

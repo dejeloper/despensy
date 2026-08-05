@@ -29,6 +29,7 @@ export default function PlaceIndex({ places }: { places: PaginatedPlaces }) {
         data: places.data,
         itemsPerPage: 10,
         searchTerm,
+        sortKey: 'name',
     });
 
     return (

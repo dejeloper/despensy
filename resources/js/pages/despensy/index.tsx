@@ -20,7 +20,6 @@ import { Pagination } from '@/components/shared/pagination.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
-import { sortByName } from '@/lib/utils';
 import { despensyColumns } from '@/structures/despensy.structure';
 import { Action } from '@/types/ui';
 import { CircleCheck, CircleX, Eye } from 'lucide-react';
@@ -48,7 +47,7 @@ export default function DespensyIndex({ products, categories, units, places, che
     const [staleDialogOpen, setStaleDialogOpen] = useState(checklistIsStale);
 
     const facetedProducts = useMemo(() => {
-        return sortByName(products).filter((product) => {
+        return products.filter((product) => {
             if (categoryFilter !== 'all' && product.category_id?.toString() !== categoryFilter) return false;
             if (listFilter === 'in_list' && !product.active_checklist_item_id) return false;
             if (listFilter === 'out_of_list' && product.active_checklist_item_id) return false;
@@ -60,6 +59,7 @@ export default function DespensyIndex({ products, categories, units, places, che
         data: facetedProducts,
         itemsPerPage: 10,
         searchTerm,
+        sortKey: 'name',
     });
 
     const openProductModal = (product: Product) => {
