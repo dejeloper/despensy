@@ -78,18 +78,20 @@ test('markNotBought flashes an error instead of a raw 404 when the item no longe
         ->assertSessionHas('error');
 });
 
-test('a user cannot mark another users item as bought', function () {
-    $owner = User::factory()->create();
-    $intruder = User::factory()->create();
-    $checklist = Checklist::factory()->open()->create(['user_id' => $owner->id]);
+test('a user can mark as bought an item on a checklist created by another user', function () {
+    $creator = User::factory()->create();
+    $collaborator = User::factory()->create();
+    $checklist = Checklist::factory()->open()->create(['user_id' => $creator->id]);
     $item = ChecklistItem::factory()->create(['checklist_id' => $checklist->id]);
 
-    $this->actingAs($intruder)
+    $this->actingAs($collaborator)
         ->patch("/dashboard/checklist-items/{$item->id}/mark-bought", [
             'quantity_bought' => 1,
             'unit_id_bought' => Unit::factory()->create()->id,
             'place_id' => Place::factory()->create()->id,
             'total_price' => 1000,
         ])
-        ->assertForbidden();
+        ->assertRedirect();
+
+    expect($item->fresh()->was_bought)->toBeTrue();
 });

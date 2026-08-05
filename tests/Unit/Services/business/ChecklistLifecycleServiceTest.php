@@ -10,10 +10,8 @@ describe('ChecklistLifecycleService', function () {
         seedChecklistStates();
     });
 
-    test('openChecklistFor returns null when the user has no open checklist', function () {
-        $user = User::factory()->create();
-
-        $result = (new ChecklistLifecycleService)->openChecklistFor($user);
+    test('openChecklistFor returns null when there is no open checklist', function () {
+        $result = (new ChecklistLifecycleService)->openChecklistFor();
 
         expect($result)->toBeNull();
     });
@@ -32,7 +30,7 @@ describe('ChecklistLifecycleService', function () {
         $user = User::factory()->create();
         $created = (new ChecklistLifecycleService)->openNewFor($user);
 
-        $found = (new ChecklistLifecycleService)->openChecklistFor($user);
+        $found = (new ChecklistLifecycleService)->openChecklistFor();
 
         expect($found->id)->toBe($created->id);
     });
@@ -48,20 +46,22 @@ describe('ChecklistLifecycleService', function () {
 
         expect($first->state->name)->toBe(State::CHECKLIST_CLOSED)
             ->and($second->state->name)->toBe(State::CHECKLIST_OPEN)
-            ->and($service->openChecklistFor($user)->id)->toBe($second->id);
+            ->and($service->openChecklistFor()->id)->toBe($second->id);
     });
 
-    test('does not affect other users open checklists', function () {
+    test('opening a new checklist as another user still closes the shared open one', function () {
         $userA = User::factory()->create();
         $userB = User::factory()->create();
         $service = new ChecklistLifecycleService;
 
         $checklistA = $service->openNewFor($userA);
-        $service->openNewFor($userB);
+        $checklistB = $service->openNewFor($userB);
 
         $checklistA->refresh();
 
-        expect($checklistA->state->name)->toBe(State::CHECKLIST_OPEN);
+        expect($checklistA->state->name)->toBe(State::CHECKLIST_CLOSED)
+            ->and($checklistB->state->name)->toBe(State::CHECKLIST_OPEN)
+            ->and($service->openChecklistFor()->id)->toBe($checklistB->id);
     });
 
     test('complete sets the checklist to closed', function () {
@@ -97,7 +97,7 @@ describe('ChecklistLifecycleService', function () {
         $result = $service->activeChecklistFor($user);
 
         expect($result->id)->toBe($existing->id)
-            ->and(Checklist::forUser($user->id)->count())->toBe(1);
+            ->and(Checklist::count())->toBe(1);
     });
 
     test('isStale is false for a checklist updated within 15 days', function () {

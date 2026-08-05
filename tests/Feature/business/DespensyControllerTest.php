@@ -24,7 +24,7 @@ test('viewing despensy creates an open checklist when the user has none', functi
         ->get('/despensy')
         ->assertOk();
 
-    expect(Checklist::forUser($user->id)->count())->toBe(1);
+    expect(Checklist::count())->toBe(1);
 });
 
 test('viewing despensy reuses the existing open checklist', function () {
@@ -33,8 +33,8 @@ test('viewing despensy reuses the existing open checklist', function () {
 
     $this->actingAs($user)->get('/despensy')->assertOk();
 
-    expect(Checklist::forUser($user->id)->count())->toBe(1)
-        ->and(Checklist::forUser($user->id)->first()->id)->toBe($checklist->id);
+    expect(Checklist::count())->toBe(1)
+        ->and(Checklist::first()->id)->toBe($checklist->id);
 });
 
 test('updateProductState adds a product to the checklist without visiting it first', function () {
@@ -50,7 +50,7 @@ test('updateProductState adds a product to the checklist without visiting it fir
         ])
         ->assertRedirect();
 
-    $checklist = Checklist::forUser($user->id)->first();
+    $checklist = Checklist::first();
 
     expect($checklist)->not->toBeNull()
         ->and($checklist->items()->where('product_id', $product->id)->exists())->toBeTrue();
@@ -65,7 +65,7 @@ test('updateProductState reuses the already open checklist instead of creating a
         ->put("/despensy/products/{$product->id}", ['will_buy' => true, 'quantity_planned' => 1])
         ->assertRedirect();
 
-    expect(Checklist::forUser($user->id)->count())->toBe(1)
+    expect(Checklist::count())->toBe(1)
         ->and($checklist->items()->where('product_id', $product->id)->exists())->toBeTrue();
 });
 
@@ -116,5 +116,5 @@ test('renewChecklist closes the stale checklist and opens a new one', function (
         ->assertRedirect();
 
     expect($old->fresh()->state->name)->toBe(\App\Models\business\State::CHECKLIST_CLOSED)
-        ->and(Checklist::forUser($user->id)->inState(\App\Models\business\State::CHECKLIST_OPEN)->count())->toBe(1);
+        ->and(Checklist::inState(\App\Models\business\State::CHECKLIST_OPEN)->count())->toBe(1);
 });

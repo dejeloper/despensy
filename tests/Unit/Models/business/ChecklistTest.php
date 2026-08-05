@@ -35,14 +35,6 @@ describe('Checklist Model', function () {
             ->and($checklist->state->name)->toBe(State::CHECKLIST_OPEN);
     });
 
-    test('scopeForUser filters by user', function () {
-        $user = User::factory()->create();
-        Checklist::factory()->create(['user_id' => $user->id]);
-        Checklist::factory()->create();
-
-        expect(Checklist::forUser($user->id)->get())->toHaveCount(1);
-    });
-
     test('scopeInState filters by state name', function () {
         Checklist::factory()->open()->create();
         Checklist::factory()->closed()->create();

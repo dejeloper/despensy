@@ -12,35 +12,36 @@ test('guests are redirected to the login page', function () {
     $this->get('/dashboard/checklists')->assertRedirect('/login');
 });
 
-test('authenticated user can view their checklists', function () {
+test('authenticated user can view checklists created by anyone', function () {
     $user = User::factory()->create();
     Checklist::factory()->open()->create(['user_id' => $user->id]);
-    Checklist::factory()->closed()->create(); // otro usuario, no debe aparecer
+    Checklist::factory()->closed()->create(); // creada por otro usuario, debe aparecer igual
 
     $this->actingAs($user)
         ->get('/dashboard/checklists')
         ->assertOk();
 });
 
-test('store creates a new open checklist for the user', function () {
+test('store creates a new open checklist attributed to the user', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->post('/dashboard/checklists', ['name' => 'Mercado de la semana'])
         ->assertRedirect(route('despensy.index'));
 
-    $checklist = Checklist::forUser($user->id)->first();
+    $checklist = Checklist::latest()->first();
 
-    expect($checklist->name)->toBe('Mercado de la semana')
+    expect($checklist->user_id)->toBe($user->id)
+        ->and($checklist->name)->toBe('Mercado de la semana')
         ->and($checklist->state->name)->toBe(State::CHECKLIST_OPEN);
 });
 
-test('store closes any previously open checklist for the same user', function () {
+test('store closes the previously open checklist, regardless of who created it', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     $this->post('/dashboard/checklists', ['name' => 'Primera']);
-    $first = Checklist::forUser($user->id)->first();
+    $first = Checklist::latest()->first();
 
     $this->post('/dashboard/checklists', ['name' => 'Segunda']);
 
@@ -69,31 +70,24 @@ test('cancel transitions the checklist to cancelled', function () {
     expect($checklist->fresh()->state->name)->toBe(State::CHECKLIST_CANCELLED);
 });
 
-test('show displays a checklist owned by the user', function () {
-    $user = User::factory()->create();
-    $checklist = Checklist::factory()->closed()->create(['user_id' => $user->id]);
+test('show displays a checklist created by another user', function () {
+    $creator = User::factory()->create();
+    $viewer = User::factory()->create();
+    $checklist = Checklist::factory()->closed()->create(['user_id' => $creator->id]);
 
-    $this->actingAs($user)
+    $this->actingAs($viewer)
         ->get("/dashboard/checklists/{$checklist->id}")
         ->assertOk();
 });
 
-test('a user cannot view another users checklist', function () {
-    $owner = User::factory()->create();
-    $intruder = User::factory()->create();
-    $checklist = Checklist::factory()->closed()->create(['user_id' => $owner->id]);
+test('a user can complete a checklist created by another user', function () {
+    $creator = User::factory()->create();
+    $collaborator = User::factory()->create();
+    $checklist = Checklist::factory()->open()->create(['user_id' => $creator->id]);
 
-    $this->actingAs($intruder)
-        ->get("/dashboard/checklists/{$checklist->id}")
-        ->assertForbidden();
-});
-
-test('a user cannot complete another users checklist', function () {
-    $owner = User::factory()->create();
-    $intruder = User::factory()->create();
-    $checklist = Checklist::factory()->open()->create(['user_id' => $owner->id]);
-
-    $this->actingAs($intruder)
+    $this->actingAs($collaborator)
         ->post("/dashboard/checklists/{$checklist->id}/complete")
-        ->assertForbidden();
+        ->assertRedirect(route('checklists.index'));
+
+    expect($checklist->fresh()->state->name)->toBe(State::CHECKLIST_CLOSED);
 });
