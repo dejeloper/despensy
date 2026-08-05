@@ -40,7 +40,7 @@ export const checklistColumns: Column<Checklist>[] = [
     },
     {
         key: 'user',
-        label: 'Usuario',
+        label: 'Creado por',
         render: (checklist) => checklist.user?.name ?? 'Sin usuario',
     },
 ];
