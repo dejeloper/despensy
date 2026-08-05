@@ -31,7 +31,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] CRUD completo para Products (sin métodos show, lastPurchase, purchaseHistory)
 - [x] Todos los controladores traen todos los datos (preparados para búsqueda/paginación del cliente)
 - [x] **Bug: Despensa muestra productos desactivados** — `ProductLastPurchaseService::allWithLastPurchase()` no filtraba por `enabled = true`, entonces un producto que desactivás seguía apareciendo en la vista de compra y se podía seguir agregando a la lista. Es un método compartido con `ProductController::index` (CRUD de productos), que sí necesita ver los desactivados para poder reactivarlos, así que no se podía filtrar en el service directamente. Se agregó el parámetro opcional `onlyEnabled` (default `false`) — `DespensyController::index` lo pasa en `true`, el CRUD lo deja en `false`.
-- [ ] **Mover la lógica de `/dashboard` a un `DashboardController`** — Hoy es un closure en `routes/web.php` que ya orquesta 2 Services (`ChecklistLifecycleService` y `DashboardStatsService`) — es la única vista de negocio que no sigue el patrón Controller del resto de la app
+- [x] **Mover la lógica de `/dashboard` a un `DashboardController`** — Creado `App\Http\Controllers\business\DashboardController::index()`, con `ChecklistLifecycleService` y `DashboardStatsService` inyectados por constructor (mismo patrón que `DespensyController`/`CheckoutController`). `routes/web.php` pasó de un closure de 40+ líneas a `Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard')`. Lógica y payload de Inertia sin cambios, solo movidos — no se creó un Resource nuevo para los arrays de `topCategories`/`topPlaces`/`topProducts` (son estructuras ad-hoc para el dashboard, no una entidad con Resource propio).
 
 ### Frontend - Vistas
 
@@ -150,21 +150,12 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ### Frontend - Componentes (Alta Prioridad)
 
-- [ ] **Componente ProductCard mejorado**
-    - Mostrar último precio
-    - Mostrar última compra
-    - Botón toggle para agregar/quitar de lista
-    - Indicador visual de estado
-
-- [ ] **Componente ChecklistItemCard**
-    - Para usar en vista de compra
-    - Checkbox de comprado
-    - Campos de precio, cantidad, lugar
-    - Optimizado para móvil
+- [x] **Componente ProductCard mejorado** — Obsoleto en el plan, resuelto distinto: no se creó un `ProductCard` dedicado; despensy usa `DataTable`/`DataCards` (genéricos, con `Column<T>`) sobre `despensyColumns`, que ya muestran último precio/última compra y tienen la acción "Ver / agregar a la lista" — cubre lo mismo sin un componente ad-hoc.
+- [x] **Componente ChecklistItemCard** — Obsoleto en el plan, resuelto distinto: `CheckoutItemRow` (pendientes) y `BoughtItemRow` (confirmados) en `checkout/index.tsx` cubren exactamente este rol (checkbox/confirmar, cantidad/precio/lugar, optimizado para móvil), sin necesidad de un componente compartido único ya que pendientes y confirmados tienen forms/acciones distintas.
 
 - [x] Historial de compras en `products/show.tsx` como lista de tarjetas (mismo patrón visual que `checklists/show.tsx` y "Comprados" en checkout) — no se creó un componente `PurchaseHistoryTable` ni paginación de cliente porque el historial de un solo producto no alcanza el volumen que justifique paginar (ver `docs/ARCHITECTURE.md`)
 - [x] **Unificar el filtro de categoría + búsqueda (despensy y checkout)** — Se creó el hook `useCategoryFilter<T>(items, getCategoryId)` (`resources/js/hooks/use-category-filter.ts`), que encapsula el `useState` del filtro (`'all'` o el id como string) + el `useMemo` que filtra por categoría, y el componente `CategoryFilterSelect` (`resources/js/components/shared/categoryFilterSelect.component.tsx`) con el `<Select>` que antes estaba duplicado. Se aplicó en 3 lugares (era una duplicación triple, no solo doble): `despensy/index.tsx` (filtro de productos), y en `checkout/index.tsx` tanto en pendientes (`CheckoutIndex`) como en confirmados (`BoughtItemsList`). En cada caso el filtrado por categoría se compone con el resto de la lógica propia de esa vista (búsqueda por nombre, `listFilter`, `placeFilter`) encadenando sobre `filteredItems`/`facetedProducts` del hook, sin cambiar el comportamiento existente.
-- [ ] **Unificar las tarjetas "Top" del dashboard en un solo componente** — `TopCategoriesCard`, `TopPlacesCard` y `TopProductsCard` son casi idénticas (ícono + título + lista con badge y contador). Se pueden fusionar en un componente genérico con un `renderItem`, como ya se hace con `Column<T>` en los `structure.tsx`
+- [x] **Unificar las tarjetas "Top" del dashboard en un solo componente** — Creado `TopListCard<T extends { purchases_count: number }>` (`resources/js/components/shared/topListCard.component.tsx`): recibe `title`, `items`, `getKey` y `renderItem` (patrón genérico, igual que `Column<T>` en los `structure.tsx`), y resuelve el ícono `Trophy`, el ranking `#N` y el "`N` compra(s)" internamente ya que esa parte era 100% idéntica en las 3 cards. `dashboard.tsx` eliminó `TopCategoriesCard`/`TopPlacesCard`/`TopProductsCard` (unas ~90 líneas) y las reemplazó por 3 usos de `<TopListCard>`, cada uno pasando solo su `renderItem` específico (`ColorBadge` para categorías, `Badge` con color inline para lugares, texto plano para productos).
 
 ### Tipos TypeScript (Prioridad Media)
 

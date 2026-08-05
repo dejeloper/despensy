@@ -1,11 +1,12 @@
 import { ColorBadge } from '@/components/shared/colorBadge.component';
+import { TopListCard } from '@/components/shared/topListCard.component';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ClipboardList, ShoppingBasket, Trophy } from 'lucide-react';
+import { ClipboardList, ShoppingBasket } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -76,100 +77,6 @@ function ChecklistSummaryCard({ activeChecklist }: { activeChecklist: ActiveChec
     );
 }
 
-function TopCategoriesCard({ topCategories }: { topCategories: TopCategory[] }) {
-    return (
-        <Card className="overflow-hidden">
-            <CardContent className="flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Trophy className="h-4 w-4" />
-                    <span className="text-sm font-medium">Top 3 categorías más compradas</span>
-                </div>
-
-                {topCategories.length > 0 ? (
-                    <ul className="flex flex-col gap-2">
-                        {topCategories.map(({ category, purchases_count }, index) => (
-                            <li key={category.id} className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                                    <ColorBadge
-                                        text={category.name}
-                                        icon={category.icon}
-                                        bgColor={category.bg_color}
-                                        textColor={category.text_color}
-                                    />
-                                </div>
-                                <span className="text-sm font-semibold">{purchases_count} compra(s)</span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-sm text-muted-foreground">Aún no hay compras registradas.</p>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
-function TopPlacesCard({ topPlaces }: { topPlaces: TopPlace[] }) {
-    return (
-        <Card className="overflow-hidden">
-            <CardContent className="flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Trophy className="h-4 w-4" />
-                    <span className="text-sm font-medium">Top 3 lugares con más compras</span>
-                </div>
-
-                {topPlaces.length > 0 ? (
-                    <ul className="flex flex-col gap-2">
-                        {topPlaces.map(({ place, purchases_count }, index) => (
-                            <li key={place.id} className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                                    <Badge style={{ backgroundColor: place.bg_color || undefined, color: place.text_color || undefined }}>
-                                        {place.name}
-                                    </Badge>
-                                </div>
-                                <span className="text-sm font-semibold">{purchases_count} compra(s)</span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-sm text-muted-foreground">Aún no hay compras registradas.</p>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
-function TopProductsCard({ topProducts }: { topProducts: TopProduct[] }) {
-    return (
-        <Card className="overflow-hidden">
-            <CardContent className="flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Trophy className="h-4 w-4" />
-                    <span className="text-sm font-medium">Top 5 productos más comprados</span>
-                </div>
-
-                {topProducts.length > 0 ? (
-                    <ul className="flex flex-col gap-2">
-                        {topProducts.map(({ product, purchases_count }, index) => (
-                            <li key={product.id} className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                                    <span className="text-sm">{product.name}</span>
-                                </div>
-                                <span className="text-sm font-semibold">{purchases_count} compra(s)</span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-sm text-muted-foreground">Aún no hay compras registradas.</p>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
 export default function Dashboard({ activeChecklist, topCategories, topPlaces, topProducts }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -177,11 +84,32 @@ export default function Dashboard({ activeChecklist, topCategories, topPlaces, t
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-2">
                     <ChecklistSummaryCard activeChecklist={activeChecklist} />
-                    <TopCategoriesCard topCategories={topCategories} />
+                    <TopListCard
+                        title="Top 3 categorías más compradas"
+                        items={topCategories}
+                        getKey={(item) => item.category.id}
+                        renderItem={({ category }) => (
+                            <ColorBadge text={category.name} icon={category.icon} bgColor={category.bg_color} textColor={category.text_color} />
+                        )}
+                    />
                 </div>
                 <div className="grid auto-rows-min gap-4 md:grid-cols-2">
-                    <TopPlacesCard topPlaces={topPlaces} />
-                    <TopProductsCard topProducts={topProducts} />
+                    <TopListCard
+                        title="Top 3 lugares con más compras"
+                        items={topPlaces}
+                        getKey={(item) => item.place.id}
+                        renderItem={({ place }) => (
+                            <Badge style={{ backgroundColor: place.bg_color || undefined, color: place.text_color || undefined }}>
+                                {place.name}
+                            </Badge>
+                        )}
+                    />
+                    <TopListCard
+                        title="Top 5 productos más comprados"
+                        items={topProducts}
+                        getKey={(item) => item.product.id}
+                        renderItem={({ product }) => <span className="text-sm">{product.name}</span>}
+                    />
                 </div>
             </div>
         </AppLayout>
