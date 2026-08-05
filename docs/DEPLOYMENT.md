@@ -6,13 +6,13 @@ El objetivo del diseño: reducir el despliegue a **dos acciones** — ejecutar `
 
 ## Piezas
 
-| Pieza                    | Rol                                                                                                   |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `deploy.js`               | Corre en la máquina de desarrollo: compila, empaqueta, limpia el remoto y sube por FTP.               |
-| `install.php`             | Corre en el servidor (una sola vez): valida, extrae, mueve el proyecto a su sitio y se auto-elimina.  |
-| `deploy.token`             | Token aleatorio de un solo uso que autoriza la ejecución de `install.php`. Lo genera `deploy.js`.     |
-| `production.zip`           | Paquete de producción con el proyecto ya compilado.                                                   |
-| `.env` (`DEPLOY_FTP_*`)    | Configuración FTP del despliegue. **No** hay un `deploy.config.json` — todo vive en `.env`.           |
+| Pieza                   | Rol                                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `deploy.js`             | Corre en la máquina de desarrollo: compila, empaqueta, limpia el remoto y sube por FTP.              |
+| `install.php`           | Corre en el servidor (una sola vez): valida, extrae, mueve el proyecto a su sitio y se auto-elimina. |
+| `deploy.token`          | Token aleatorio de un solo uso que autoriza la ejecución de `install.php`. Lo genera `deploy.js`.    |
+| `production.zip`        | Paquete de producción con el proyecto ya compilado.                                                  |
+| `.env` (`DEPLOY_FTP_*`) | Configuración FTP del despliegue. **No** hay un `deploy.config.json` — todo vive en `.env`.          |
 
 ## Estructura del hosting (clave para entender el flujo)
 
@@ -20,7 +20,7 @@ El **Document Root** del subdominio apunta a la carpeta `public` de Laravel, y l
 
 ```
 <DEPLOY_FTP_REMOTE_DIR>/            ← raíz de la app: donde cae el FTP y a donde se despliega el proyecto
-    production.zip  deploy.token    ← privados: fuera del alcance del navegador
+    production.zip deploy.token     ← privados: fuera del alcance del navegador
     app/ bootstrap/ config/ vendor/ ...
     public/                         ← Document Root: lo único que sirve el navegador
         install.php                 ← accesible como https://<dominio>/install.php
@@ -41,6 +41,7 @@ Consecuencia de diseño: cualquier archivo que deba abrirse por URL (el instalad
     - `install.php` → subcarpeta `public/`.
 
     **Por qué neutralizar y no borrar todo por FTP:** se probó llamar a `client.clearWorkingDir()` antes de subir, pero el remoto ya tiene un Laravel completo desplegado (incluido `vendor/`, con miles de archivos) porque `install.php` lo extrae del lado del servidor, no vía FTP. Borrar eso recursivamente por FTP implica miles de comandos `DELE`/`RMD` uno por uno; en este hosting compartido eso tarda tanto que el socket de control se cae a medio camino (`ECONNRESET`). Por eso `deploy.js` no borra nada por FTP: solo neutraliza el `.htaccess` que bloqueaba la request a `install.php`, y deja que `install.php` haga el reemplazo del lado del servidor (disco local, rápido) al fusionar `production/` sobre la raíz.
+
 6. Imprime la URL final: `https://<host>/install.php?token=<token>`. El token local se borra tras subirlo.
 
 Cualquier error durante la conexión o subida por FTP se relanza y termina el proceso con código de salida distinto de cero — un fallo de despliegue nunca se reporta como éxito.
@@ -69,6 +70,6 @@ Se ejecuta desde `public/`, así que obtiene la raíz real con `$root = dirname(
 
 - **Config FTP en `.env`, no en JSON.** `DEPLOY_FTP_REMOTE_DIR` es la raíz de la app (donde cae el FTP); su subcarpeta `public/` es el Document Root.
 - **No metas en rutas excluidas archivos que el runtime necesite.** El filtro de `deploy.js` descarta `.md`, `docs/`, `tests/`, config de tooling, etc. Si algo de eso hiciera falta en producción, ajusta el filtro; no asumas que llega al servidor.
-- **No hay borrado masivo del remoto — ni por FTP ni en `install.php`.** El despliegue es un *merge*: `install.php` fusiona `production/` sobre la raíz existente (`rename`, con fallback a copia recursiva), sobrescribiendo lo que coincide pero sin tocar lo que no viene en el ZIP. Consecuencia: un archivo que quede huérfano en el server (porque se quitó del repo, o porque se subió manualmente fuera del flujo, p. ej. a `storage/app/public`) **sobrevive** a futuros despliegues indefinidamente — nada lo limpia. Si algún día hace falta purgar el remoto, hay que hacerlo a mano (FTP/cPanel), sabiendo que un `clearWorkingDir()` vía FTP no es viable en este hosting por el volumen de archivos (ver arriba, `ECONNRESET`).
+- **No hay borrado masivo del remoto — ni por FTP ni en `install.php`.** El despliegue es un _merge_: `install.php` fusiona `production/` sobre la raíz existente (`rename`, con fallback a copia recursiva), sobrescribiendo lo que coincide pero sin tocar lo que no viene en el ZIP. Consecuencia: un archivo que quede huérfano en el server (porque se quitó del repo, o porque se subió manualmente fuera del flujo, p. ej. a `storage/app/public`) **sobrevive** a futuros despliegues indefinidamente — nada lo limpia. Si algún día hace falta purgar el remoto, hay que hacerlo a mano (FTP/cPanel), sabiendo que un `clearWorkingDir()` vía FTP no es viable en este hosting por el volumen de archivos (ver arriba, `ECONNRESET`).
 - **Sin `artisan` en el server.** El paquete de producción no incluye el binario `artisan` ni `database/migrations`, `database/seeders` o `database/factories` — no se ejecuta ningún comando `artisan` en el hosting. Los cambios de esquema se aplican por otra vía, fuera de este flujo de deploy.
 - **`symlink()` no está disponible en el hosting actual.** `install.php` no intenta crear `public/storage`; no lo agregues sin antes confirmar que `function_exists('symlink')` es `true` en el server, porque llamar a una función inexistente en PHP lanza un `Error` fatal (no un warning) que no queda contenido por el manejo de errores del instalador.
