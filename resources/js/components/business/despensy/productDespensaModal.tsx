@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
@@ -88,7 +88,9 @@ function MarkBoughtSection({
 }
 
 export function ProductDespensaModal({ product, units, places, open, onOpenChange }: ProductDespensaModalProps) {
-    const contentRef = useRef<HTMLDivElement>(null);
+    // State (not useRef) so the DialogContent's mount triggers a re-render —
+    // a ref alone stays null through the render that creates it.
+    const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null);
 
     const { data, setData, put, processing, reset, transform } = useForm<DespensaForm>({
         will_buy: false,
@@ -139,7 +141,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md" ref={contentRef}>
+            <DialogContent className="overflow-visible sm:max-w-md" ref={setContentEl}>
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">{product.name}</DialogTitle>
                     {product.category && (
@@ -199,7 +201,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
                                     searchPlaceholder="Buscar unidad..."
                                     emptyText="No se encontraron unidades"
                                     className="flex-1"
-                                    portalContainer={contentRef.current}
+                                    portalContainer={contentEl}
                                 />
                             </div>
                         )}
@@ -229,7 +231,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
                                     searchPlaceholder="Buscar unidad..."
                                     emptyText="No se encontraron unidades"
                                     className="flex-1"
-                                    portalContainer={contentRef.current}
+                                    portalContainer={contentEl}
                                 />
                             </div>
                         )}

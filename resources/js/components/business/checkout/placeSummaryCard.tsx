@@ -41,10 +41,15 @@ export function PlaceSummaryCard({ boughtItems }: PlaceSummaryCardProps) {
     }
 
     return (
-        <div className="flex flex-col items-start gap-1 border-b p-3 text-sm">
+        <div className="flex flex-col items-start gap-1 border-b p-3 pb-6 text-sm">
             {rows.map(({ place, productsCount, total }) => (
                 <div key={place.id} className="flex flex-wrap items-center gap-2 text-muted-foreground">
-                    <ColorBadge text={place.name} bgColor={place.bg_color} textColor={place.text_color} className="min-w-0 shrink-0 px-2 py-0.5 text-xs" />
+                    <ColorBadge
+                        text={place.name}
+                        bgColor={place.bg_color}
+                        textColor={place.text_color}
+                        className="min-w-0 shrink-0 px-2 py-0.5 text-xs"
+                    />
                     <span>
                         Productos: <span className="font-bold">{productsCount}</span> · Total: <Money value={total} className="font-bold" />
                     </span>

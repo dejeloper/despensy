@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { Head, router, useForm } from '@inertiajs/react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { BreadcrumbItem } from '@/types';
 import { Category } from '@/types/business/category';
@@ -11,6 +11,7 @@ import { Unit } from '@/types/business/unit';
 
 import { AddOutOfListProductModal } from '@/components/business/checkout/addOutOfListProductModal';
 import { PlaceSummaryCard } from '@/components/business/checkout/placeSummaryCard';
+import { CategoryFilterSelect } from '@/components/shared/categoryFilterSelect.component';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
@@ -19,6 +20,7 @@ import { Combobox, ComboboxItem } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCategoryFilter } from '@/hooks/use-category-filter';
 import { normalizeText, sortBy } from '@/lib/utils';
 import { Check, LoaderCircle, Pencil } from 'lucide-react';
 
@@ -135,8 +137,10 @@ function EditBoughtItemModal({
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
-    const contentRef = useRef<HTMLDivElement>(null);
     const [unconfirming, setUnconfirming] = useState(false);
+    // State (not useRef) so the DialogContent's mount triggers a re-render —
+    // a ref alone stays null through the render that creates it.
+    const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null);
 
     const { data, setData, patch, processing, errors, reset } = useForm({
         quantity_bought: item.quantity_bought?.toString() || '',
@@ -171,7 +175,7 @@ function EditBoughtItemModal({
                 onOpenChange(value);
             }}
         >
-            <DialogContent className="sm:max-w-md" ref={contentRef}>
+            <DialogContent className="overflow-visible sm:max-w-md" ref={setContentEl}>
                 <DialogHeader>
                     <DialogTitle>Editar compra</DialogTitle>
                     <DialogDescription>{item.product?.name}</DialogDescription>
@@ -198,7 +202,7 @@ function EditBoughtItemModal({
                                 placeholder="Unidad"
                                 searchPlaceholder="Buscar unidad..."
                                 emptyText="No se encontraron unidades"
-                                portalContainer={contentRef.current}
+                                portalContainer={contentEl}
                             />
                             {errors.unit_id_bought && <p className="mt-1 text-xs text-destructive">{errors.unit_id_bought}</p>}
                         </div>
@@ -212,7 +216,7 @@ function EditBoughtItemModal({
                             placeholder="Lugar"
                             searchPlaceholder="Buscar lugar..."
                             emptyText="No se encontraron lugares"
-                            portalContainer={contentRef.current}
+                            portalContainer={contentEl}
                         />
                         {errors.place_id && <p className="mt-1 text-xs text-destructive">{errors.place_id}</p>}
                     </div>
@@ -290,15 +294,18 @@ function BoughtItemsList({
     categories: Category[];
 }) {
     const [placeFilter, setPlaceFilter] = useState<string>('all');
-    const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
-    const filteredBoughtItems = useMemo(() => {
-        return boughtItems.filter((item) => {
-            if (placeFilter !== 'all' && item.place?.id?.toString() !== placeFilter) return false;
-            if (categoryFilter !== 'all' && item.product?.category?.id?.toString() !== categoryFilter) return false;
-            return true;
-        });
-    }, [boughtItems, placeFilter, categoryFilter]);
+    const placeFilteredItems = useMemo(() => {
+        if (placeFilter === 'all') return boughtItems;
+
+        return boughtItems.filter((item) => item.place?.id?.toString() === placeFilter);
+    }, [boughtItems, placeFilter]);
+
+    const {
+        categoryFilter,
+        setCategoryFilter,
+        filteredItems: filteredBoughtItems,
+    } = useCategoryFilter(placeFilteredItems, (item) => item.product?.category?.id);
 
     const totalConfirmed = useMemo(() => {
         return filteredBoughtItems.reduce((sum, item) => sum + Number(item.total_price ?? 0), 0);
@@ -329,19 +336,7 @@ function BoughtItemsList({
                         </SelectContent>
                     </Select>
 
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-auto whitespace-nowrap">
-                            <SelectValue placeholder="Categoría" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas las categorías</SelectItem>
-                            {categories.map((category) => (
-                                <SelectItem key={category.id} value={category.id!.toString()}>
-                                    {category.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <CategoryFilterSelect categories={categories} value={categoryFilter} onValueChange={setCategoryFilter} />
                 </div>
             </div>
 
@@ -350,7 +345,12 @@ function BoughtItemsList({
             {filteredBoughtItems.length === 0 ? (
                 <p className="p-4 text-sm text-muted-foreground">Ningún producto confirmado coincide con el filtro.</p>
             ) : (
-                filteredBoughtItems.map((item) => <BoughtItemRow key={item.id} item={item} units={units} places={places} />)
+                <>
+                    <p className="px-3 pt-3 text-sm font-medium">Listado:</p>
+                    {filteredBoughtItems.map((item) => (
+                        <BoughtItemRow key={item.id} item={item} units={units} places={places} />
+                    ))}
+                </>
             )}
         </div>
     );
@@ -362,19 +362,25 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
     const [changePlaceOpen, setChangePlaceOpen] = useState(() => !placeId);
     const [addProductOpen, setAddProductOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
     const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
     const selectedPlace = places.find((p) => p.id!.toString() === placeId);
-    const changePlaceContentRef = useRef<HTMLDivElement>(null);
+    // State (not useRef) so the DialogContent's mount triggers a re-render —
+    // a ref alone stays null through the render that creates it.
+    const [changePlaceContentEl, setChangePlaceContentEl] = useState<HTMLDivElement | null>(null);
+
+    const {
+        categoryFilter,
+        setCategoryFilter,
+        filteredItems: categoryFilteredItems,
+    } = useCategoryFilter(items, (item) => item.product?.category?.id);
 
     const filteredItems = useMemo(() => {
-        return sortBy(items, (item) => item.product?.name).filter((item) => {
-            if (categoryFilter !== 'all' && item.product?.category?.id?.toString() !== categoryFilter) return false;
+        return sortBy(categoryFilteredItems, (item) => item.product?.name).filter((item) => {
             if (searchTerm && !normalizeText(item.product?.name ?? '').includes(normalizeText(searchTerm))) return false;
             return true;
         });
-    }, [items, searchTerm, categoryFilter]);
+    }, [categoryFilteredItems, searchTerm]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -406,19 +412,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                     <div className="flex flex-wrap items-center gap-2">
                         <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar productos..." />
 
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-auto whitespace-nowrap">
-                                <SelectValue placeholder="Categoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todas las categorías</SelectItem>
-                                {categories.map((category) => (
-                                    <SelectItem key={category.id} value={category.id!.toString()}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <CategoryFilterSelect categories={categories} value={categoryFilter} onValueChange={setCategoryFilter} />
                     </div>
                 )}
 
@@ -436,7 +430,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
             </div>
 
             <Dialog open={changePlaceOpen} onOpenChange={setChangePlaceOpen}>
-                <DialogContent className="sm:max-w-md" ref={changePlaceContentRef}>
+                <DialogContent className="overflow-visible sm:max-w-md" ref={setChangePlaceContentEl}>
                     <DialogHeader>
                         <DialogTitle>{selectedPlace ? 'Cambiar lugar de compra' : '¿Dónde compraste?'}</DialogTitle>
                         <DialogDescription>Los productos que confirmes se registrarán en este lugar.</DialogDescription>
@@ -451,7 +445,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                         placeholder="Selecciona un lugar"
                         searchPlaceholder="Buscar lugar..."
                         emptyText="No se encontraron lugares"
-                        portalContainer={changePlaceContentRef.current}
+                        portalContainer={changePlaceContentEl}
                     />
                 </DialogContent>
             </Dialog>

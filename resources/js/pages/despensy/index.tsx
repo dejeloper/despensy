@@ -14,10 +14,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { ProductDespensaModal } from '@/components/business/despensy/productDespensaModal';
+import { CategoryFilterSelect } from '@/components/shared/categoryFilterSelect.component';
 import { DataCards } from '@/components/shared/datacards.component';
 import { DataTable } from '@/components/shared/datatable.component';
 import { Pagination } from '@/components/shared/pagination.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
+import { useCategoryFilter } from '@/hooks/use-category-filter';
 import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { despensyColumns } from '@/structures/despensy.structure';
@@ -40,7 +42,6 @@ type ListFilter = 'all' | 'in_list' | 'out_of_list';
 export default function DespensyIndex({ products, categories, units, places, checklist, checklistIsStale }: DespensyProps) {
     const isLoading = useInertiaLoading();
     const [searchTerm, setSearchTerm] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [listFilter, setListFilter] = useState<ListFilter>('all');
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -48,14 +49,19 @@ export default function DespensyIndex({ products, categories, units, places, che
     const [closingList, setClosingList] = useState(false);
     const [cancelingList, setCancelingList] = useState(false);
 
+    const {
+        categoryFilter,
+        setCategoryFilter,
+        filteredItems: categoryFilteredProducts,
+    } = useCategoryFilter(products, (product) => product.category_id);
+
     const facetedProducts = useMemo(() => {
-        return products.filter((product) => {
-            if (categoryFilter !== 'all' && product.category_id?.toString() !== categoryFilter) return false;
+        return categoryFilteredProducts.filter((product) => {
             if (listFilter === 'in_list' && !product.active_checklist_item_id) return false;
             if (listFilter === 'out_of_list' && product.active_checklist_item_id) return false;
             return true;
         });
-    }, [products, categoryFilter, listFilter]);
+    }, [categoryFilteredProducts, listFilter]);
 
     const { paginatedData, paginationLinks, handlePageChange } = useClientPagination({
         data: facetedProducts,
@@ -129,19 +135,7 @@ export default function DespensyIndex({ products, categories, units, places, che
                 <div className="flex flex-wrap items-center gap-2">
                     <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar productos..." />
 
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-auto whitespace-nowrap">
-                            <SelectValue placeholder="Categoría" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas las categorías</SelectItem>
-                            {categories.map((category) => (
-                                <SelectItem key={category.id} value={category.id!.toString()}>
-                                    {category.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <CategoryFilterSelect categories={categories} value={categoryFilter} onValueChange={setCategoryFilter} />
 
                     <Select value={listFilter} onValueChange={(value) => setListFilter(value as ListFilter)}>
                         <SelectTrigger className="w-48">

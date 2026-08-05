@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { useRef } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Combobox, ComboboxItem } from '@/components/ui/combobox';
@@ -27,10 +27,9 @@ type AddProductForm = {
 };
 
 export function AddOutOfListProductModal({ open, onOpenChange, products, units, placeId }: AddOutOfListProductModalProps) {
-    // Radix's Dialog scroll-lock only allows wheel/touch scroll inside the
-    // Dialog's own DOM subtree, so Combobox popovers (portaled to document.body
-    // by default) end up unscrollable here — portalContainer fixes that.
-    const contentRef = useRef<HTMLDivElement>(null);
+    // State (not useRef) so the DialogContent's mount triggers a re-render —
+    // a ref alone stays null through the render that creates it.
+    const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null);
 
     const { data, setData, post, processing, errors, reset, transform } = useForm<AddProductForm>({
         product_id: '',
@@ -62,7 +61,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                 onOpenChange(value);
             }}
         >
-            <DialogContent className="sm:max-w-md" ref={contentRef}>
+            <DialogContent className="overflow-visible sm:max-w-md" ref={setContentEl}>
                 <DialogHeader>
                     <DialogTitle>Producto fuera de la lista</DialogTitle>
                     <DialogDescription>Se agregará directamente como comprado, sin haber sido presupuestado.</DialogDescription>
@@ -77,7 +76,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                             placeholder="Selecciona un producto"
                             searchPlaceholder="Buscar producto..."
                             emptyText="No se encontraron productos"
-                            portalContainer={contentRef.current}
+                            portalContainer={contentEl}
                         />
                         {errors.product_id && <p className="mt-1 text-xs text-destructive">{errors.product_id}</p>}
                     </div>
@@ -99,10 +98,10 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                                 items={unitItems}
                                 value={data.unit_id_bought}
                                 onValueChange={(value) => setData('unit_id_bought', value)}
-                                placeholder="Unidad"
+                                placeholder="Selecciona unidad"
                                 searchPlaceholder="Buscar unidad..."
                                 emptyText="No se encontraron unidades"
-                                portalContainer={contentRef.current}
+                                portalContainer={contentEl}
                             />
                             {errors.unit_id_bought && <p className="mt-1 text-xs text-destructive">{errors.unit_id_bought}</p>}
                         </div>
