@@ -205,7 +205,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] Tests unitarios para lógica de última compra
 - [x] Tests de integración para flujo de checklist
 - [x] Tests de regla "solo una lista abierta"
-- [ ] **Agregar tests que falten para lo último agregado** — No hay test que verifique que `/dashboard` devuelve `topCategories`/`topPlaces`/`topProducts`, ni que `/despensy/checkout` devuelve `categories`
+- [x] **Agregar tests que falten para lo último agregado** — No hay test que verifique que `/dashboard` devuelve `topCategories`/`topPlaces`/`topProducts`, ni que `/despensy/checkout` devuelve `categories`
 
 ### Mejoras Futuras (Backlog)
 
@@ -214,7 +214,6 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [ ] Gráficas de evolución de precios
 - [ ] Comparativa de precios entre lugares
 - [ ] Sugerencias basadas en frecuencia de compra
-- [ ] Exportar historial a Excel/PDF
 - [ ] Notificaciones de productos no comprados en X tiempo
 
 ---
