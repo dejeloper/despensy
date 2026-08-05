@@ -40,11 +40,13 @@ type MarkBoughtForm = {
 };
 
 function MarkBoughtSection({ product, units, places, onSaved }: { product: Product; units: Unit[]; places: Place[]; onSaved: () => void }) {
-    const { data, setData, patch, processing } = useForm<MarkBoughtForm>({
+    const wasBought = !!product.active_was_bought;
+
+    const { data, setData, patch, processing, errors } = useForm<MarkBoughtForm>({
         quantity_bought: product.active_quantity_bought?.toString() || product.active_quantity_planned?.toString() || '1',
         unit_id_bought: product.active_unit_id_bought?.toString() || product.active_unit_id_planned?.toString() || '',
         place_id: product.active_place_id?.toString() || '',
-        total_price: '',
+        total_price: product.active_total_price?.toString() || '',
     });
 
     const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
@@ -58,34 +60,16 @@ function MarkBoughtSection({ product, units, places, onSaved }: { product: Produ
         });
     };
 
-    if (product.active_was_bought) {
-        return (
-            <div className="flex flex-col gap-3 rounded-md border p-3">
-                <p className="font-medium">Comprado</p>
-                <p className="text-sm text-muted-foreground">
-                    {product.active_quantity_bought} · <Money value={product.active_unit_price} />
-                </p>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-fit"
-                    onClick={() => {
-                        router.patch(route('checklist-items.mark-not-bought', product.active_checklist_item_id), undefined, {
-                            preserveScroll: true,
-                            onSuccess: onSaved,
-                        });
-                    }}
-                >
-                    Deshacer
-                </Button>
-            </div>
-        );
-    }
+    const unconfirm = () => {
+        router.patch(route('checklist-items.mark-not-bought', product.active_checklist_item_id), undefined, {
+            preserveScroll: true,
+            onSuccess: onSaved,
+        });
+    };
 
     return (
         <form onSubmit={submit} className="flex flex-col gap-3 rounded-md border p-3">
-            <p className="font-medium">Marcar como comprado</p>
+            <p className="font-medium">{wasBought ? 'Editar compra' : 'Marcar como comprado'}</p>
             <div className="flex flex-wrap gap-2">
                 <Input
                     type="number"
@@ -125,10 +109,22 @@ function MarkBoughtSection({ product, units, places, onSaved }: { product: Produ
                     required
                 />
             </div>
-            <Button type="submit" size="sm" className="w-fit" disabled={processing}>
-                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                Marcar comprado
-            </Button>
+            {(errors.quantity_bought || errors.unit_id_bought || errors.place_id || errors.total_price) && (
+                <p className="text-xs text-destructive">
+                    {errors.quantity_bought || errors.unit_id_bought || errors.place_id || errors.total_price}
+                </p>
+            )}
+            <div className="flex gap-2">
+                <Button type="submit" size="sm" className="w-fit" disabled={processing}>
+                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                    {wasBought ? 'Guardar' : 'Marcar comprado'}
+                </Button>
+                {wasBought && (
+                    <Button type="button" variant="outline" size="sm" className="w-fit" onClick={unconfirm} disabled={processing}>
+                        Deshacer
+                    </Button>
+                )}
+            </div>
         </form>
     );
 }

@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
 import { BreadcrumbItem } from '@/types';
@@ -16,11 +16,11 @@ import { SearchBar } from '@/components/shared/searchbar.component';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Combobox, ComboboxItem } from '@/components/ui/combobox';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { sortBy } from '@/lib/utils';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Pencil } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Despensa', href: route('despensy.index') },
@@ -119,7 +119,152 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
     );
 }
 
-function BoughtItemsList({ boughtItems }: { boughtItems: ChecklistItem[] }) {
+function EditBoughtItemModal({
+    item,
+    units,
+    places,
+    open,
+    onOpenChange,
+}: {
+    item: ChecklistItem;
+    units: Unit[];
+    places: Place[];
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}) {
+    const { data, setData, patch, processing, errors, reset } = useForm({
+        quantity_bought: item.quantity_bought?.toString() || '',
+        unit_id_bought: item.unit_bought?.id?.toString() || '',
+        place_id: item.place?.id?.toString() || '',
+        total_price: item.total_price?.toString() || '',
+    });
+
+    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
+    const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
+
+    const submit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        patch(route('checklist-items.mark-bought', item.id), { preserveScroll: true, onSuccess: () => onOpenChange(false) });
+    };
+
+    const unconfirm = () => {
+        if (!confirm(`¿Quitar la confirmación de compra de "${item.product?.name}"? Volverá a la lista de pendientes.`)) return;
+        router.patch(route('checklist-items.mark-not-bought', item.id), undefined, { preserveScroll: true, onSuccess: () => onOpenChange(false) });
+    };
+
+    return (
+        <Dialog
+            open={open}
+            onOpenChange={(value) => {
+                if (!value) reset();
+                onOpenChange(value);
+            }}
+        >
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Editar compra</DialogTitle>
+                    <DialogDescription>{item.product?.name}</DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={submit} className="flex flex-col gap-3">
+                    <div className="flex gap-2">
+                        <div className="w-24">
+                            <Input
+                                type="number"
+                                min={1}
+                                placeholder="Cantidad"
+                                value={data.quantity_bought}
+                                onChange={(e) => setData('quantity_bought', e.target.value)}
+                                required
+                            />
+                            {errors.quantity_bought && <p className="mt-1 text-xs text-destructive">{errors.quantity_bought}</p>}
+                        </div>
+                        <div className="flex-1">
+                            <Combobox
+                                items={unitItems}
+                                value={data.unit_id_bought}
+                                onValueChange={(value) => setData('unit_id_bought', value)}
+                                placeholder="Unidad"
+                                searchPlaceholder="Buscar unidad..."
+                                emptyText="No se encontraron unidades"
+                            />
+                            {errors.unit_id_bought && <p className="mt-1 text-xs text-destructive">{errors.unit_id_bought}</p>}
+                        </div>
+                    </div>
+
+                    <div>
+                        <Combobox
+                            items={placeItems}
+                            value={data.place_id}
+                            onValueChange={(value) => setData('place_id', value)}
+                            placeholder="Lugar"
+                            searchPlaceholder="Buscar lugar..."
+                            emptyText="No se encontraron lugares"
+                        />
+                        {errors.place_id && <p className="mt-1 text-xs text-destructive">{errors.place_id}</p>}
+                    </div>
+
+                    <div>
+                        <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            placeholder="Precio total"
+                            value={data.total_price}
+                            onChange={(e) => setData('total_price', e.target.value)}
+                            required
+                        />
+                        {errors.total_price && <p className="mt-1 text-xs text-destructive">{errors.total_price}</p>}
+                    </div>
+
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={unconfirm} disabled={processing}>
+                            Quitar confirmación
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                            Guardar
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Unit[]; places: Place[] }) {
+    const [editOpen, setEditOpen] = useState(false);
+
+    return (
+        <div className="flex flex-col gap-1 border-b p-4 last:border-b-0 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2 sm:p-3">
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                <p className="min-w-0 truncate text-base font-semibold">{item.product?.name}</p>
+                {item.product?.category && (
+                    <ColorBadge
+                        text={item.product.category.name}
+                        icon={item.product.category.icon}
+                        bgColor={item.product.category.bg_color}
+                        textColor={item.product.category.text_color}
+                        className="min-w-0 shrink-0 px-2 py-0.5 text-sm font-medium"
+                    />
+                )}
+            </div>
+            <div className="flex items-center justify-between gap-2 sm:justify-end">
+                <p className="text-sm text-muted-foreground">
+                    {item.quantity_bought} {item.unit_bought?.short_name}
+                </p>
+                <Money value={item.total_price} />
+                <Button type="button" variant="outline" size="icon" title="Editar" onClick={() => setEditOpen(true)}>
+                    <Pencil className="h-4 w-4" />
+                </Button>
+            </div>
+
+            <EditBoughtItemModal item={item} units={units} places={places} open={editOpen} onOpenChange={setEditOpen} />
+        </div>
+    );
+}
+
+function BoughtItemsList({ boughtItems, units, places }: { boughtItems: ChecklistItem[]; units: Unit[]; places: Place[] }) {
     if (boughtItems.length === 0) {
         return null;
     }
@@ -129,29 +274,7 @@ function BoughtItemsList({ boughtItems }: { boughtItems: ChecklistItem[] }) {
             <CardContent className="flex flex-col gap-2 p-0">
                 <p className="p-3 pb-0 font-medium">Comprados ({boughtItems.length})</p>
                 {boughtItems.map((item) => (
-                    <div
-                        key={item.id}
-                        className="flex flex-col gap-1 border-b p-4 last:border-b-0 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2 sm:p-3"
-                    >
-                        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                            <p className="min-w-0 truncate text-base font-semibold">{item.product?.name}</p>
-                            {item.product?.category && (
-                                <ColorBadge
-                                    text={item.product.category.name}
-                                    icon={item.product.category.icon}
-                                    bgColor={item.product.category.bg_color}
-                                    textColor={item.product.category.text_color}
-                                    className="min-w-0 shrink-0 px-2 py-0.5 text-sm font-medium"
-                                />
-                            )}
-                        </div>
-                        <div className="flex items-center justify-between gap-2 sm:justify-end">
-                            <p className="text-sm text-muted-foreground">
-                                {item.quantity_bought} {item.unit_bought?.short_name}
-                            </p>
-                            <Money value={item.total_price} />
-                        </div>
-                    </div>
+                    <BoughtItemRow key={item.id} item={item} units={units} places={places} />
                 ))}
             </CardContent>
         </Card>
@@ -235,7 +358,7 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                     </CardContent>
                 </Card>
 
-                <BoughtItemsList boughtItems={boughtItems} />
+                <BoughtItemsList boughtItems={boughtItems} units={units} places={places} />
             </div>
 
             <Dialog open={changePlaceOpen} onOpenChange={setChangePlaceOpen}>

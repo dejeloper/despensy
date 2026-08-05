@@ -26,6 +26,7 @@ export type Product = {
     active_unit_id_bought?: number;
     active_place_id?: number;
     active_unit_price?: number;
+    active_total_price?: number;
     created_at?: string;
     updated_at?: string;
 };

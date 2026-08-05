@@ -234,7 +234,11 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 - [x] **Orden alfabético por defecto en todos los listados del sistema** — Se generalizó a un helper `sortBy<T>(items, key, direction?)` (`resources/js/lib/utils.ts`), que acepta el nombre de columna (`keyof T`) o un accessor para valores anidados, con colación española (`localeCompare('es')`) para strings y orden numérico para números. Se integró como parámetro opcional `sortKey` en `useClientPagination` y se aplicó (`sortKey: 'name'`) en categories, places, units, checklists, products y despensy; `checkout/index.tsx` y `AddOutOfListProductModal` usan `sortBy` directamente al no pasar por el hook. El listado de "Comprados" en checkout se dejó ordenado por fecha (más reciente primero) por ser un historial, no un catálogo.
 
-- [ ] **Editar/desconfirmar un producto ya confirmado en una lista** — Permitir editar cantidad, unidad, lugar y precio de un `checklist_item` ya marcado como comprado, y permitir desconfirmarlo (volver a pendiente). Solo mientras el checklist esté **abierto o en progreso** — no aplica a listas cerradas o canceladas.
+- [x] **Editar/desconfirmar un producto ya confirmado en una lista** — El backend ya tenía todo lo necesario (`ChecklistItemService::markAsBought/markAsNotBought` + rutas `checklist-items.mark-bought`/`mark-not-bought`), incluida la regla de "solo si el checklist está abierto/en progreso" (`guardEditable` lanza `ChecklistNotEditableException` si está cerrado/cancelado). Faltaba exponerlo en la UI:
+    - `checkout/index.tsx`: la sección "Comprados" tiene, por item, un botón **Editar** (ícono lápiz, `variant="outline"` para que se vea como botón) que abre un **modal** (`EditBoughtItemModal`) con cantidad, unidad, lugar y precio; el modal tiene **Guardar** (reutiliza `mark-bought`) y **Quitar confirmación** (`mark-not-bought`, con `confirm()`) juntos en el footer.
+    - `despensy/` (`ProductDespensaModal` → `MarkBoughtSection`): paridad con checkout — cuando el item ya está comprado, el mismo formulario queda editable (prellenado) con botones **Guardar** y **Deshacer**, en vez del resumen de solo lectura que tenía antes.
+    - Se agregó `active_total_price` al backend (`ProductLastPurchaseService`, `ProductResource`) y al tipo `Product` para poder prellenar el precio en despensy.
+    - Decisión explícita: cantidad sigue siendo entera en todo el sistema (no se hizo la migración a `decimal` para `quantity_bought`/`quantity_planned`/`quantity_at_home`).
 
 - [ ] **Filtro por lugar y categoría para confirmados (despensy/checkout)** — La sección de "confirmados" tiene su propio selector de lugar y categoría, **independiente** del filtro de categoría que ya existe para pendientes (no se comparte estado entre ambos filtros).
 
@@ -247,6 +251,10 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
     - Hay que identificar el componente de select usado y corregir su navegación por teclado/scroll.
 
 - [ ] **Búsqueda de productos sin distinguir tildes (CRUD productos, despensy/checkout, despensy/)** — Normalizar acentos **en el cliente**, en la misma lógica de búsqueda actual (client-side, ya trae todo el listado), en ambas direcciones: buscar "cafe" encuentra "café" y buscar "café" encuentra "cafe".
+
+- [ ] **Mejorar el responsive de despensy/checkout** — En resoluciones menores a 1024px el nombre del producto no se ve; ajustar el layout para que el nombre sea legible en pantallas pequeñas.
+
+- [ ] **No manejar decimales en precios (nivel visual)** — Trabajar precios como números enteros (redondeo/sin decimales) en toda la UI. **No tocar** base de datos ni migraciones; mover el mínimo de backend si es estrictamente necesario (ej. formateo).
 
 ---
 
