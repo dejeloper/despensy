@@ -22,7 +22,7 @@ import { useClientPagination } from '@/hooks/use-client-pagination';
 import { useInertiaLoading } from '@/hooks/use-inertia-loading';
 import { despensyColumns } from '@/structures/despensy.structure';
 import { Action } from '@/types/ui';
-import { CircleCheck, CircleX, Eye } from 'lucide-react';
+import { CircleCheck, CircleX, Eye, LoaderCircle } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Despensa', href: '#' }];
 
@@ -45,6 +45,8 @@ export default function DespensyIndex({ products, categories, units, places, che
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [staleDialogOpen, setStaleDialogOpen] = useState(checklistIsStale);
+    const [closingList, setClosingList] = useState(false);
+    const [cancelingList, setCancelingList] = useState(false);
 
     const facetedProducts = useMemo(() => {
         return products.filter((product) => {
@@ -94,20 +96,31 @@ export default function DespensyIndex({ products, categories, units, places, che
                             variant="outline"
                             size="sm"
                             title="Cerrar lista"
-                            onClick={() => router.post(route('checklists.complete', checklist.id))}
+                            disabled={closingList || cancelingList}
+                            onClick={() => {
+                                setClosingList(true);
+                                router.post(route('checklists.complete', checklist.id), undefined, { onFinish: () => setClosingList(false) });
+                            }}
                         >
-                            <CircleCheck className="h-4 w-4 sm:mr-1" />
+                            {closingList ? (
+                                <LoaderCircle className="h-4 w-4 animate-spin sm:mr-1" />
+                            ) : (
+                                <CircleCheck className="h-4 w-4 sm:mr-1" />
+                            )}
                             <span className="hidden sm:inline">Cerrar lista</span>
                         </Button>
                         <Button
                             variant="destructive"
                             size="sm"
                             title="Cancelar lista"
+                            disabled={closingList || cancelingList}
                             onClick={() => {
-                                if (confirm('¿Cancelar esta lista?')) router.post(route('checklists.cancel', checklist.id));
+                                if (!confirm('¿Cancelar esta lista?')) return;
+                                setCancelingList(true);
+                                router.post(route('checklists.cancel', checklist.id), undefined, { onFinish: () => setCancelingList(false) });
                             }}
                         >
-                            <CircleX className="h-4 w-4 sm:mr-1" />
+                            {cancelingList ? <LoaderCircle className="h-4 w-4 animate-spin sm:mr-1" /> : <CircleX className="h-4 w-4 sm:mr-1" />}
                             <span className="hidden sm:inline">Cancelar lista</span>
                         </Button>
                     </div>
@@ -143,7 +156,7 @@ export default function DespensyIndex({ products, categories, units, places, che
                 </div>
 
                 <div className="w-full">
-                    <div className="hidden md:block">
+                    <div className="hidden lg:block">
                         <DataTable
                             data={paginatedData}
                             columns={despensyColumns}
@@ -153,7 +166,7 @@ export default function DespensyIndex({ products, categories, units, places, che
                         />
                     </div>
 
-                    <div className="block md:hidden">
+                    <div className="block lg:hidden">
                         <DataCards
                             data={paginatedData}
                             columns={despensyColumns}
