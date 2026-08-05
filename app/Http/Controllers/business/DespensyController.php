@@ -35,7 +35,7 @@ class DespensyController extends Controller
             'products' => $products,
             'categories' => Category::where('enabled', true)->get(['id', 'name']),
             'units' => Unit::where('enabled', true)->get(['id', 'name', 'short_name']),
-            'places' => Place::where('enabled', true)->get(['id', 'name']),
+            'places' => Place::where('enabled', true)->get(['id', 'name', 'bg_color', 'text_color']),
             'checklist' => [
                 'id' => $checklist->id,
                 'name' => $checklist->name,
