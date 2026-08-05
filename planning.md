@@ -236,8 +236,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 - [x] **Editar/desconfirmar un producto ya confirmado en una lista** — El backend ya tenía todo lo necesario (`ChecklistItemService::markAsBought/markAsNotBought` + rutas `checklist-items.mark-bought`/`mark-not-bought`), incluida la regla de "solo si el checklist está abierto/en progreso" (`guardEditable` lanza `ChecklistNotEditableException` si está cerrado/cancelado). Faltaba exponerlo en la UI:
     - `checkout/index.tsx`: la sección "Comprados" tiene, por item, un botón **Editar** (ícono lápiz, `variant="outline"` para que se vea como botón) que abre un **modal** (`EditBoughtItemModal`) con cantidad, unidad, lugar y precio; el modal tiene **Guardar** (reutiliza `mark-bought`) y **Quitar confirmación** (`mark-not-bought`, con `confirm()`) juntos en el footer.
-    - `despensy/` (`ProductDespensaModal` → `MarkBoughtSection`): paridad con checkout — cuando el item ya está comprado, el mismo formulario queda editable (prellenado) con botones **Guardar** y **Deshacer**, en vez del resumen de solo lectura que tenía antes.
-    - Se agregó `active_total_price` al backend (`ProductLastPurchaseService`, `ProductResource`) y al tipo `Product` para poder prellenar el precio en despensy.
+    - `despensy/` (`ProductDespensaModal` → `MarkBoughtSection`): decisión final distinta a checkout — cuando el item ya está comprado, **no** se puede reeditar/reconfirmar desde este modal, solo **deshacer**. La sección muestra un resumen compacto de solo lectura (cantidad + unidad, `ColorBadge` del lugar con sus colores, y precio total con `Money`) más un botón **Deshacer** (con spinner `LoaderCircle` mientras la petición a `mark-not-bought` está en curso). Se agregó `active_total_price` al backend (`ProductLastPurchaseService`, `ProductResource`) y al tipo `Product` para poder mostrar el precio. `DespensyController::index` amplió el `select` de `places` a `['id', 'name', 'bg_color', 'text_color']` (antes solo traía `id`/`name`, por lo que el `ColorBadge` no tenía colores).
     - Decisión explícita: cantidad sigue siendo entera en todo el sistema (no se hizo la migración a `decimal` para `quantity_bought`/`quantity_planned`/`quantity_at_home`).
 
 - [x] **Filtro por lugar y categoría para confirmados (despensy/checkout)** — `BoughtItemsList` (dentro de `checkout/index.tsx`) tiene su propio `placeFilter`/`categoryFilter`, con estado 100% independiente del filtro de categoría de "pendientes" (cada uno vive en su propio componente, sin compartir estado). Filtra tanto las filas de "Productos Confirmados" como el `PlaceSummaryCard` (el resumen refleja lo filtrado). Muestra mensaje "Ningún producto confirmado coincide con el filtro" cuando no hay resultados.
@@ -255,6 +254,8 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [ ] **Mejorar el responsive de despensy/checkout** — En resoluciones menores a 1024px el nombre del producto no se ve; ajustar el layout para que el nombre sea legible en pantallas pequeñas.
 
 - [ ] **No manejar decimales en precios (nivel visual)** — Trabajar precios como números enteros (redondeo/sin decimales) en toda la UI. **No tocar** base de datos ni migraciones; mover el mínimo de backend si es estrictamente necesario (ej. formateo).
+
+- [x] **Bug: `ColorBadge` de lugar sin colores en despensy** — `DespensyController::index` traía `places` con `Place::where('enabled', true)->get(['id', 'name'])`, sin `bg_color`/`text_color`, por lo que el `ColorBadge` del lugar en `MarkBoughtSection` se renderizaba sin color. Corregido el `select` a `['id', 'name', 'bg_color', 'text_color']`.
 
 ---
 

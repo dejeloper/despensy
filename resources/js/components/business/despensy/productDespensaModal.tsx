@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
@@ -32,104 +32,64 @@ type DespensaForm = {
     unit_id_at_home: string;
 };
 
-type MarkBoughtForm = {
-    quantity_bought: string;
-    unit_id_bought: string;
-    place_id: string;
-    total_price: string;
-};
-
-function MarkBoughtSection({ product, units, places, onSaved }: { product: Product; units: Unit[]; places: Place[]; onSaved: () => void }) {
+function MarkBoughtSection({
+    product,
+    units,
+    places,
+    onSaved,
+}: {
+    product: Product;
+    units: Unit[];
+    places: Place[];
+    onSaved: () => void;
+}) {
     const wasBought = !!product.active_was_bought;
+    const [unconfirming, setUnconfirming] = useState(false);
 
-    const { data, setData, patch, processing, errors } = useForm<MarkBoughtForm>({
-        quantity_bought: product.active_quantity_bought?.toString() || product.active_quantity_planned?.toString() || '1',
-        unit_id_bought: product.active_unit_id_bought?.toString() || product.active_unit_id_planned?.toString() || '',
-        place_id: product.active_place_id?.toString() || '',
-        total_price: product.active_total_price?.toString() || '',
-    });
+    if (!wasBought) return null;
 
-    const unitItems: ComboboxItem[] = units.map((u) => ({ value: u.id.toString(), label: u.name, searchText: `${u.name} ${u.name}` }));
-    const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
-
-    const submit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        patch(route('checklist-items.mark-bought', product.active_checklist_item_id), {
-            preserveScroll: true,
-            onSuccess: onSaved,
-        });
-    };
+    const unitName = units.find((u) => u.id === product.active_unit_id_bought)?.name;
+    const place = places.find((p) => p.id === product.active_place_id);
 
     const unconfirm = () => {
+        setUnconfirming(true);
         router.patch(route('checklist-items.mark-not-bought', product.active_checklist_item_id), undefined, {
             preserveScroll: true,
             onSuccess: onSaved,
+            onFinish: () => setUnconfirming(false),
         });
     };
 
     return (
-        <form onSubmit={submit} className="flex flex-col gap-3 rounded-md border p-3">
-            <p className="font-medium">{wasBought ? 'Editar compra' : 'Marcar como comprado'}</p>
-            <div className="flex flex-wrap gap-2">
-                <Input
-                    type="number"
-                    min={1}
-                    placeholder="Cantidad"
-                    className="w-24"
-                    value={data.quantity_bought}
-                    onChange={(e) => setData('quantity_bought', e.target.value)}
-                    required
-                />
-                <Combobox
-                    items={unitItems}
-                    value={data.unit_id_bought}
-                    onValueChange={(value) => setData('unit_id_bought', value)}
-                    placeholder="Unidad"
-                    searchPlaceholder="Buscar unidad..."
-                    emptyText="No se encontraron unidades"
-                    className="w-32"
-                />
-                <Combobox
-                    items={placeItems}
-                    value={data.place_id}
-                    onValueChange={(value) => setData('place_id', value)}
-                    placeholder="Lugar"
-                    searchPlaceholder="Buscar lugar..."
-                    emptyText="No se encontraron lugares"
-                    className="w-36"
-                />
-                <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Precio total"
-                    className="w-28"
-                    value={data.total_price}
-                    onChange={(e) => setData('total_price', e.target.value)}
-                    required
-                />
-            </div>
-            {(errors.quantity_bought || errors.unit_id_bought || errors.place_id || errors.total_price) && (
-                <p className="text-xs text-destructive">
-                    {errors.quantity_bought || errors.unit_id_bought || errors.place_id || errors.total_price}
-                </p>
-            )}
-            <div className="flex gap-2">
-                <Button type="submit" size="sm" className="w-fit" disabled={processing}>
-                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                    {wasBought ? 'Guardar' : 'Marcar comprado'}
+        <div className="flex flex-col gap-2 rounded-md border p-2 text-sm">
+            <p className="font-medium">Compra confirmada</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">
+                        {product.active_quantity_bought} {unitName}
+                    </span>
+                    {place && (
+                        <ColorBadge
+                            text={place.name}
+                            bgColor={place.bg_color}
+                            textColor={place.text_color}
+                            className="min-w-0 px-2 py-0.5 text-xs"
+                        />
+                    )}
+                    <Money value={product.active_total_price} />
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={unconfirm} disabled={unconfirming}>
+                    {unconfirming && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                    Deshacer
                 </Button>
-                {wasBought && (
-                    <Button type="button" variant="outline" size="sm" className="w-fit" onClick={unconfirm} disabled={processing}>
-                        Deshacer
-                    </Button>
-                )}
             </div>
-        </form>
+        </div>
     );
 }
 
 export function ProductDespensaModal({ product, units, places, open, onOpenChange }: ProductDespensaModalProps) {
+    const contentRef = useRef<HTMLDivElement>(null);
+
     const { data, setData, put, processing, reset, transform } = useForm<DespensaForm>({
         will_buy: false,
         quantity_planned: '',
@@ -179,7 +139,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md" ref={contentRef}>
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">{product.name}</DialogTitle>
                     {product.category && (
@@ -239,6 +199,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
                                     searchPlaceholder="Buscar unidad..."
                                     emptyText="No se encontraron unidades"
                                     className="flex-1"
+                                    portalContainer={contentRef.current}
                                 />
                             </div>
                         )}
@@ -268,6 +229,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
                                     searchPlaceholder="Buscar unidad..."
                                     emptyText="No se encontraron unidades"
                                     className="flex-1"
+                                    portalContainer={contentRef.current}
                                 />
                             </div>
                         )}
@@ -281,7 +243,7 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
                     </DialogFooter>
                 </form>
 
-                {product.active_checklist_item_id && (
+                {product.active_was_bought && (
                     <MarkBoughtSection product={product} units={units} places={places} onSaved={() => onOpenChange(false)} />
                 )}
             </DialogContent>
