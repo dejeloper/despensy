@@ -28,7 +28,7 @@ class DespensyController extends Controller
         $checklist = $this->lifecycleService->activeChecklistFor($request->user());
         $checklist->load('state');
 
-        $products = $this->lastPurchaseService->allWithLastPurchase($checklist->id)
+        $products = $this->lastPurchaseService->allWithLastPurchase($checklist->id, onlyEnabled: true)
             ->map(fn ($product) => (new ProductResource($product))->resolve($request));
 
         return Inertia::render('despensy/index', [

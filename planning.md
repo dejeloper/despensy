@@ -30,7 +30,7 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 - [x] CRUD completo para Units
 - [x] CRUD completo para Products (sin métodos show, lastPurchase, purchaseHistory)
 - [x] Todos los controladores traen todos los datos (preparados para búsqueda/paginación del cliente)
-- [ ] **Bug: Despensa muestra productos desactivados** — `DespensyController::index` no filtra por `enabled = true`, entonces un producto que desactivás sigue apareciendo en la vista de compra y se puede seguir agregando a la lista
+- [x] **Bug: Despensa muestra productos desactivados** — `ProductLastPurchaseService::allWithLastPurchase()` no filtraba por `enabled = true`, entonces un producto que desactivás seguía apareciendo en la vista de compra y se podía seguir agregando a la lista. Es un método compartido con `ProductController::index` (CRUD de productos), que sí necesita ver los desactivados para poder reactivarlos, así que no se podía filtrar en el service directamente. Se agregó el parámetro opcional `onlyEnabled` (default `false`) — `DespensyController::index` lo pasa en `true`, el CRUD lo deja en `false`.
 - [ ] **Mover la lógica de `/dashboard` a un `DashboardController`** — Hoy es un closure en `routes/web.php` que ya orquesta 2 Services (`ChecklistLifecycleService` y `DashboardStatsService`) — es la única vista de negocio que no sigue el patrón Controller del resto de la app
 
 ### Frontend - Vistas

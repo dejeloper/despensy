@@ -20,10 +20,16 @@ class ProductLastPurchaseService
      * When $activeChecklistId is given, also annotates each product with its
      * item on that specific checklist (if any) — used by the Despensa view
      * to know whether a product is already on the active shopping list.
+     *
+     * $onlyEnabled restricts the result to enabled products — used by the
+     * Despensa view, which must not offer disabled products for purchase.
+     * The Products CRUD listing keeps $onlyEnabled = false so disabled
+     * products stay visible there and can be re-enabled.
      */
-    public function allWithLastPurchase(?int $activeChecklistId = null): Collection
+    public function allWithLastPurchase(?int $activeChecklistId = null, bool $onlyEnabled = false): Collection
     {
         return Product::with('category')
+            ->when($onlyEnabled, fn ($query) => $query->where('products.enabled', true))
             ->leftJoin('checklist_items as ci', function ($join) {
                 $join->on('ci.id', '=', DB::raw('(
                     SELECT ci2.id
