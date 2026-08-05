@@ -15,7 +15,7 @@ Pregunta guía para cualquier funcionalidad nueva: **¿esto ayuda a decidir mejo
 Estos límites son deliberados y evitan que el proyecto crezca hacia algo que no busca resolver:
 
 - **No es un sistema de inventario de negocio.** No lleva stock exacto, no gestiona múltiples bodegas, no tiene control de existencias en tiempo real. Por eso `products` no tiene `stock`: la cantidad relevante es la de cada compra (`checklist_items.quantity_bought`), no una existencia acumulada.
-- **No es multiusuario colaborativo real.** Cada usuario tiene su propia despensa y sus propias listas; no hay listas compartidas entre usuarios ni permisos entre cuentas.
+- **No tiene roles ni permisos por cuenta.** Es colaborativo por diseño: la despensa y la checklist activa son compartidas por todos los usuarios autenticados — cualquiera puede ver y editar lo del resto, sin distinción de dueño. `user_id` en una checklist es solo un dato informativo de quién la creó, no un control de acceso.
 - **No es un e-commerce ni gestiona pagos.** Los precios que se registran son datos históricos de referencia, no transacciones.
 - **No es un ERP ni ledger contable.** No hay doble entrada, no hay conciliación de caja, no hay reportes fiscales.
 

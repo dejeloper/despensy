@@ -32,9 +32,9 @@ Estados válidos para `Checklist` (según `planning.md`): `open`, `in_progress`,
 
 ### Checklist
 
-Una lista de compra de un usuario. Pertenece a un `User` (`user_id`), tiene un `state_id` y un `name` opcional.
+Una lista de compra **compartida por todos los usuarios autenticados** — no pertenece a un usuario en el sentido de control de acceso. Tiene un `state_id`, un `name` opcional y un `user_id` que registra quién la creó, puramente informativo (se muestra como "creado por" en la UI, no restringe quién puede verla o editarla).
 
-**Regla de negocio central: un usuario solo puede tener una checklist en estado `open` (o `in_progress`) a la vez.** Al crear una nueva lista mientras existe una abierta, la anterior debe cerrarse o cancelarse primero — esta regla vive en un Service (`ChecklistService` o similar, ver `docs/ARCHITECTURE.md`), nunca duplicada en el controlador o en el frontend.
+**Regla de negocio central: solo puede existir una checklist en estado `open` (o `in_progress`) a la vez en todo el sistema**, sin importar quién la creó. Al crear una nueva lista mientras existe una abierta, la anterior debe cerrarse o cancelarse primero — esta regla vive en un Service (`ChecklistLifecycleService`, ver `docs/ARCHITECTURE.md`), nunca duplicada en el controlador o en el frontend.
 
 Ciclo de vida: `open` → (`in_progress` opcional mientras se compra) → `closed` (compra completada, inmutable después) o `cancelled` (se descarta, no genera historial de compra).
 
@@ -51,7 +51,7 @@ Este es el registro que alimenta el historial de compras de un producto. "Últim
 
 ## Reglas de negocio que deben quedar centralizadas (no duplicadas)
 
-1. **Una sola checklist abierta por usuario** — lógica en un único Service, nunca replicada en controlador ni en validación de frontend únicamente.
+1. **Una sola checklist abierta en todo el sistema** (compartida por todos los usuarios) — lógica en un único Service, nunca replicada en controlador ni en validación de frontend únicamente.
 2. **Última compra de un producto** (precio, lugar, fecha, unidad) — un único método/Service reutilizable, no una subquery repetida en cada controlador que la necesite.
 3. **Transiciones de estado de checklist** — `open → in_progress → closed` y `* → cancelled` son las únicas transiciones válidas. Una checklist `closed` o `cancelled` es inmutable: ningún endpoint debe permitir modificar sus `ChecklistItem` después de ese punto.
 4. **Estados como catálogo, no como string mágico** — cualquier comparación de estado se hace contra `State` (por `id` o por un valor conocido consultado una sola vez), nunca comparando strings hardcodeados esparcidos en el código.
