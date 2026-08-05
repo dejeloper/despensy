@@ -228,6 +228,28 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ---
 
+## Issues en producción
+
+- [x] **Quitar el ofrecimiento de traducción de Chrome** — Causa raíz: `APP_LOCALE=en` hacía que `<html lang="en">` no coincidiera con el contenido real (español), lo que dispara el aviso de traducción en cualquier navegador (Chrome, Safari, etc). Corregido `APP_LOCALE`/`APP_FALLBACK_LOCALE` a `es` en `.env`, `.env.example`, `.env.prod` y el default de `config/app.php`; agregado `translate="no"` + `<meta name="google" content="notranslate">` en `app.blade.php` como refuerzo para Chrome/Edge.
+
+- [ ] **Orden alfabético por defecto (CRUD productos, despensy/checkout, despensy/)** — Reemplazar el orden actual (por id/created_at) como orden inicial en las 3 vistas, usando `localeCompare('es')` para que las tildes se ordenen como en el diccionario español (ej. "café" antes de "cazo", no después por el acento).
+
+- [ ] **Editar/desconfirmar un producto ya confirmado en una lista** — Permitir editar cantidad, unidad, lugar y precio de un `checklist_item` ya marcado como comprado, y permitir desconfirmarlo (volver a pendiente). Solo mientras el checklist esté **abierto o en progreso** — no aplica a listas cerradas o canceladas.
+
+- [ ] **Filtro por lugar y categoría para confirmados (despensy/checkout)** — La sección de "confirmados" tiene su propio selector de lugar y categoría, **independiente** del filtro de categoría que ya existe para pendientes (no se comparte estado entre ambos filtros).
+
+- [ ] **Resumen por lugar en despensy/checkout** — Por cada lugar: cantidad de productos y valor total (precio × cantidad), calculado **únicamente** sobre los items confirmados que tengan precio registrado (no incluye pendientes).
+
+- [ ] **Bug: selects de unidad/lugar no se pueden navegar** — En el modal "Producto fuera de la lista" de checkout, los selects de unidad y lugar (los que permiten escribir):
+    - Desktop: el scroll con la ruedita del mouse no funciona dentro del dropdown; hay que usar el botón "bajar".
+    - Teclado: para saltar a una opción hay que escribir la palabra completa (ej. escribir "p" no filtra ni permite bajar con flechas hasta la última opción).
+    - iPad: el scroll táctil dentro del dropdown no funciona.
+    - Hay que identificar el componente de select usado y corregir su navegación por teclado/scroll.
+
+- [ ] **Búsqueda de productos sin distinguir tildes (CRUD productos, despensy/checkout, despensy/)** — Normalizar acentos **en el cliente**, en la misma lógica de búsqueda actual (client-side, ya trae todo el listado), en ambas direcciones: buscar "cafe" encuentra "café" y buscar "café" encuentra "cafe".
+
+---
+
 ## Nuevas tareas
 
 - Use this format to add new tasks
@@ -236,4 +258,4 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 ## Actualizado
 
-- 2026-07-18
+- 2026-08-05
