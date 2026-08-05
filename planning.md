@@ -257,6 +257,8 @@ Herramienta personal para tomar mejores decisiones al momento de comprar product
 
 - [x] **Bug: suma incorrecta en "Productos Confirmados" (checkout)** — `ChecklistItem::$casts` tiene `'total_price' => 'decimal:2'`, y Laravel serializa los `decimal` casts como **string** (ej. `"12.50"`), aunque el tipo TS (`ChecklistItem.total_price: number | null`) diga lo contrario. Sumar strings con `+`/`+=` hace concatenación, no suma numérica (`"12.50" + "8.00" = "12.508.00"`). Corregido envolviendo cada valor en `Number(...)` antes de sumar, en los tres lugares donde se acumulaba `total_price`: `checkout/index.tsx` (total de confirmados), `placeSummaryCard.tsx` (total por lugar) y `checklists/show.tsx` (total del historial). `Money`/`formatCurrency` ya manejaban el string correctamente (por eso el precio individual de cada item se veía bien) — el bug solo afectaba a las sumas acumuladas.
 
+- [x] **UI: padding horizontal del componente `Card` en todo el sistema** — `Card` (`resources/js/components/ui/card.tsx`) solo tenía `py-6`; el padding horizontal (`px-6`) vivía en `CardHeader`/`CardContent`/`CardFooter`, así que cualquier `CardContent` con `p-0` (usado para listas de filas full-bleed, como "Productos Confirmados"/"Pendientes" en checkout y el historial en `products/show.tsx`) dejaba el contenido pegado al borde de la card. Se movió el `px-6` al `Card` base (ahora estructural, no se puede perder overrideando `CardContent`) y se quitó de `CardHeader`/`CardContent`/`CardFooter`. Único caso especial: `auth-card-layout.tsx` ya traía su propio `px-10` en `CardHeader`/`CardContent`, así que se le agregó `px-0` al `Card` para no duplicar el padding horizontal ahí.
+
 ---
 
 ## Nuevas tareas

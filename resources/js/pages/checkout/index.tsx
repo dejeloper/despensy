@@ -15,7 +15,6 @@ import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Combobox, ComboboxItem } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -59,7 +58,7 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
     return (
         <form
             onSubmit={submit}
-            className="flex flex-col gap-3 border-b p-4 last:border-b-0 sm:p-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4"
+            className="flex flex-col gap-3 border-b p-4 transition-colors last:border-b-0 hover:bg-muted/50 sm:p-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4"
         >
             <div className="min-w-0 lg:w-1/2">
                 <p className="truncate text-base font-semibold">{item.product?.name}</p>
@@ -251,7 +250,7 @@ function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Un
     const [editOpen, setEditOpen] = useState(false);
 
     return (
-        <div className="flex flex-col gap-1 border-b p-4 last:border-b-0 sm:p-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-2">
+        <div className="flex flex-col gap-1 border-b p-4 transition-colors last:border-b-0 hover:bg-muted/50 sm:p-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-2">
             <div className="min-w-0 lg:flex-1">
                 <p className="truncate text-base font-semibold">{item.product?.name}</p>
                 {item.product?.category && (
@@ -310,52 +309,50 @@ function BoughtItemsList({
     }
 
     return (
-        <Card>
-            <CardContent className="flex flex-col gap-2 p-0">
-                <div className="flex flex-col items-start gap-2 p-3 pb-0">
-                    <p className="font-medium">
-                        Productos Confirmados ({filteredBoughtItems.length}) · Total: <Money value={totalConfirmed} />
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        <Select value={placeFilter} onValueChange={setPlaceFilter}>
-                            <SelectTrigger className="w-auto whitespace-nowrap">
-                                <SelectValue placeholder="Lugar" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos los lugares</SelectItem>
-                                {places.map((place) => (
-                                    <SelectItem key={place.id} value={place.id!.toString()}>
-                                        {place.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+        <div className="relative flex flex-col gap-2 overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+            <div className="flex flex-col items-start gap-2 p-3 pb-0">
+                <p className="font-medium">
+                    Productos Confirmados ({filteredBoughtItems.length}) · Total: <Money value={totalConfirmed} />
+                </p>
+                <div className="flex flex-wrap gap-2">
+                    <Select value={placeFilter} onValueChange={setPlaceFilter}>
+                        <SelectTrigger className="w-auto whitespace-nowrap">
+                            <SelectValue placeholder="Lugar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos los lugares</SelectItem>
+                            {places.map((place) => (
+                                <SelectItem key={place.id} value={place.id!.toString()}>
+                                    {place.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-auto whitespace-nowrap">
-                                <SelectValue placeholder="Categoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todas las categorías</SelectItem>
-                                {categories.map((category) => (
-                                    <SelectItem key={category.id} value={category.id!.toString()}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="w-auto whitespace-nowrap">
+                            <SelectValue placeholder="Categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las categorías</SelectItem>
+                            {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id!.toString()}>
+                                    {category.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
+            </div>
 
-                <PlaceSummaryCard boughtItems={filteredBoughtItems} />
+            <PlaceSummaryCard boughtItems={filteredBoughtItems} />
 
-                {filteredBoughtItems.length === 0 ? (
-                    <p className="p-4 text-sm text-muted-foreground">Ningún producto confirmado coincide con el filtro.</p>
-                ) : (
-                    filteredBoughtItems.map((item) => <BoughtItemRow key={item.id} item={item} units={units} places={places} />)
-                )}
-            </CardContent>
-        </Card>
+            {filteredBoughtItems.length === 0 ? (
+                <p className="p-4 text-sm text-muted-foreground">Ningún producto confirmado coincide con el filtro.</p>
+            ) : (
+                filteredBoughtItems.map((item) => <BoughtItemRow key={item.id} item={item} units={units} places={places} />)
+            )}
+        </div>
     );
 }
 
@@ -425,17 +422,15 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                     </div>
                 )}
 
-                <Card>
-                    <CardContent className="flex flex-col p-0">
-                        {items.length === 0 ? (
-                            <p className="p-4 text-sm text-muted-foreground">No tienes productos presupuestados pendientes por confirmar.</p>
-                        ) : filteredItems.length === 0 ? (
-                            <p className="p-4 text-sm text-muted-foreground">Ningún producto coincide con el filtro.</p>
-                        ) : (
-                            filteredItems.map((item) => <CheckoutItemRow key={item.id} item={item} units={units} placeId={placeId} />)
-                        )}
-                    </CardContent>
-                </Card>
+                <div className="relative flex flex-col overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                    {items.length === 0 ? (
+                        <p className="p-4 text-sm text-muted-foreground">No tienes productos presupuestados pendientes por confirmar.</p>
+                    ) : filteredItems.length === 0 ? (
+                        <p className="p-4 text-sm text-muted-foreground">Ningún producto coincide con el filtro.</p>
+                    ) : (
+                        filteredItems.map((item) => <CheckoutItemRow key={item.id} item={item} units={units} placeId={placeId} />)
+                    )}
+                </div>
 
                 <BoughtItemsList boughtItems={boughtItems} units={units} places={places} categories={categories} />
             </div>
