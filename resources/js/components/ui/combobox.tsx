@@ -28,6 +28,10 @@ interface ComboboxProps {
   renderItem?: (item: ComboboxItem) => React.ReactNode
   onCreateNew?: (query: string) => void
   createNewLabel?: (query: string) => string
+  // Where to portal the dropdown. Pass the enclosing Dialog's content element
+  // when this Combobox is used inside a Dialog — see PopoverContent's
+  // `container` prop for why this is needed for scroll to work there.
+  portalContainer?: HTMLElement | null
 }
 
 export function Combobox({
@@ -42,18 +46,32 @@ export function Combobox({
   renderItem,
   onCreateNew,
   createNewLabel = (query) => `Crear "${query}"`,
+  portalContainer,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState("")
+  const [highlightedIndex, setHighlightedIndex] = React.useState(0)
+  const itemRefs = React.useRef<(HTMLDivElement | null)[]>([])
 
   const filteredItems = React.useMemo(() => {
     if (!search) return items
-    
+
     return items.filter((item) => {
       const searchIn = item.searchText || item.label
       return searchIn.toLowerCase().includes(search.toLowerCase())
     })
   }, [items, search])
+
+  // La lista filtrada cambia con cada tecla — siempre resaltar la primera
+  // opción para que Enter/flechas tengan un punto de partida consistente.
+  React.useEffect(() => {
+    setHighlightedIndex(0)
+  }, [filteredItems])
+
+  React.useEffect(() => {
+    if (!open) return
+    itemRefs.current[highlightedIndex]?.scrollIntoView({ block: "nearest" })
+  }, [open, highlightedIndex])
 
   const selectedItem = items.find((item) => item.value === value)
 
@@ -69,8 +87,34 @@ export function Combobox({
     setSearch("")
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setHighlightedIndex((i) => Math.min(i + 1, filteredItems.length - 1))
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setHighlightedIndex((i) => Math.max(i - 1, 0))
+    } else if (e.key === "Enter") {
+      e.preventDefault()
+      const item = filteredItems[highlightedIndex]
+      if (item) {
+        handleSelect(item.value)
+      } else if (onCreateNew && search) {
+        handleCreateNew()
+      }
+    } else if (e.key === "Escape") {
+      setOpen(false)
+    }
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(value) => {
+        setOpen(value)
+        if (!value) setSearch("")
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -91,16 +135,21 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-[300px] shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0"> 
+      <PopoverContent
+        align="start"
+        container={portalContainer}
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+      >
         <div className="p-2">
           <Input
             placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="h-9"
           />
         </div>
-        <div className="max-h-60 overflow-auto">
+        <div className="max-h-60 overflow-auto overscroll-contain">
           {filteredItems.length === 0 ? (
             onCreateNew && search ? (
               <div
@@ -115,13 +164,18 @@ export function Combobox({
               </div>
             )
           ) : (
-            filteredItems.map((item) => (
+            filteredItems.map((item, index) => (
               <div
                 key={item.value}
+                ref={(el) => {
+                  itemRefs.current[index] = el
+                }}
                 className={cn(
                   "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
-                  item.value === value && "bg-accent text-accent-foreground"
+                  item.value === value && "bg-accent text-accent-foreground",
+                  index === highlightedIndex && "bg-accent text-accent-foreground"
                 )}
+                onMouseEnter={() => setHighlightedIndex(index)}
                 onClick={() => handleSelect(item.value)}
               >
                 <Check

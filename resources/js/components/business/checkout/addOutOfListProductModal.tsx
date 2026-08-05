@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
+import { useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Combobox, ComboboxItem } from '@/components/ui/combobox';
@@ -26,6 +27,11 @@ type AddProductForm = {
 };
 
 export function AddOutOfListProductModal({ open, onOpenChange, products, units, placeId }: AddOutOfListProductModalProps) {
+    // Radix's Dialog scroll-lock only allows wheel/touch scroll inside the
+    // Dialog's own DOM subtree, so Combobox popovers (portaled to document.body
+    // by default) end up unscrollable here — portalContainer fixes that.
+    const contentRef = useRef<HTMLDivElement>(null);
+
     const { data, setData, post, processing, errors, reset, transform } = useForm<AddProductForm>({
         product_id: '',
         quantity_bought: '1',
@@ -56,7 +62,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                 onOpenChange(value);
             }}
         >
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md" ref={contentRef}>
                 <DialogHeader>
                     <DialogTitle>Producto fuera de la lista</DialogTitle>
                     <DialogDescription>Se agregará directamente como comprado, sin haber sido presupuestado.</DialogDescription>
@@ -71,6 +77,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                             placeholder="Selecciona un producto"
                             searchPlaceholder="Buscar producto..."
                             emptyText="No se encontraron productos"
+                            portalContainer={contentRef.current}
                         />
                         {errors.product_id && <p className="mt-1 text-xs text-destructive">{errors.product_id}</p>}
                     </div>
@@ -95,6 +102,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
                                 placeholder="Unidad"
                                 searchPlaceholder="Buscar unidad..."
                                 emptyText="No se encontraron unidades"
+                                portalContainer={contentRef.current}
                             />
                             {errors.unit_id_bought && <p className="mt-1 text-xs text-destructive">{errors.unit_id_bought}</p>}
                         </div>
