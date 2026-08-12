@@ -1,5 +1,5 @@
-import {type ClassValue, clsx} from 'clsx';
-import {twMerge} from 'tailwind-merge';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -24,10 +24,16 @@ export function formatCurrency(value: number | string | null | undefined, symbol
  * viceversa).
  */
 export function normalizeText(value: string): string {
-    return value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '');
+    return value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+/**
+ * Turn a decimal typed with the Spanish separator ("1,64") into the form the
+ * backend expects ("1.64"). Deja intacto lo que ya viene con punto o sin
+ * decimales, y devuelve '' para vacío.
+ */
+export function normalizeDecimal(value: string): string {
+    return value.trim().replace(',', '.');
 }
 
 /**

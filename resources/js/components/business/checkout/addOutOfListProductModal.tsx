@@ -7,7 +7,8 @@ import { Combobox, ComboboxItem } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
-import { sortBy } from '@/lib/utils';
+import { QuantityInput } from '@/components/shared/quantityInput.component';
+import { normalizeDecimal, sortBy } from '@/lib/utils';
 import { Product } from '@/types/business/product';
 import { Unit } from '@/types/business/unit';
 
@@ -43,7 +44,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        transform((formData) => ({ ...formData, place_id: placeId }));
+        transform((formData) => ({ ...formData, quantity_bought: normalizeDecimal(formData.quantity_bought), place_id: placeId }));
         post(route('checkout.add-product'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -83,14 +84,7 @@ export function AddOutOfListProductModal({ open, onOpenChange, products, units, 
 
                     <div className="flex gap-2">
                         <div className="w-24">
-                            <Input
-                                type="number"
-                                min={1}
-                                placeholder="Cantidad"
-                                value={data.quantity_bought}
-                                onChange={(e) => setData('quantity_bought', e.target.value)}
-                                required
-                            />
+                            <QuantityInput value={data.quantity_bought} onChange={(value) => setData('quantity_bought', value)} required />
                             {errors.quantity_bought && <p className="mt-1 text-xs text-destructive">{errors.quantity_bought}</p>}
                         </div>
                         <div className="flex-1">

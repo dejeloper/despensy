@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react';
 
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
+import { QuantityInput } from '@/components/shared/quantityInput.component';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox, ComboboxItem } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { normalizeDecimal } from '@/lib/utils';
 
 import { Place } from '@/types/business/place';
 import { Product } from '@/types/business/product';
@@ -109,9 +110,9 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
 
         transform((formData) => ({
             will_buy: formData.will_buy,
-            quantity_planned: formData.will_buy && formData.quantity_planned ? formData.quantity_planned : null,
+            quantity_planned: formData.will_buy && formData.quantity_planned ? normalizeDecimal(formData.quantity_planned) : null,
             unit_id_planned: formData.will_buy && formData.unit_id_planned ? formData.unit_id_planned : null,
-            quantity_at_home: formData.has_at_home && formData.quantity_at_home ? formData.quantity_at_home : null,
+            quantity_at_home: formData.has_at_home && formData.quantity_at_home ? normalizeDecimal(formData.quantity_at_home) : null,
             unit_id_at_home: formData.has_at_home && formData.unit_id_at_home ? formData.unit_id_at_home : null,
         }));
 
@@ -170,13 +171,10 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
 
                         {data.has_at_home && (
                             <div className="flex gap-2">
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    placeholder="Cantidad"
+                                <QuantityInput
                                     className="w-28"
                                     value={data.quantity_at_home}
-                                    onChange={(e) => setData('quantity_at_home', e.target.value)}
+                                    onChange={(value) => setData('quantity_at_home', value)}
                                 />
                                 <Combobox
                                     items={unitItems}
@@ -200,13 +198,10 @@ export function ProductDespensaModal({ product, units, places, open, onOpenChang
 
                         {data.will_buy && (
                             <div className="flex gap-2">
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    placeholder="Cantidad"
+                                <QuantityInput
                                     className="w-28"
                                     value={data.quantity_planned}
-                                    onChange={(e) => setData('quantity_planned', e.target.value)}
+                                    onChange={(value) => setData('quantity_planned', value)}
                                 />
                                 <Combobox
                                     items={unitItems}

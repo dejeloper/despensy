@@ -14,6 +14,7 @@ import { PlaceSummaryCard } from '@/components/business/checkout/placeSummaryCar
 import { CategoryFilterSelect } from '@/components/shared/categoryFilterSelect.component';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
+import { QuantityInput } from '@/components/shared/quantityInput.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
 import { Button } from '@/components/ui/button';
 import { Combobox, ComboboxItem } from '@/components/ui/combobox';
@@ -21,7 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategoryFilter } from '@/hooks/use-category-filter';
-import { normalizeText, sortBy } from '@/lib/utils';
+import { normalizeDecimal, normalizeText, sortBy } from '@/lib/utils';
 import { Check, LoaderCircle, Pencil } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -50,7 +51,7 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        transform((formData) => ({ ...formData, place_id: placeId }));
+        transform((formData) => ({ ...formData, quantity_bought: normalizeDecimal(formData.quantity_bought), place_id: placeId }));
         // La redirección de vuelta refresca las props (incluyendo `items` y
         // `boughtItems`). `preserveState` mantiene el `placeId` local elegido para
         // no volver a la pantalla de "¿Dónde compraste?" tras confirmar.
@@ -76,14 +77,7 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
             </div>
             <div className="flex flex-wrap items-end gap-2 lg:w-1/2 lg:flex-nowrap lg:justify-end">
                 <div className="w-24">
-                    <Input
-                        type="number"
-                        min={1}
-                        placeholder="Cantidad"
-                        value={data.quantity_bought}
-                        onChange={(e) => setData('quantity_bought', e.target.value)}
-                        required
-                    />
+                    <QuantityInput value={data.quantity_bought} onChange={(value) => setData('quantity_bought', value)} required />
                     {errors.quantity_bought && <p className="mt-1 text-xs text-destructive">{errors.quantity_bought}</p>}
                 </div>
                 <div className="w-32">
@@ -142,7 +136,7 @@ function EditBoughtItemModal({
     // a ref alone stays null through the render that creates it.
     const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null);
 
-    const { data, setData, patch, processing, errors, reset } = useForm({
+    const { data, setData, patch, processing, errors, reset, transform } = useForm({
         quantity_bought: item.quantity_bought?.toString() || '',
         unit_id_bought: item.unit_bought?.id?.toString() || '',
         place_id: item.place?.id?.toString() || '',
@@ -154,6 +148,7 @@ function EditBoughtItemModal({
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        transform((formData) => ({ ...formData, quantity_bought: normalizeDecimal(formData.quantity_bought) }));
         patch(route('checklist-items.mark-bought', item.id), { preserveScroll: true, onSuccess: () => onOpenChange(false) });
     };
 
@@ -184,14 +179,7 @@ function EditBoughtItemModal({
                 <form onSubmit={submit} className="flex flex-col gap-3">
                     <div className="flex gap-2">
                         <div className="w-24">
-                            <Input
-                                type="number"
-                                min={1}
-                                placeholder="Cantidad"
-                                value={data.quantity_bought}
-                                onChange={(e) => setData('quantity_bought', e.target.value)}
-                                required
-                            />
+                            <QuantityInput value={data.quantity_bought} onChange={(value) => setData('quantity_bought', value)} required />
                             {errors.quantity_bought && <p className="mt-1 text-xs text-destructive">{errors.quantity_bought}</p>}
                         </div>
                         <div className="flex-1">
