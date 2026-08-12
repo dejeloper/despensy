@@ -22,6 +22,7 @@ Reglas concretas para código PHP en Despensy. El _por qué_ de las capas está 
 - `rules()` y `messages()` siempre presentes, con mensajes en español, siguiendo el estilo ya usado en `CategoryRequest`/`ProductRequest` (`'campo.regla' => 'Mensaje.'`).
 - Reglas de unicidad que dependen de la ruta (`Rule::unique(...)->ignore($id)`) se resuelven leyendo el `id` desde `$this->route('recurso')?->id`, como ya hace `ProductRequest`.
 - Las reglas deben validar exactamente las columnas que existen en la migración — antes de escribir una regla para un campo, confirmar que el campo existe en `database/migrations/`.
+- Las cantidades de `ChecklistItem` se validan con `numeric|min:0.01|decimal:0,2`, nunca con `integer` — son fraccionarias (ver `docs/DOMAIN.md`). `decimal:0,2` acota los decimales a la precisión real de la columna; sin esa regla, un `1.999` se guardaría redondeado y silenciosamente distinto a lo que el usuario escribió.
 
 ## Modelos
 
@@ -54,3 +55,4 @@ Reglas concretas para código PHP en Despensy. El _por qué_ de las capas está 
 - Los tests de modelo (`tests/Unit/Models/business/`) verifican relaciones, scopes y casts — patrón usado para Category/Place/Product/Unit/State/Checklist/ChecklistItem.
 - Todo Service con lógica de negocio lleva su test unitario en `tests/Unit/Services/business/` (ver `ProductLastPurchaseServiceTest`, `ChecklistLifecycleServiceTest`, `ChecklistItemServiceTest` como referencia) — se escribe en el mismo cambio que crea el Service, no después.
 - Los flujos de controlador con reglas de negocio o autorización llevan un Feature test en `tests/Feature/` (ver `tests/Feature/Checklist/` y `tests/Feature/business/` como referencia) — se escribe en el mismo cambio que crea o modifica el controlador.
+- **Cuidado al asertar floats contra props de Inertia.** `$response->inertiaProps(...)` hace `json_decode(json_encode(...))` por dentro, y PHP serializa un float sin parte decimal como entero: un `1.0` del Resource llega al test como `int(1)` y `toBe(1.0)` falla. Al cubrir un campo decimal, usa un valor fraccionario de verdad (`1.5`) — sobrevive el round-trip y además prueba lo que importa. Contra el modelo o el Service directamente no aplica: ahí el float llega intacto.

@@ -32,7 +32,15 @@ En vez de una tabla de estados por entidad (`checklist_states`, `product_states`
 ## Precisión numérica
 
 - Montos monetarios: `decimal(10, 2)` — ya usado en `checklist_items.unit_price`/`total_price`. Cualquier columna monetaria nueva sigue esta misma precisión, no `float`/`double`.
-- Cantidades (`quantity_planned`, `quantity_bought`): `integer`. Si en el futuro se necesitan cantidades fraccionarias (ej. "1.5 kg"), es un cambio de tipo a evaluar conscientemente, no algo a mezclar silenciosamente con enteros.
+- Cantidades (`quantity_planned`, `quantity_at_home`, `quantity_bought`): `decimal(10,2)`, para soportar compras fraccionarias por peso (ej. "1.64 kg"). El modelo las castea a `float` para que el frontend reciba `1.64` y no `"1.64"` como string.
+
+## Seeders
+
+`DatabaseSeeder` llama a los seeders en un orden que **es una dependencia real, no estética**: `User → State → Category → Place → Unit → Product → Checklist`. Cada uno resuelve sus foreign keys contra lo que sembró el anterior.
+
+- Los datos son los reales de producción (catálogo de ~205 productos, 18 lugares, 25 unidades y una checklist de mercado con compras históricas), no datos inventados. Así el dashboard, el checkout y el historial de última compra tienen con qué trabajar apenas se siembra la base.
+- **Un seeder nunca hardcodea IDs de otra tabla.** Se resuelve por nombre con `pluck('id', 'name')` (ver `ProductSeeder`/`ChecklistSeeder`). Un ID literal se rompe en cuanto alguien reordena o inserta una fila más arriba.
+- Si agregas una unidad, lugar o categoría que un producto o checklist va a referenciar, siémbrala en su seeder **antes** de referenciarla — si no, el `pluck` no la encuentra y la siembra falla con "Undefined array key".
 
 ## Antes de escribir una migración nueva
 

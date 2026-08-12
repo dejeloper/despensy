@@ -40,10 +40,13 @@ Ciclo de vida: `open` → (`in_progress` opcional mientras se compra) → `close
 
 ### ChecklistItem
 
-Un producto dentro de una checklist, con dos "capas" de datos: lo planeado y lo comprado.
+Un producto dentro de una checklist, con tres "capas" de datos: lo que ya hay en casa, lo planeado y lo comprado.
 
+- En casa: `quantity_at_home`, `unit_id_at_home` — cuánto queda en la despensa al armar la lista. Es informativo (ayuda a decidir cuánto comprar), no participa en ningún cálculo de precio.
 - Planeado: `quantity_planned`, `unit_id_planned`.
 - Comprado (se llenan al marcar `was_bought = true`): `quantity_bought`, `unit_id_bought`, `place_id`, `unit_price`, `total_price`, `purchase_date`.
+
+Las tres cantidades son **fraccionarias** — se compra por peso ("1,64 kg de carne"), no solo por unidades enteras. La precisión y el casteo están en `docs/DATABASE.md`; la entrada en la UI, en `docs/FRONTEND_CONVENTIONS.md`.
 
 Este es el registro que alimenta el historial de compras de un producto. "Última compra de un producto" = el `ChecklistItem` más reciente de ese producto con `was_bought = true`, ordenado por `purchase_date` (o `created_at` si `purchase_date` es nulo) — lógica centralizada en `ProductLastPurchaseService` (ver `docs/ARCHITECTURE.md`), reutilizada por `ProductController` y `DespensyController`.
 

@@ -36,6 +36,7 @@ Reglas concretas para código en `resources/js/`. Stack real: Inertia.js 2 + Rea
 
 - Paginación y búsqueda de listados: siempre vía `use-client-pagination` mientras aplique la decisión de `docs/ARCHITECTURE.md` (dataset completo del servidor, filtrado en cliente). Si un listado migra a paginación server-side, deja de usar este hook y se documenta el cambio.
 - Formularios usan el helper de formularios de Inertia (`useForm`) para mantener consistencia con el flujo `redirect()->with('success'|'error', ...)` del backend.
+- **Cantidades siempre vía `<QuantityInput>`** (`components/shared/quantityInput.component.tsx`), nunca un `<Input type="number">` suelto. El input nativo descarta la coma decimal en locales que la usan, así que un usuario escribiendo "1,64" perdía el decimal; `QuantityInput` es `type="text"` + `inputMode="decimal"`, acepta coma o punto y limita a 2 decimales al teclear. Al enviar, el formulario normaliza con `normalizeDecimal()` de `lib/utils.ts` para que el backend reciba punto — esa llamada va en el `transform()` del `useForm`, no dispersa en cada `onChange`.
 - No se introduce una librería de manejo de estado global (Redux, Zustand, etc.) sin justificar por qué el estado de página + props de Inertia no alcanza — hoy el proyecto no la necesita y no debe agregarse preventivamente.
 
 ## Estilo y formato
