@@ -64,7 +64,7 @@ test('addProduct creates an out-of-list item already marked as bought', function
 
     expect($item)->not->toBeNull()
         ->and($item->was_bought)->toBeTrue()
-        ->and($item->quantity_bought)->toBe(2)
+        ->and($item->quantity_bought)->toBe(2.0)
         ->and((float) $item->total_price)->toBe(3000.0)
         ->and((float) $item->unit_price)->toBe(1500.0);
 });

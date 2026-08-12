@@ -91,7 +91,7 @@ test('despensy shows a product as bought once its checklist item was marked as b
 
     $item = (new ChecklistItemService)->syncProduct($checklist, $product, ['will_buy' => true, 'quantity_planned' => 1]);
     (new ChecklistItemService)->markAsBought($item, [
-        'quantity_bought' => 1,
+        'quantity_bought' => 1.5,
         'unit_id_bought' => $unit->id,
         'place_id' => $place->id,
         'total_price' => 1500,
@@ -103,7 +103,7 @@ test('despensy shows a product as bought once its checklist item was marked as b
     $entry = collect($products)->firstWhere('id', $product->id);
 
     expect($entry['active_was_bought'])->toBeTrue()
-        ->and($entry['active_quantity_bought'])->toBe(1)
+        ->and($entry['active_quantity_bought'])->toBe(1.5)
         ->and($entry['active_place_id'])->toBe($place->id);
 });
 

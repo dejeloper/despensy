@@ -112,8 +112,8 @@ describe('ProductLastPurchaseService', function () {
         $otherEntry = $result->firstWhere('id', $otherProduct->id);
 
         expect($entry->active_checklist_item_id)->not->toBeNull()
-            ->and($entry->active_quantity_planned)->toBe(3)
-            ->and($entry->active_quantity_at_home)->toBe(1)
+            ->and((float) $entry->active_quantity_planned)->toBe(3.0)
+            ->and((float) $entry->active_quantity_at_home)->toBe(1.0)
             ->and($otherEntry->active_checklist_item_id)->toBeNull();
     });
 
@@ -136,7 +136,7 @@ describe('ProductLastPurchaseService', function () {
         $entry = $result->firstWhere('id', $product->id);
 
         expect($entry->active_was_bought)->toBeTruthy()
-            ->and($entry->active_quantity_bought)->toBe(2)
+            ->and((float) $entry->active_quantity_bought)->toBe(2.0)
             ->and($entry->active_unit_id_bought)->toBe($unit->id)
             ->and($entry->active_place_id)->toBe($place->id)
             ->and((float) $entry->active_unit_price)->toBe(3200.0);

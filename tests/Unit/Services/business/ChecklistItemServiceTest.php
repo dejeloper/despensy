@@ -25,7 +25,7 @@ describe('ChecklistItemService', function () {
         $item->refresh();
 
         expect($item->was_bought)->toBeTrue()
-            ->and($item->quantity_bought)->toBe(2)
+            ->and($item->quantity_bought)->toBe(2.0)
             ->and($item->place_id)->toBe($place->id)
             ->and((float) $item->total_price)->toBe(9000.0)
             ->and((float) $item->unit_price)->toBe(4500.0)
@@ -60,8 +60,8 @@ describe('ChecklistItemService', function () {
         expect($item)->not->toBeNull()
             ->and($item->checklist_id)->toBe($checklist->id)
             ->and($item->product_id)->toBe($product->id)
-            ->and($item->quantity_planned)->toBe(2)
-            ->and($item->quantity_at_home)->toBe(1);
+            ->and($item->quantity_planned)->toBe(2.0)
+            ->and($item->quantity_at_home)->toBe(1.0);
     });
 
     test('syncProduct updates the existing item instead of duplicating it', function () {
@@ -74,7 +74,7 @@ describe('ChecklistItemService', function () {
         $second = $service->syncProduct($checklist, $product, ['will_buy' => true, 'quantity_planned' => 5, 'unit_id_planned' => $unit->id]);
 
         expect($second->id)->toBe($first->id)
-            ->and($second->quantity_planned)->toBe(5)
+            ->and($second->quantity_planned)->toBe(5.0)
             ->and(ChecklistItem::where('checklist_id', $checklist->id)->where('product_id', $product->id)->count())->toBe(1);
     });
 
@@ -126,7 +126,7 @@ describe('ChecklistItemService', function () {
         expect($item->checklist_id)->toBe($checklist->id)
             ->and($item->product_id)->toBe($product->id)
             ->and($item->was_bought)->toBeTrue()
-            ->and($item->quantity_bought)->toBe(3)
+            ->and($item->quantity_bought)->toBe(3.0)
             ->and($item->place_id)->toBe($place->id)
             ->and((float) $item->total_price)->toBe(6000.0)
             ->and((float) $item->unit_price)->toBe(2000.0);
