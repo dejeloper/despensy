@@ -14,7 +14,7 @@ class ChecklistItemMarkBoughtRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity_bought' => 'required|integer|min:1',
+            'quantity_bought' => 'required|numeric|min:0.01|decimal:0,2',
             'unit_id_bought' => 'required|exists:units,id',
             'place_id' => 'required|exists:places,id',
             'total_price' => 'required|integer|min:0',
@@ -26,8 +26,9 @@ class ChecklistItemMarkBoughtRequest extends FormRequest
     {
         return [
             'quantity_bought.required' => 'La cantidad comprada es obligatoria.',
-            'quantity_bought.integer' => 'La cantidad debe ser un número entero.',
-            'quantity_bought.min' => 'La cantidad debe ser al menos 1.',
+            'quantity_bought.numeric' => 'La cantidad debe ser un número.',
+            'quantity_bought.decimal' => 'La cantidad admite hasta 2 decimales.',
+            'quantity_bought.min' => 'La cantidad debe ser mayor que 0.',
             'unit_id_bought.required' => 'La unidad es obligatoria.',
             'unit_id_bought.exists' => 'La unidad seleccionada no existe.',
             'place_id.required' => 'El lugar es obligatorio.',

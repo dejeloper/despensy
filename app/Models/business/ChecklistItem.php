@@ -27,6 +27,9 @@ class ChecklistItem extends Model
 
     protected $casts = [
         'was_bought' => 'boolean',
+        'quantity_planned' => 'float',
+        'quantity_at_home' => 'float',
+        'quantity_bought' => 'float',
         'unit_price' => 'decimal:2',
         'total_price' => 'decimal:2',
         'purchase_date' => 'date',

@@ -33,12 +33,12 @@ class ProductResource extends JsonResource
             // Estado en la checklist activa, presentes solo cuando el producto viene
             // de ProductLastPurchaseService::allWithLastPurchase($activeChecklistId).
             'active_checklist_item_id' => $this->active_checklist_item_id,
-            'active_quantity_planned' => $this->active_quantity_planned,
+            'active_quantity_planned' => is_null($this->active_quantity_planned) ? null : (float) $this->active_quantity_planned,
             'active_unit_id_planned' => $this->active_unit_id_planned,
-            'active_quantity_at_home' => $this->active_quantity_at_home,
+            'active_quantity_at_home' => is_null($this->active_quantity_at_home) ? null : (float) $this->active_quantity_at_home,
             'active_unit_id_at_home' => $this->active_unit_id_at_home,
             'active_was_bought' => is_null($this->active_was_bought) ? null : (bool) $this->active_was_bought,
-            'active_quantity_bought' => $this->active_quantity_bought,
+            'active_quantity_bought' => is_null($this->active_quantity_bought) ? null : (float) $this->active_quantity_bought,
             'active_unit_id_bought' => $this->active_unit_id_bought,
             'active_place_id' => $this->active_place_id,
             'active_unit_price' => $this->active_unit_price,

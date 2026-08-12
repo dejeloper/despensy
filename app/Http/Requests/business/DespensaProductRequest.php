@@ -15,9 +15,9 @@ class DespensaProductRequest extends FormRequest
     {
         return [
             'will_buy' => 'required|boolean',
-            'quantity_planned' => 'nullable|integer|min:1',
+            'quantity_planned' => 'nullable|numeric|min:0.01|decimal:0,2',
             'unit_id_planned' => 'nullable|exists:units,id',
-            'quantity_at_home' => 'nullable|integer|min:1',
+            'quantity_at_home' => 'nullable|numeric|min:0.01|decimal:0,2',
             'unit_id_at_home' => 'nullable|exists:units,id',
         ];
     }
@@ -27,11 +27,13 @@ class DespensaProductRequest extends FormRequest
         return [
             'will_buy.required' => 'Debes indicar si se va a comprar.',
             'will_buy.boolean' => 'El valor de "se va a comprar" no es válido.',
-            'quantity_planned.integer' => 'La cantidad a comprar debe ser un número entero.',
-            'quantity_planned.min' => 'La cantidad a comprar debe ser al menos 1.',
+            'quantity_planned.numeric' => 'La cantidad a comprar debe ser un número.',
+            'quantity_planned.decimal' => 'La cantidad a comprar admite hasta 2 decimales.',
+            'quantity_planned.min' => 'La cantidad a comprar debe ser mayor que 0.',
             'unit_id_planned.exists' => 'La unidad seleccionada no existe.',
-            'quantity_at_home.integer' => 'La cantidad en casa debe ser un número entero.',
-            'quantity_at_home.min' => 'La cantidad en casa debe ser al menos 1.',
+            'quantity_at_home.numeric' => 'La cantidad en casa debe ser un número.',
+            'quantity_at_home.decimal' => 'La cantidad en casa admite hasta 2 decimales.',
+            'quantity_at_home.min' => 'La cantidad en casa debe ser mayor que 0.',
             'unit_id_at_home.exists' => 'La unidad seleccionada no existe.',
         ];
     }
