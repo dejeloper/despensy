@@ -31,6 +31,7 @@ class PlaceSeeder extends Seeder
             ['Pet Pawradise', 'Pawradise', 'Mosquera', '#03A9F4', '#212121', ''],
             ['Plaza Paloquemado', 'Paloquemado', 'Bogotá Paloquemado', '#FFFFFF', '#FF9800', ''],
             ['Salsamentaria', 'Salsa', 'Mosquera',  '#FFFFFF', '#884844', ''],
+            ['Panamericana', 'Panamericana', null, '#ff8648', '#000000', null],
         ];
 
         $data = array_map(fn ($p) => [

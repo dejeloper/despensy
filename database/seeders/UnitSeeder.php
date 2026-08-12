@@ -37,6 +37,7 @@ class UnitSeeder extends Seeder
             ['Promoción', 'Promo'],
             ['Tarro', 'Tar'],
             ['Unidad', 'Und'],
+            ['Lata', 'Lata'],
         ];
 
         $data = array_map(fn ($u) => [
