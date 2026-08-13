@@ -6,9 +6,12 @@ use App\Http\Controllers\business\ChecklistItemController;
 use App\Http\Controllers\business\CheckoutController;
 use App\Http\Controllers\business\DashboardController;
 use App\Http\Controllers\business\DespensyController;
+use App\Http\Controllers\business\EquivalenceController;
 use App\Http\Controllers\business\PlaceController;
+use App\Http\Controllers\business\ProductContainerController;
 use App\Http\Controllers\business\ProductController;
 use App\Http\Controllers\business\UnitController;
+use App\Http\Controllers\business\UnitEquivalenceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -31,6 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('places', PlaceController::class)->except(['show']);
 
         Route::resource('units', UnitController::class)->except(['show']);
+        Route::get('equivalences', [EquivalenceController::class, 'index'])->name('equivalences.index');
+        Route::resource('unit-equivalences', UnitEquivalenceController::class)->only(['store', 'update', 'destroy']);
+        Route::resource('product-containers', ProductContainerController::class)->only(['store', 'update', 'destroy']);
 
         Route::resource('products', ProductController::class);
 
@@ -45,5 +51,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\business\UnitConversionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,17 +15,34 @@ class ChecklistItemResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'product' => $this->whenLoaded('product', fn () => (new ProductResource($this->product))->resolve($request)),
+            'product' => $this->whenLoaded('product', fn() => (new ProductResource($this->product))->resolve($request)),
             'quantity_planned' => $this->quantity_planned,
-            'unit_planned' => $this->whenLoaded('unitPlanned', fn () => $this->unitPlanned ? (new UnitResource($this->unitPlanned))->resolve($request) : null),
+            'unit_planned' => $this->whenLoaded('unitPlanned', fn() => $this->unitPlanned ? (new UnitResource($this->unitPlanned))->resolve($request) : null),
             'was_bought' => $this->was_bought,
             'quantity_bought' => $this->quantity_bought,
-            'unit_bought' => $this->whenLoaded('unitBought', fn () => $this->unitBought ? (new UnitResource($this->unitBought))->resolve($request) : null),
-            'place' => $this->whenLoaded('place', fn () => $this->place ? (new PlaceResource($this->place))->resolve($request) : null),
+            'unit_bought' => $this->whenLoaded('unitBought', fn() => $this->unitBought ? (new UnitResource($this->unitBought))->resolve($request) : null),
+            'place' => $this->whenLoaded('place', fn() => $this->place ? (new PlaceResource($this->place))->resolve($request) : null),
             'unit_price' => $this->unit_price,
             'total_price' => $this->total_price,
             'purchase_date' => $this->purchase_date?->format('Y-m-d'),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'conversion' => $this->whenLoaded('unitBought', fn() => $this->breakdown()),
+            'needs_conversion_setup' => $this->whenLoaded('unitBought', fn() => $this->unitBought !== null && app(UnitConversionService::class)->isUnconfigured($this->unitBought)),
         ];
+    }
+
+    private function breakdown(): ?array
+    {
+        if (! $this->was_bought || $this->unitBought === null || $this->quantity_bought === null) {
+            return null;
+        }
+
+        return app(UnitConversionService::class)->purchaseBreakdown(
+            (float) $this->quantity_bought,
+            $this->unitBought,
+            $this->total_price === null ? null : (float) $this->total_price,
+            $this->product_id,
+            $this->place_id,
+        );
     }
 }

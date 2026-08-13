@@ -6,9 +6,11 @@ use App\Exceptions\ChecklistNotEditableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\business\CheckoutAddProductRequest;
 use App\Http\Resources\ChecklistItemResource;
+use App\Http\Resources\ProductContainerResource;
 use App\Models\business\Category;
 use App\Models\business\Place;
 use App\Models\business\Product;
+use App\Models\business\ProductContainer;
 use App\Models\business\Unit;
 use App\Services\business\ChecklistItemService;
 use App\Services\business\ChecklistLifecycleService;
@@ -31,19 +33,22 @@ class CheckoutController extends Controller
             ->whereNotNull('quantity_planned')
             ->with(['product.category', 'unitPlanned'])
             ->get()
-            ->map(fn ($item) => (new ChecklistItemResource($item))->resolve($request));
+            ->map(fn($item) => (new ChecklistItemResource($item))->resolve($request));
 
         $boughtItems = $checklist->items()
             ->where('was_bought', true)
             ->with(['product.category', 'unitBought', 'place'])
             ->latest('updated_at')
             ->get()
-            ->map(fn ($item) => (new ChecklistItemResource($item))->resolve($request));
+            ->map(fn($item) => (new ChecklistItemResource($item))->resolve($request));
 
         return Inertia::render('checkout/index', [
             'checklist' => ['id' => $checklist->id, 'name' => $checklist->name],
             'items' => $pendingItems,
             'boughtItems' => $boughtItems,
+            'productContainers' => ProductContainer::with(['place', 'containerUnit', 'contentUnit'])
+                ->get()
+                ->map(fn($container) => (new ProductContainerResource($container))->resolve($request)),
             'places' => Place::where('enabled', true)->get(['id', 'name', 'bg_color', 'text_color']),
             'units' => Unit::where('enabled', true)->get(['id', 'name', 'short_name']),
             'products' => Product::where('enabled', true)->get(['id', 'name']),
