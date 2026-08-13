@@ -33,6 +33,7 @@ En vez de una tabla de estados por entidad (`checklist_states`, `product_states`
 
 - Montos monetarios: `decimal(10, 2)` — ya usado en `checklist_items.unit_price`/`total_price`. Cualquier columna monetaria nueva sigue esta misma precisión, no `float`/`double`.
 - Cantidades (`quantity_planned`, `quantity_at_home`, `quantity_bought`): `decimal(10,2)`, para soportar compras fraccionarias por peso (ej. "1.64 kg"). El modelo las castea a `float` para que el frontend reciba `1.64` y no `"1.64"` como string.
+- Factores de conversión (`unit_equivalences.factor`, `product_containers.content_quantity`): `decimal(12,4)` — más decimales que una cantidad porque una conversión mal redondeada se propaga a todo lo que se calcule con ella.
 
 ## Seeders
 

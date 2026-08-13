@@ -24,6 +24,34 @@ Lugar de compra (ej. "Supermercado X"). No pertenece al producto — se asocia p
 
 Unidad de medida (ej. "kg", "unidad"), con `short_name` para mostrar compacto. Se usa en dos momentos distintos de un `ChecklistItem`: la unidad planeada (`unit_id_planned`) y la unidad con la que efectivamente se compró (`unit_id_bought`) — pueden diferir.
 
+`units` es **solo el catálogo**: nombre, nombre corto y `enabled`. Las equivalencias viven aparte (ver abajo).
+
+### UnitEquivalence
+
+Equivalencia dimensional **universal**: `1 unit = factor parent`, sin importar producto ni lugar (`1 Kilogramo = 1000 Gramo`). Se encadenan: Arroba → Libra → Gramo. Se registra contra la unidad con la que un humano la compara de verdad ("una arroba son 25 libras"), no contra la raíz — el recorrido hasta la unidad base lo hace `UnitConversionService`.
+
+Una unidad se define contra **un solo** padre (índice único en `unit_id`): dos filas para Kilogramo harían ambigua la cadena.
+
+### ProductContainer
+
+Cuánto trae un empaque de un producto **concreto**, opcionalmente según el lugar: "1 Paquete de Leche en el Mercado A trae 6 Unidad", pero 8 en el Mercado B. Por eso no puede vivir en `unit_equivalences`: un paquete de leche y uno de arroz no traen lo mismo.
+
+`place_id` nulo es la fila por defecto del producto, usada cuando el lugar de la compra no tiene la suya. Sin eso habría que repetir "la unidad de leche son 1300 ml" en cada uno de los lugares.
+
+### Cómo se combinan
+
+`UnitConversionService` recorre la cadena saltando entre las dos tablas. En cada salto gana la regla **más específica**: contenedor del producto en ese lugar → contenedor del producto sin lugar → equivalencia dimensional. Así "1 Paquete de Leche en Mercado A" resuelve a 6 Unidad y, si además existe "1 Unidad de Leche = 1300 Mililitro", sigue hasta 7800 ml.
+
+Lo único que se muestra es el **precio por unidad mínima** ("$1,49/g"). La cantidad convertida (1,64 Kg → 1640 g) se calcula para poder dividir, pero **no se expone ni se muestra**: es un paso intermedio, no información que el usuario necesite leer.
+
+El precio aparece siempre que haya con qué dividir, aunque no haya conversión: comprar 600 g de arveja por $2.975 no convierte nada, pero "$4,95/g" sigue siendo el dato útil.
+
+Lo que sí cambia según la configuración es la marca de "falta configurar" (`°`), que solo aparece en unidades **aisladas**: las que no figuran en ninguna fila de ninguna de las dos tablas. Gramo no la lleva, porque como raíz ya está bien.
+
+Ese `°` es un botón: abre un modal con las equivalencias ya registradas para ese producto (5 por página, más recientes primero), donde se puede seleccionar una para editarla o crear una nueva sin salir del checkout. Es el mismo CRUD de `/dashboard/equivalences`, pero acotado al producto de la fila y con la unidad de compra preseleccionada.
+
+Nada de esto se persiste calculado: el desglose se computa al vuelo, así que corregir un factor arregla también lo ya registrado. Ambas tablas se administran desde la pantalla **Equivalencias** (`/dashboard/equivalences`).
+
 ### State
 
 Catálogo centralizado de estados (tabla `states`, con `name`, `type`, `color`, `icon`, `enabled`). Los estados de `Checklist` **nunca se hardcodean como string** (`'open'`, `'closed'`) directamente en el código de negocio; se referencian por `state_id` contra este catálogo. `type` permite que la misma tabla sirva para catalogar estados de distintas entidades en el futuro sin crear una tabla de estados por entidad.
