@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Box, CheckCheck, ClipboardList, Github, LayoutGrid, ShoppingBasket, Sliders, Store, Tags, Weight } from 'lucide-react';
+import { Box, CheckCheck, ClipboardList, Github, LayoutGrid, Scale, ShoppingBasket, Sliders, Store, Tags, Weight } from 'lucide-react';
 import AppLogo from './app-logo';
 
 function useMainNavItems(): NavItem[] {
@@ -63,6 +63,11 @@ function useMainNavItems(): NavItem[] {
                     title: 'Unidades',
                     href: '/dashboard/units',
                     icon: Weight,
+                },
+                {
+                    title: 'Equivalencias',
+                    href: '/dashboard/equivalences',
+                    icon: Scale,
                 },
             ],
         },

@@ -5,15 +5,18 @@ import { useMemo, useState } from 'react';
 import { BreadcrumbItem } from '@/types';
 import { Category } from '@/types/business/category';
 import { ChecklistItem } from '@/types/business/checklist';
+import { ProductContainer } from '@/types/business/equivalence';
 import { Place } from '@/types/business/place';
 import { Product } from '@/types/business/product';
 import { Unit } from '@/types/business/unit';
 
 import { AddOutOfListProductModal } from '@/components/business/checkout/addOutOfListProductModal';
+import { ConversionSetupModal } from '@/components/business/checkout/conversionSetupModal';
 import { PlaceSummaryCard } from '@/components/business/checkout/placeSummaryCard';
 import { CategoryFilterSelect } from '@/components/shared/categoryFilterSelect.component';
 import { ColorBadge } from '@/components/shared/colorBadge.component';
 import { Money } from '@/components/shared/money.component';
+import { Pagination } from '@/components/shared/pagination.component';
 import { QuantityInput } from '@/components/shared/quantityInput.component';
 import { SearchBar } from '@/components/shared/searchbar.component';
 import { Button } from '@/components/ui/button';
@@ -22,13 +25,29 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategoryFilter } from '@/hooks/use-category-filter';
-import { normalizeDecimal, normalizeText, sortBy } from '@/lib/utils';
+import { useClientPagination } from '@/hooks/use-client-pagination';
+import { cn, formatQuantity, formatUnitPrice, normalizeDecimal, normalizeText } from '@/lib/utils';
 import { Check, LoaderCircle, Pencil } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Despensa', href: route('despensy.index') },
     { title: 'Registrar compra', href: '#' },
 ];
+
+const ITEMS_PER_PAGE = 10;
+
+type CheckoutTab = 'pending' | 'confirmed';
+
+const itemProductName = (item: ChecklistItem) => item.product?.name ?? '';
+const itemCategoryId = (item: ChecklistItem) => item.product?.category?.id;
+
+function countMatching(items: ChecklistItem[], searchTerm: string): number {
+    if (!searchTerm.trim()) return items.length;
+
+    const term = normalizeText(searchTerm);
+
+    return items.filter((item) => normalizeText(itemProductName(item)).includes(term)).length;
+}
 
 interface CheckoutProps {
     checklist: { id: number; name: string | null };
@@ -38,6 +57,7 @@ interface CheckoutProps {
     units: Unit[];
     products: Product[];
     categories: Category[];
+    productContainers: ProductContainer[];
 }
 
 function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units: Unit[]; placeId: string }) {
@@ -52,9 +72,6 @@ function CheckoutItemRow({ item, units, placeId }: { item: ChecklistItem; units:
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         transform((formData) => ({ ...formData, quantity_bought: normalizeDecimal(formData.quantity_bought), place_id: placeId }));
-        // La redirección de vuelta refresca las props (incluyendo `items` y
-        // `boughtItems`). `preserveState` mantiene el `placeId` local elegido para
-        // no volver a la pantalla de "¿Dónde compraste?" tras confirmar.
         patch(route('checklist-items.mark-bought', item.id), { preserveScroll: true, preserveState: true });
     };
 
@@ -238,8 +255,9 @@ function EditBoughtItemModal({
     );
 }
 
-function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Unit[]; places: Place[] }) {
+function BoughtItemRow({ item, units, places, containers }: { item: ChecklistItem; units: Unit[]; places: Place[]; containers: ProductContainer[] }) {
     const [editOpen, setEditOpen] = useState(false);
+    const [setupOpen, setSetupOpen] = useState(false);
 
     return (
         <div className="flex flex-col gap-1 border-b p-4 transition-colors last:border-b-0 hover:bg-muted/50 sm:p-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-2">
@@ -257,15 +275,49 @@ function BoughtItemRow({ item, units, places }: { item: ChecklistItem; units: Un
             </div>
             <div className="flex items-center justify-between gap-2 lg:justify-end">
                 <p className="text-sm text-muted-foreground">
-                    {item.quantity_bought} {item.unit_bought?.short_name}
+                    {formatQuantity(item.quantity_bought)} {item.unit_bought?.short_name}
+                    {item.product && (
+                        <button
+                            type="button"
+                            onClick={() => setSetupOpen(true)}
+                            className="align-super text-xs hover:cursor-pointer hover:text-foreground hover:underline hover:underline-offset-2"
+                            title={
+                                item.needs_conversion_setup
+                                    ? `Debe configurar ${item.unit_bought?.name} para conversión`
+                                    : `Editar la equivalencia de ${item.unit_bought?.name}`
+                            }
+                        >
+                            °
+                        </button>
+                    )}
                 </p>
-                <Money value={item.total_price} />
+                <div className="text-right">
+                    <Money value={item.total_price} />
+                    {item.conversion && item.conversion.unit_price !== null && (
+                        <p className="text-xs text-muted-foreground">
+                            {formatUnitPrice(item.conversion.unit_price)}/{item.conversion.unit_short_name}
+                        </p>
+                    )}
+                </div>
                 <Button type="button" variant="outline" size="icon" title="Editar" onClick={() => setEditOpen(true)}>
                     <Pencil className="h-4 w-4" />
                 </Button>
             </div>
 
             <EditBoughtItemModal item={item} units={units} places={places} open={editOpen} onOpenChange={setEditOpen} />
+
+            {item.product && (
+                <ConversionSetupModal
+                    productId={item.product.id}
+                    productName={item.product.name}
+                    defaultContainerUnitId={item.unit_bought?.id}
+                    containers={containers}
+                    units={units}
+                    places={places}
+                    open={setupOpen}
+                    onOpenChange={setSetupOpen}
+                />
+            )}
         </div>
     );
 }
@@ -275,11 +327,15 @@ function BoughtItemsList({
     units,
     places,
     categories,
+    containers,
+    searchTerm,
 }: {
     boughtItems: ChecklistItem[];
     units: Unit[];
     places: Place[];
     categories: Category[];
+    containers: ProductContainer[];
+    searchTerm: string;
 }) {
     const [placeFilter, setPlaceFilter] = useState<string>('all');
 
@@ -289,25 +345,29 @@ function BoughtItemsList({
         return boughtItems.filter((item) => item.place?.id?.toString() === placeFilter);
     }, [boughtItems, placeFilter]);
 
-    const {
-        categoryFilter,
-        setCategoryFilter,
-        filteredItems: filteredBoughtItems,
-    } = useCategoryFilter(placeFilteredItems, (item) => item.product?.category?.id);
+    const { categoryFilter, setCategoryFilter, filteredItems: categoryFilteredItems } = useCategoryFilter(placeFilteredItems, itemCategoryId);
+
+    const { paginatedData, filteredData, paginationLinks, handlePageChange } = useClientPagination({
+        data: categoryFilteredItems,
+        itemsPerPage: ITEMS_PER_PAGE,
+        searchTerm,
+        sortKey: itemProductName,
+        searchText: itemProductName,
+    });
 
     const totalConfirmed = useMemo(() => {
-        return filteredBoughtItems.reduce((sum, item) => sum + Number(item.total_price ?? 0), 0);
-    }, [filteredBoughtItems]);
+        return filteredData.reduce((sum, item) => sum + Number(item.total_price ?? 0), 0);
+    }, [filteredData]);
 
     if (boughtItems.length === 0) {
-        return null;
+        return <p className="p-4 text-sm text-muted-foreground">Todavía no has confirmado ningún producto.</p>;
     }
 
     return (
-        <div className="relative flex flex-col gap-2 overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+        <div className="relative flex flex-col gap-2 overflow-x-auto">
             <div className="flex flex-col items-start gap-2 p-3 pb-0">
                 <p className="font-medium">
-                    Productos Confirmados ({filteredBoughtItems.length}) · Total: <Money value={totalConfirmed} />
+                    Productos Confirmados ({filteredData.length}) · Total: <Money value={totalConfirmed} />
                 </p>
                 <div className="flex flex-wrap gap-2">
                     <Select value={placeFilter} onValueChange={setPlaceFilter}>
@@ -328,47 +388,57 @@ function BoughtItemsList({
                 </div>
             </div>
 
-            <PlaceSummaryCard boughtItems={filteredBoughtItems} />
+            <PlaceSummaryCard boughtItems={filteredData} />
 
-            {filteredBoughtItems.length === 0 ? (
+            {filteredData.length === 0 ? (
                 <p className="p-4 text-sm text-muted-foreground">Ningún producto confirmado coincide con el filtro.</p>
             ) : (
                 <>
                     <p className="px-3 pt-3 text-sm font-medium">Listado:</p>
-                    {filteredBoughtItems.map((item) => (
-                        <BoughtItemRow key={item.id} item={item} units={units} places={places} />
+                    {paginatedData.map((item) => (
+                        <BoughtItemRow key={item.id} item={item} units={units} places={places} containers={containers} />
                     ))}
+                    {paginationLinks.length > 0 && <Pagination links={paginationLinks} onPageChange={handlePageChange} />}
                 </>
             )}
         </div>
     );
 }
 
-export default function CheckoutIndex({ items, boughtItems, places, units, products, categories }: CheckoutProps) {
+export default function CheckoutIndex({ items, boughtItems, places, units, products, categories, productContainers }: CheckoutProps) {
     const [placeId, setPlaceId] = useState('');
     // Abre el modal automáticamente en la primera carga si aún no hay lugar elegido.
     const [changePlaceOpen, setChangePlaceOpen] = useState(() => !placeId);
     const [addProductOpen, setAddProductOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [tab, setTab] = useState<CheckoutTab>('pending');
 
     const placeItems: ComboboxItem[] = places.map((p) => ({ value: p.id!.toString(), label: p.name }));
     const selectedPlace = places.find((p) => p.id!.toString() === placeId);
-    // State (not useRef) so the DialogContent's mount triggers a re-render —
-    // a ref alone stays null through the render that creates it.
     const [changePlaceContentEl, setChangePlaceContentEl] = useState<HTMLDivElement | null>(null);
 
-    const {
-        categoryFilter,
-        setCategoryFilter,
-        filteredItems: categoryFilteredItems,
-    } = useCategoryFilter(items, (item) => item.product?.category?.id);
+    const { categoryFilter, setCategoryFilter, filteredItems: categoryFilteredItems } = useCategoryFilter(items, itemCategoryId);
 
-    const filteredItems = useMemo(() => {
-        return sortBy(categoryFilteredItems, (item) => item.product?.name).filter((item) => {
-            if (searchTerm && !normalizeText(item.product?.name ?? '').includes(normalizeText(searchTerm))) return false;
-            return true;
-        });
-    }, [categoryFilteredItems, searchTerm]);
+    const {
+        paginatedData: pendingPage,
+        filteredData: pendingFiltered,
+        paginationLinks: pendingLinks,
+        handlePageChange: handlePendingPageChange,
+    } = useClientPagination({
+        data: categoryFilteredItems,
+        itemsPerPage: ITEMS_PER_PAGE,
+        searchTerm,
+        sortKey: itemProductName,
+        searchText: itemProductName,
+    });
+
+    const pendingCount = useMemo(() => countMatching(items, searchTerm), [items, searchTerm]);
+    const confirmedCount = useMemo(() => countMatching(boughtItems, searchTerm), [boughtItems, searchTerm]);
+
+    const tabs: { id: CheckoutTab; label: string; count: number }[] = [
+        { id: 'pending', label: 'Productos en lista', count: pendingCount },
+        { id: 'confirmed', label: 'Productos confirmados', count: confirmedCount },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -396,25 +466,73 @@ export default function CheckoutIndex({ items, boughtItems, places, units, produ
                     </div>
                 </div>
 
-                {items.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2">
-                        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar productos..." />
-
-                        <CategoryFilterSelect categories={categories} value={categoryFilter} onValueChange={setCategoryFilter} />
-                    </div>
+                {(items.length > 0 || boughtItems.length > 0) && (
+                    <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} placeholder="Buscar productos..." />
                 )}
 
-                <div className="relative flex flex-col overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    {items.length === 0 ? (
-                        <p className="p-4 text-sm text-muted-foreground">No tienes productos presupuestados pendientes por confirmar.</p>
-                    ) : filteredItems.length === 0 ? (
-                        <p className="p-4 text-sm text-muted-foreground">Ningún producto coincide con el filtro.</p>
-                    ) : (
-                        filteredItems.map((item) => <CheckoutItemRow key={item.id} item={item} units={units} placeId={placeId} />)
-                    )}
-                </div>
+                <div className="flex flex-col gap-0">
+                    <div role="tablist" aria-label="Productos de la compra" className="flex flex-wrap gap-1 border-b">
+                        {tabs.map(({ id, label, count }) => (
+                            <button
+                                key={id}
+                                type="button"
+                                role="tab"
+                                aria-selected={tab === id}
+                                onClick={() => setTab(id)}
+                                className={cn(
+                                    '-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                    tab === id
+                                        ? 'border-primary text-foreground'
+                                        : 'border-transparent text-muted-foreground hover:border-muted-foreground/30 hover:text-foreground',
+                                )}
+                            >
+                                {label} ({count})
+                            </button>
+                        ))}
+                    </div>
 
-                <BoughtItemsList boughtItems={boughtItems} units={units} places={places} categories={categories} />
+                    <div
+                        role="tabpanel"
+                        className={cn(
+                            'relative flex flex-col overflow-x-auto rounded-b-xl border border-t-0 border-sidebar-border/70 dark:border-sidebar-border',
+                            tab !== 'pending' && 'hidden',
+                        )}
+                    >
+                        <div className="p-3 pb-0">
+                            <CategoryFilterSelect categories={categories} value={categoryFilter} onValueChange={setCategoryFilter} />
+                        </div>
+
+                        {items.length === 0 ? (
+                            <p className="p-4 text-sm text-muted-foreground">No tienes productos presupuestados pendientes por confirmar.</p>
+                        ) : pendingFiltered.length === 0 ? (
+                            <p className="p-4 text-sm text-muted-foreground">Ningún producto coincide con el filtro.</p>
+                        ) : (
+                            <>
+                                {pendingPage.map((item) => (
+                                    <CheckoutItemRow key={item.id} item={item} units={units} placeId={placeId} />
+                                ))}
+                                {pendingLinks.length > 0 && <Pagination links={pendingLinks} onPageChange={handlePendingPageChange} />}
+                            </>
+                        )}
+                    </div>
+
+                    <div
+                        role="tabpanel"
+                        className={cn(
+                            'relative flex flex-col overflow-x-auto rounded-b-xl border border-t-0 border-sidebar-border/70 dark:border-sidebar-border',
+                            tab !== 'confirmed' && 'hidden',
+                        )}
+                    >
+                        <BoughtItemsList
+                            boughtItems={boughtItems}
+                            units={units}
+                            places={places}
+                            categories={categories}
+                            containers={productContainers}
+                            searchTerm={searchTerm}
+                        />
+                    </div>
+                </div>
             </div>
 
             <Dialog open={changePlaceOpen} onOpenChange={setChangePlaceOpen}>

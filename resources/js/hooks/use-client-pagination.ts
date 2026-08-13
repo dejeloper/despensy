@@ -1,49 +1,52 @@
-import { useEffect, useMemo, useState } from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
-import { normalizeText, sortBy, type SortKey } from '@/lib/utils';
+import {normalizeText, sortBy, type SortKey} from '@/lib/utils';
 
 interface UseClientPaginationOptions<T> {
     data: T[];
     itemsPerPage?: number;
     searchTerm: string;
-    /** Column (or accessor) to sort `data` by before filtering/paginating. Omit to keep the given order. */
     sortKey?: SortKey<T>;
     sortDirection?: 'asc' | 'desc';
+    searchText?: (item: T) => string;
 }
 
-export function useClientPagination<T>({ data, itemsPerPage = 10, searchTerm, sortKey, sortDirection = 'asc' }: UseClientPaginationOptions<T>) {
+export function useClientPagination<T>({
+    data,
+    itemsPerPage = 10,
+    searchTerm,
+    sortKey,
+    sortDirection = 'asc',
+    searchText,
+}: UseClientPaginationOptions<T>) {
     const [currentPage, setCurrentPage] = useState(1);
 
     const sortedData = useMemo(() => (sortKey ? sortBy(data, sortKey, sortDirection) : data), [data, sortKey, sortDirection]);
 
-    // Búsqueda en todos los campos del objeto
     const filteredData = useMemo(() => {
         if (!searchTerm.trim()) return sortedData;
 
         const term = normalizeText(searchTerm);
 
         return sortedData.filter((item) => {
-            // Buscar en todos los valores del objeto
+            if (searchText) return normalizeText(searchText(item)).includes(term);
+
             return Object.values(item as Record<string, unknown>).some((value) => {
                 if (value === null || value === undefined) return false;
 
-                // Convertir a string y buscar
                 return normalizeText(String(value)).includes(term);
             });
         });
-    }, [sortedData, searchTerm]);
+    }, [sortedData, searchTerm, searchText]);
 
-    // Paginación en el cliente
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         return filteredData.slice(startIndex, endIndex);
     }, [filteredData, currentPage, itemsPerPage]);
 
-    // Calcular total de páginas
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
-    // Generar links de paginación
     const paginationLinks = useMemo(() => {
         if (totalPages <= 1) return [];
 
@@ -74,16 +77,16 @@ export function useClientPagination<T>({ data, itemsPerPage = 10, searchTerm, so
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top: 0, behavior: 'smooth'});
     };
 
-    // Resetear a página 1 cuando cambia la búsqueda
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm]);
 
     return {
         paginatedData,
+        filteredData,
         paginationLinks,
         handlePageChange,
         currentPage,

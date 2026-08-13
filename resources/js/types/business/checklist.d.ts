@@ -1,7 +1,13 @@
-import { Place } from './place';
-import { Product } from './product';
-import { State } from './state';
-import { Unit } from './unit';
+import {Place} from './place';
+import {Product} from './product';
+import {State} from './state';
+import {Unit} from './unit';
+
+export type PurchaseConversion = {
+    unit_name: string;
+    unit_short_name: string;
+    unit_price: number | null;
+};
 
 export type ChecklistItem = {
     id: number;
@@ -16,6 +22,8 @@ export type ChecklistItem = {
     total_price: number | null;
     purchase_date: string | null;
     created_at?: string;
+    conversion?: PurchaseConversion | null;
+    needs_conversion_setup?: boolean;
 };
 
 export type Checklist = {
@@ -24,7 +32,7 @@ export type Checklist = {
     state?: State;
     items?: ChecklistItem[];
     items_count?: number;
-    user?: { id: number; name: string };
+    user?: {id: number; name: string};
     created_at?: string;
     updated_at?: string;
 };
@@ -34,5 +42,5 @@ export type PaginatedChecklist = {
     current_page: number;
     per_page: number;
     total: number;
-    links: { url: string | null; label: string; active: boolean }[];
+    links: {url: string | null; label: string; active: boolean}[];
 };

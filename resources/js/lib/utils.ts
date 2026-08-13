@@ -19,6 +19,39 @@ export function formatCurrency(value: number | string | null | undefined, symbol
 }
 
 /**
+ * Precio por unidad base ("$1,49", "$100", "$100,5"). A diferencia de
+ * `formatCurrency`, que trunca a entero porque los precios de compra son pesos
+ * redondos, aquí los decimales son el dato: el gramo puede costar menos de un
+ * peso. Sin ceros de relleno: $100,00 se muestra "$100".
+ */
+export function formatUnitPrice(value: number | string | null | undefined, symbol: string = '$'): string {
+    const formatted = formatQuantity(value);
+
+    return formatted === '' ? '' : `${symbol}${formatted}`;
+}
+
+/**
+ * Número legible ("1.640", "1,64", "100,5"): hasta 2 decimales **truncados**
+ * —nunca redondeados hacia arriba— y sin ceros de relleno.
+ */
+export function formatQuantity(value: number | string | null | undefined): string {
+    const numeric = toNumber(value);
+    if (numeric === null) return '';
+
+    const truncated = Math.trunc(numeric * 100) / 100;
+
+    return truncated.toLocaleString('es-CO', { maximumFractionDigits: 2 });
+}
+
+function toNumber(value: number | string | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') return null;
+
+    const numeric = typeof value === 'string' ? parseFloat(value) : value;
+
+    return Number.isNaN(numeric) ? null : numeric;
+}
+
+/**
  * Lowercase + strip diacritics (á → a, ñ → n, ...) so search matches
  * regardless of accents on either side (buscar "cafe" encuentra "café" y
  * viceversa).
