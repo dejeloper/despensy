@@ -7,7 +7,6 @@ export type UnitEquivalence = {
     factor: number;
 };
 
-
 export type ProductContainer = {
     id: number;
     product_id: number;

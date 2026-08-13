@@ -108,11 +108,7 @@ export default function DespensyIndex({ products, categories, units, places, che
                                 router.post(route('checklists.complete', checklist.id), undefined, { onFinish: () => setClosingList(false) });
                             }}
                         >
-                            {closingList ? (
-                                <LoaderCircle className="h-4 w-4 animate-spin sm:mr-1" />
-                            ) : (
-                                <CircleCheck className="h-4 w-4 sm:mr-1" />
-                            )}
+                            {closingList ? <LoaderCircle className="h-4 w-4 animate-spin sm:mr-1" /> : <CircleCheck className="h-4 w-4 sm:mr-1" />}
                             <span className="hidden sm:inline">Cerrar lista</span>
                         </Button>
                         <Button

@@ -1,6 +1,6 @@
-import {useEffect, useMemo, useState} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import {normalizeText, sortBy, type SortKey} from '@/lib/utils';
+import { normalizeText, sortBy, type SortKey } from '@/lib/utils';
 
 interface UseClientPaginationOptions<T> {
     data: T[];
@@ -77,7 +77,7 @@ export function useClientPagination<T>({
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     useEffect(() => {

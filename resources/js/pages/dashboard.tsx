@@ -99,9 +99,7 @@ export default function Dashboard({ activeChecklist, topCategories, topPlaces, t
                         items={topPlaces}
                         getKey={(item) => item.place.id}
                         renderItem={({ place }) => (
-                            <Badge style={{ backgroundColor: place.bg_color || undefined, color: place.text_color || undefined }}>
-                                {place.name}
-                            </Badge>
+                            <Badge style={{ backgroundColor: place.bg_color || undefined, color: place.text_color || undefined }}>{place.name}</Badge>
                         )}
                     />
                     <TopListCard
