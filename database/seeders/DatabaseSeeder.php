@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             PlaceSeeder::class,
             UnitSeeder::class,
+            UnitEquivalenceSeeder::class,
             ProductSeeder::class,
             ChecklistSeeder::class,
         ]);
